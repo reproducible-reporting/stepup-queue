@@ -14,7 +14,7 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
 
 ## [1.0.1][] - 2025-05-11 {: #v1.0.1 }
 
-This is an initial and experimental release of StepUp Queue.
+This is a minor cleanup release, mainly testing the release process.
 
 ## [1.0.0][] - 2025-05-11 {: #v1.0.0 }
 
