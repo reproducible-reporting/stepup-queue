@@ -1,0 +1,100 @@
+site_name: StepUp Queue
+repo_url: https://github.com/reproducible-reporting/stepup-queue
+edit_uri: edit/main/docs/
+site_description: StepUp Queue Documentation
+site_author: Toon Verstraelen
+copyright: 2024-2025, Toon Verstraelen
+
+watch:
+  - stepup
+
+strict: true
+validation:
+  nav:
+    omitted_files: warn
+    not_found: warn
+    absolute_links: warn
+  links:
+    not_found: warn
+    anchors: warn
+    absolute_links: warn
+    unrecognized_links: warn
+
+extra:
+  version:
+    provider: mike
+    alias: true
+    default: stable
+
+theme:
+  name: material
+  custom_dir: overrides
+  font:
+    text: IBM Plex Sans
+    code: Source Code Pro
+  features:
+  - search.highlight
+  - search.suggest
+  - search.share
+  - navigation.instant
+  - navigation.instant.prefetch
+  - content.code.copy
+  - content.action.edit
+  palette:
+  - media: "(prefers-color-scheme)"
+    toggle:
+      icon: material/link
+      name: Switch to light mode
+  - media: "(prefers-color-scheme: light)"
+    scheme: default
+    primary: black
+    accent: indigo
+    toggle:
+      icon: material/toggle-switch
+      name: Switch to dark mode
+  - media: "(prefers-color-scheme: dark)"
+    scheme: slate
+    primary: black
+    accent: indigo
+    toggle:
+      icon: material/toggle-switch-off
+      name: Switch to system preference
+
+nav:
+  - Home: index.md
+  - installation.md
+  - usage.md
+  - changelog.md
+  - development.md
+  - license.md
+
+plugins:
+- mike
+- search:
+    lang:
+      - en
+- macros:
+    on_error_fail: true
+    on_undefined: strict
+- mkdocstrings:
+    default_handler: python
+    handlers:
+      python:
+        paths: ["stepup-queue"]
+        options:
+          docstring_style: numpy
+          docstring_section_style: list
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - smarty
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - toc:
+      permalink: true

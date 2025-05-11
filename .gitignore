@@ -1,0 +1,29 @@
+# Local dev environment
+.envrc
+.idea
+.local
+tmp
+site/
+venv/
+.venv/
+.ruff_cache
+.pytest_cache
+notes.md
+
+# Python and packaging
+__pycache__
+*.egg-info
+dist
+build
+_version.py
+
+# StepUp specifics
+docs/.stepup
+
+# Temporary files
+*.swp
+
+# NodeJS (for markdownlint)
+node_modules/
+package-lock.json
+package.json

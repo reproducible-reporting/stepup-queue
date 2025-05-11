@@ -1,0 +1,95 @@
+[build-system]
+requires = ["setuptools>=65.0", "setuptools_scm>=8.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stepup-queue"
+authors = [
+  { name="Toon Verstraelen", email="toon.verstraelen@ugent.be" },
+]
+description = "StepUp Queue integrates queued jobs into a StepUp workflow."
+readme = "README.md"
+license = {file = "COPYING"}
+requires-python = ">=3.11"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Natural Language :: English",
+    "Operating System :: POSIX",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Build Tools",
+]
+dependencies = [
+    # Ensure changes to these dependencies are reflected in .github/requirements-old.txt
+    "stepup>=3.0.0,<4.0.0",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+dev = [
+    "psutil",
+    "pytest",
+    "pytest-asyncio>=0.24",
+    "pytest-xdist",
+    "mike",
+    "mkdocs",
+    "mkdocstrings[python]",
+    "mkdocs-macros-plugin",
+    "mkdocs-material",
+]
+
+[project.urls]
+Issues = "https://github.com/reproducible-reporting/stepup-queue/issues"
+Source = "https://github.com/reproducible-reporting/stepup-queue/"
+
+[project.entry-points."stepup.actions"]
+sbatch = "stepup.queue.actions:sbatch"
+
+[project.entry-points."stepup.tools"]
+canceljobs = "stepup.queue.canceljobs:canceljobs_subcommand"
+
+[tool.pytest.ini_options]
+addopts = "-n auto -W error -W ignore::ResourceWarning"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "A", "B", "BLE", "C4", "E", "EXE", "F", "I", "ICN", "ISC", "N", "NPY", "PERF", "PIE", "PL",
+    "PT", "PYI", "RET", "RSE", "RUF", "SIM", "TRY", "UP", "W"
+]
+ignore = [
+    "PLR0904",  # https://docs.astral.sh/ruff/rules/too-many-public-methods/
+    "PLR0911",  # https://docs.astral.sh/ruff/rules/too-many-return-statements/
+    "PLR0912",  # https://docs.astral.sh/ruff/rules/too-many-branches/
+    "PLR0913",  # https://docs.astral.sh/ruff/rules/too-many-arguments/
+    "PLR0914",  # https://docs.astral.sh/ruff/rules/too-many-locals/
+    "PLR0915",  # https://docs.astral.sh/ruff/rules/too-many-statements/
+    "PLR0916",  # https://docs.astral.sh/ruff/rules/too-many-boolean-expressions/
+    "PLR0917",  # https://docs.astral.sh/ruff/rules/too-many-positional/
+    "PLR2004",  # https://docs.astral.sh/ruff/rules/magic-value-comparison/
+    "PLW2901",  # https://docs.astral.sh/ruff/rules/redefined-loop-name/
+    "PT011",  # https://docs.astral.sh/ruff/rules/pytest-raises-too-broad/
+    "RET503",  # https://docs.astral.sh/ruff/rules/implicit-return/
+    "RUF003",  # https://docs.astral.sh/ruff/rules/ambiguous-unicode-character-comment/
+    "TRY003",  # https://docs.astral.sh/ruff/rules/raise-vanilla-args/
+    "TRY300",  # https://docs.astral.sh/ruff/rules/try-consider-else/
+    "TRY301",  # https://docs.astral.sh/ruff/rules/raise-within-try/
+]
+
+[tool.setuptools]
+packages = ["stepup.queue"]
+
+[tool.setuptools_scm]
+version_scheme = "post-release"
+local_scheme = "no-local-version"
