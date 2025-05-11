@@ -14,4 +14,9 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
 
 ### Added
 
+Initial release of StepUp Queue.
+The initial package is based on the `sbatch-wait` script from Parman.
+It was adapted to integrate well with StepUp Core 3.
+This release also features the `stepup canceljobs` tool, which was not present in Parman.
+
 [Unreleased]: https://github.com/reproducible-reporting/stepup-queue
