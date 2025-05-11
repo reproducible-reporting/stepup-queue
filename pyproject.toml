@@ -45,8 +45,10 @@ dev = [
 ]
 
 [project.urls]
+Documentation = "https://reproducible-reporting.github.io/stepup-queue/"
 Issues = "https://github.com/reproducible-reporting/stepup-queue/issues"
 Source = "https://github.com/reproducible-reporting/stepup-queue/"
+Changelog = "https://reproducible-reporting.github.io/stepup-queue/changelog/"
 
 [project.entry-points."stepup.actions"]
 sbatch = "stepup.queue.actions:sbatch"
