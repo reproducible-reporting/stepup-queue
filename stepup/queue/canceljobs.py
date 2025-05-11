@@ -19,8 +19,8 @@
 # --
 """Tool to cancel jobs."""
 
-import os
 import argparse
+import os
 
 from path import Path
 
@@ -40,7 +40,7 @@ def canceljobs_tool(args: argparse.Namespace) -> int:
             print(f"Path {path} is not a directory.")
             continue
         for job_log in path.glob("**/slurmjob.log"):
-            with open(job_log, "r") as f:
+            with open(job_log) as f:
                 lines = f.readlines()
                 if len(lines) < 2 or lines[0][:-1] != FIRST_LINE:
                     print(f"Invalid first line in {job_log}.")
@@ -49,12 +49,12 @@ def canceljobs_tool(args: argparse.Namespace) -> int:
                 print(f"Found job {job_id} on cluster {cluster} in {job_log}")
                 job_ids.setdefault(cluster, []).append(job_id)
     # Cancel 100 at a time to avoid exceeding the command line length limit.
-    for cluster, job_ids in job_ids.items():
-        while len(job_ids) > 0:
-            command = f"scancel -M {cluster} " + " ".join(job_ids[:100])
+    for cluster, cluster_job_ids in job_ids.items():
+        while len(cluster_job_ids) > 0:
+            command = f"scancel -M {cluster} " + " ".join(cluster_job_ids[:100])
             print(command)
             os.system(command)
-            job_ids[:] = job_ids[100:]
+            cluster_job_ids[:] = cluster_job_ids[100:]
 
 
 def canceljobs_subcommand(subparser: argparse.ArgumentParser) -> callable:
@@ -67,7 +67,6 @@ def canceljobs_subcommand(subparser: argparse.ArgumentParser) -> callable:
         nargs="*",
         type=Path,
         help="Paths to the jobs to cancel. Subdirectories are searched recursively. "
-         "If not specified, the current directory is used.",
+        "If not specified, the current directory is used.",
     )
     return canceljobs_tool
-

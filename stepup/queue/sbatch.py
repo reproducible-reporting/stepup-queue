@@ -178,7 +178,9 @@ def rndsleep():
 
 def submit_job(work_thread: WorkThread) -> str:
     """Submit a job with sbatch."""
-    returncode, stdout, stderr = work_thread.runsh("sbatch --parsable -o slurmjob.out -e slurmjob.err slurmjob.sh")
+    returncode, stdout, stderr = work_thread.runsh(
+        "sbatch --parsable -o slurmjob.out -e slurmjob.err slurmjob.sh"
+    )
     if returncode != 0:
         if not (stderr is None or stderr == ""):
             print(stderr)
