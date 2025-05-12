@@ -9,8 +9,9 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/stepup-queue)
 ![GPL-3 License](https://img.shields.io/github/license/reproducible-reporting/stepup-queue)
 
-StepUp Queue is an experimental extension of
-[StepUp Core](https://reproducible-reporting.github.io/stepup-core)
-to integrate queued jobs into a workflow.
+StepUp Queue is an experimental [StepUp](https://reproducible-reporting.github.io/stepup-core)
+extension to integrate queued jobs into a workflow.
 Currently, it only supports integration with [SLURM](https://slurm.schedmd.com/),
 but it is designed to be extensible to other job schedulers.
+
+For more information, consult the [documentation](https://reproducible-reporting.github.io/stepup-queue).
