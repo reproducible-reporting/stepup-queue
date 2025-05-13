@@ -5,6 +5,7 @@
 If you want to submit a job to the queue as part of a StepUp workflow,
 you must first prepare a directory with a job script called `slurmjob.sh`.
 This can be either a static file or the output of a previous step in the workflow.
+The function [`sbatch()`][stepup.queue.api.sbatch] will then submit the job to the queue.
 For simplicity, the following example assumes that the job script is static:
 
 ```python
@@ -15,7 +16,8 @@ static("compute/", "compute/slurmjob.sh")
 sbatch("compute/")
 ```
 
-All arguments to `sbatch` must be included in the `slurmjob.sh` script with `#SBATCH` directives.
+All arguments to the `sbatch` command of SLURM
+must be included in the `slurmjob.sh` script with `#SBATCH` directives.
 You can only submit one job from a given directory.
 
 When the workflow is executed, the `sbatch` step will submit the job to the queue.
@@ -26,10 +28,19 @@ This can be useful when the workflow gets killed for some reason.
 The standard output and error of the job are written to `slurmjob.out` and `slurmjob.err`, respectively.
 
 The current status of the job is written to (and read from) the `slurmjob.log` file.
-The job will not be resubmitted if `slurmjob.log` exists.
-Instead, it will wait for the job to complete without resubmitting it.
+By default, the job is not resubmitted if `slurmjob.log` exists.
+Instead, it waits for the job to complete without resubmitting it.
 You can remove `slurmjob.log` to ensure that the job is resubmitted,
-but this is off course dangerous if the job is still running.
+but this is obviously dangerous if the job is still running.
+
+If the inputs of the job specified with `sbatch("compute/", inp=["inp.txt"])` have changed,
+restarting the workflow will by default raise an exception.
+Ideally, you should clean up old outputs before restarting the workflow,
+and check that you really want to remove the data before doing so.
+If you feel this is overly cautious, you can set the `STEPUP_QUEUE_RESUBMIT_CHANGED_INPUTS`
+environment variable to `"yes"` to allow the workflow to resubmit jobs with changed inputs.
+Old outputs are not removed before resubmission.
+It is assumed that your job script will perform the necessary cleanup itself.
 
 ## Simple Example
 

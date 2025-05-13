@@ -19,11 +19,26 @@
 # --
 """StepUp Queue package."""
 
+import contextlib
+import os
+
+from path import Path
+
+from stepup.core.utils import string_to_bool
 from stepup.core.worker import WorkThread
 
-from .sbatch import submit_once_and_wait
+from .canceljobs import read_jobid_cluster
+from .sbatch import InpDigestError, submit_once_and_wait
 
 
 def sbatch(argstr: str, work_thread: WorkThread) -> int:
     ext = ".sh" if argstr == "" else argstr
+    if string_to_bool(os.getenv("STEPUP_QUEUE_RESUBMIT_CHANGED_INPUTS", "0")):
+        with contextlib.suppress(InpDigestError):
+            return submit_once_and_wait(work_thread, ext)
+        # Cancel running job (if any), clean log and resubmit
+        path_log = Path("slurmjob.log")
+        job_id, cluster = read_jobid_cluster(path_log)
+        work_thread.runsh(f"scancel -M {cluster} {job_id}")
+        path_log.remove_p()
     return submit_once_and_wait(work_thread, ext)

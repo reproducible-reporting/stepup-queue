@@ -40,14 +40,9 @@ def canceljobs_tool(args: argparse.Namespace) -> int:
             print(f"Path {path} is not a directory.")
             continue
         for job_log in path.glob("**/slurmjob.log"):
-            with open(job_log) as f:
-                lines = f.readlines()
-                if len(lines) < 2 or lines[0][:-1] != FIRST_LINE:
-                    print(f"Invalid first line in {job_log}.")
-                    continue
-                job_id, cluster = lines[1].split()[-1].split(";")
-                print(f"Found job {job_id} on cluster {cluster} in {job_log}")
-                job_ids.setdefault(cluster, []).append(job_id)
+            job_id, cluster = read_jobid_cluster(job_log)
+            print(f"Found job {job_id} on cluster {cluster} in {job_log}")
+            job_ids.setdefault(cluster, []).append(job_id)
     # Cancel 100 at a time to avoid exceeding the command line length limit.
     for cluster, cluster_job_ids in job_ids.items():
         while len(cluster_job_ids) > 0:
@@ -55,6 +50,16 @@ def canceljobs_tool(args: argparse.Namespace) -> int:
             print(command)
             os.system(command)
             cluster_job_ids[:] = cluster_job_ids[100:]
+
+
+def read_jobid_cluster(job_log: Path) -> tuple[str, str]:
+    """Read the job ID and cluster from the job log file."""
+    with open(job_log) as f:
+        lines = f.readlines()
+        if len(lines) < 3 or lines[0][:-1] != FIRST_LINE:
+            raise ValueError(f"Invalid first line in {job_log}.")
+        job_id, cluster = lines[2].split()[-1].split(";")
+    return job_id, cluster
 
 
 def canceljobs_subcommand(subparser: argparse.ArgumentParser) -> callable:

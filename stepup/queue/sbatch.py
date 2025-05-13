@@ -31,7 +31,7 @@ from path import Path
 from stepup.core.utils import string_to_bool
 from stepup.core.worker import WorkThread
 
-FIRST_LINE = "StepUp Queue sbatch wait log format version 1"
+FIRST_LINE = "StepUp Queue sbatch wait log format version 2"
 SCONTROL_FAILED = "The command `scontrol show job` failed!\n"
 DEBUG = string_to_bool(os.getenv("STEPUP_SBATCH_DEBUG", "0"))
 CACHE_TIMEOUT = int(os.getenv("STEPUP_SBATCH_CACHE_TIMEOUT", "30"))
@@ -108,6 +108,10 @@ def _read_log(path_log: str) -> list[str]:
             check_log_version(next(f).strip())
         except StopIteration as exc:
             raise ValueError("Existing log file is empty.") from exc
+        try:
+            check_log_inp_digest(next(f).strip())
+        except StopIteration as exc:
+            raise ValueError("Existing log file is empty.") from exc
         for line in f:
             line = line.strip()
             lines.append(line)
@@ -116,8 +120,12 @@ def _read_log(path_log: str) -> list[str]:
 
 def _init_log(path_log: str):
     """Initialize a new log file."""
-    with open(path_log, "w") as f:
-        f.write(FIRST_LINE + "\n")
+    inp_digest = os.getenv("STEPUP_STEP_INP_DIGEST")
+    if inp_digest is None:
+        raise ValueError("The environment variable STEPUP_STEP_INP_DIGEST is not set.")
+    with open(path_log, "w") as fh:
+        print(FIRST_LINE, file=fh)
+        print(inp_digest, file=fh)
 
 
 def _read_or_poll_status(
@@ -177,6 +185,22 @@ def check_log_version(line: str):
     if line != FIRST_LINE:
         raise ValueError(
             f"The first line of the log is wrong. Expected: '{FIRST_LINE}' Found: '{line}'"
+        )
+
+
+class InpDigestError(ValueError):
+    """The input digest in the log file does not match the one in the environment."""
+
+
+def check_log_inp_digest(line: str):
+    """Validate the log input digest, abort if there is a mismatch."""
+    inp_digest = os.getenv("STEPUP_STEP_INP_DIGEST")
+    if inp_digest is None:
+        raise ValueError("The environment variable STEPUP_STEP_INP_DIGEST is not set.")
+    if line != inp_digest:
+        raise InpDigestError(
+            "The second line of the log contains the wrong input digest.\n"
+            f"Expected: {inp_digest}\nFound:    {line}"
         )
 
 
