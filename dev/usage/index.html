@@ -16,7 +16,7 @@
         <link rel="prev" href="../installation/">
       
       
-        <link rel="next" href="../changelog/">
+        <link rel="next" href="../stepup.queue.api/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -437,6 +437,28 @@
   
   
     <li class="md-nav__item">
+      <a href="../stepup.queue.api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    stepup.queue.api
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../changelog/" class="md-nav__link">
         
   
@@ -616,8 +638,8 @@ directory.</p>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">stepup.queue.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">sbatch</span>
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># First an example of a static job script, i.e. already present on disk.</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">static</span><span class="p">(</span><span class="s2">&quot;static/&quot;</span><span class="p">,</span> <span class="s2">&quot;static/slurmjob.sh&quot;</span><span class="p">)</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">sbatch</span><span class="p">(</span><span class="s2">&quot;static&quot;</span><span class="p">)</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">static</span><span class="p">(</span><span class="s2">&quot;static/&quot;</span><span class="p">,</span> <span class="s2">&quot;static/slurmjob.py&quot;</span><span class="p">)</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">sbatch</span><span class="p">(</span><span class="s2">&quot;static&quot;</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="s2">&quot;.py&quot;</span><span class="p">)</span>
 </span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
 </span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1"># Now an example of a job script that is generated from a template.</span>
 </span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">static</span><span class="p">(</span><span class="s2">&quot;dynamic-template.sh&quot;</span><span class="p">)</span>
