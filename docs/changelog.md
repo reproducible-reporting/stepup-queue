@@ -12,6 +12,11 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
 
 (no changes yet)
 
+### Added
+
+- Option to specify the extension of the job script.
+- Wrap all job scripts to record their return code.
+
 ## [1.0.1][] - 2025-05-11 {: #v1.0.1 }
 
 This is a minor cleanup release, mainly testing the release process.

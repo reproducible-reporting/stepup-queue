@@ -3,3 +3,4 @@ dynamic?
 *.log
 *.out
 *.err
+*.ret

@@ -47,6 +47,7 @@ def sbatch(
     - `slurmjob.log` is StepUp Queue's log file keeping track of the job's status.
     - `slurmjob.out` is the job's output file (written by SLURM).
     - `slurmjob.err` is the job's error file (written by SLURM).
+    - `slurmjob.ret` is the job's return code (written by a wrapper script).
 
     Hence, you can only have one job script per working directory,
     and it is strongly recommended to use meaningful directory names.
@@ -64,13 +65,13 @@ def sbatch(
     ext
         The filename extension of the jobscript.
         The full name is `f"slurmjob{ext}"`.
-        Extensions `.log`, `.out` and `.err` are not allowed.
+        Extensions `.log`, `.out`, `.err` and `.ret` are not allowed.
     """
     if ext == "":
         ext = ".sh"
     elif ext[0] != ".":
         ext = f".{ext}"
-    if ext in [".log", ".out", ".err"]:
+    if ext in [".log", ".out", ".err", ".ret"]:
         raise ValueError(f"Invalid extension {ext}. The extension must not be .log, .out or .err.")
     return step(
         "sbatch" if ext == ".sh" else f"sbatch {ext}",

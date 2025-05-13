@@ -39,7 +39,7 @@ POLLING_INTERVAL = int(os.getenv("STEPUP_SBATCH_POLLING_INTERVAL", "10"))
 TIME_MARGIN = int(os.getenv("STEPUP_SBATCH_TIME_MARGIN", "5"))
 
 
-def submit_once_and_wait(work_thread: WorkThread, job_ext: str):
+def submit_once_and_wait(work_thread: WorkThread, job_ext: str) -> int:
     """Submit a job and wait for it to complete. When called a second time, just wait.
 
     Parameters
@@ -48,6 +48,12 @@ def submit_once_and_wait(work_thread: WorkThread, job_ext: str):
         The work thread to use for launching the subprocesses.
     job_ext
         The file extension of the job script to be submitted.
+
+    Returns
+    -------
+    returncode
+        The return code of the job.
+        0 if successful, 1 if the job failed.
     """
     # Read previously logged steps
     path_log = Path("slurmjob.log")
@@ -85,6 +91,13 @@ def submit_once_and_wait(work_thread: WorkThread, job_ext: str):
         status, done = _read_or_poll_status(
             work_thread, submit_time, jobid, cluster, previous_lines, path_log, status
         )
+
+    # Get the return code from the job
+    with open("slurmjob.ret") as fh:
+        returncode = fh.read().strip()
+    if returncode == "":
+        raise ValueError("The job did not return a return code, e.g. because it was cancelled.")
+    return int(returncode)
 
 
 def _read_log(path_log: str) -> list[str]:
@@ -184,10 +197,32 @@ def rndsleep():
     time.sleep(sleep_seconds)
 
 
+JOB_SCRIPT_WRAPPER = """\
+#!/usr/bin/env bash
+{sbatch_header}
+
+touch slurmjob.ret
+chmod +x '{job_script}'
+./'{job_script}'
+RETURN_CODE=$?
+echo $RETURN_CODE > slurmjob.ret
+exot $RETURN_CODE
+"""
+
+
 def submit_job(work_thread: WorkThread, job_ext: str) -> str:
     """Submit a job with sbatch."""
+    # Copy the #SBATCH lines from the job script.
+    path_job = f"slurmjob{job_ext}"
+    with open(path_job) as f:
+        sbatch_header = "\n".join(line for line in f if line.startswith("#SBATCH"))
+
     returncode, stdout, stderr = work_thread.runsh(
-        f"sbatch --parsable -o slurmjob.out -e slurmjob.err slurmjob{job_ext}"
+        "sbatch --parsable -o slurmjob.out -e slurmjob.err",
+        stdin=JOB_SCRIPT_WRAPPER.format(
+            sbatch_header=sbatch_header,
+            job_script=path_job,
+        ),
     )
     if returncode != 0:
         if not (stderr is None or stderr == ""):

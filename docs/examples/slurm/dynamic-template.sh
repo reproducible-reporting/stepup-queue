@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#SBATCH -J 'dynamic {{ field }}'
+#SBATCH -J 'dyn{{ field }}'
 #SBATCH -N 1
 
 echo "Hello from dynamic job {{ field }}"
