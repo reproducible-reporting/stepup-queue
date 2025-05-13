@@ -77,7 +77,7 @@ def sbatch(
         "sbatch" if ext == ".sh" else f"sbatch {ext}",
         inp=[f"slurmjob{ext}", *string_to_list(inp)],
         env=env,
-        out=["slurmjob.out", "slurmjob.err", *string_to_list(out)],
+        out=["slurmjob.out", "slurmjob.err", "slurmjob.ret", *string_to_list(out)],
         vol=["slurmjob.log", *string_to_list(vol)],
         workdir=workdir,
         optional=optional,
