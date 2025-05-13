@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# SBATCH -J static
-# SBATCH -N 1
+#SBATCH -J pass
+#SBATCH -N 1
 
 from time import sleep
 

@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.13">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
     
     
       
@@ -616,6 +616,7 @@
 <li><code>slurmjob.log</code> is StepUp Queue&rsquo;s log file keeping track of the job&rsquo;s status.</li>
 <li><code>slurmjob.out</code> is the job&rsquo;s output file (written by SLURM).</li>
 <li><code>slurmjob.err</code> is the job&rsquo;s error file (written by SLURM).</li>
+<li><code>slurmjob.ret</code> is the job&rsquo;s return code (written by a wrapper script).</li>
 </ul>
 <p>Hence, you can only have one job script per working directory,
 and it is strongly recommended to use meaningful directory names.
@@ -638,7 +639,7 @@ and the return value.</p>
           <div class="doc-md-description">
             <p>The filename extension of the jobscript.
 The full name is <code>f"slurmjob{ext}"</code>.
-Extensions <code>.log</code>, <code>.out</code> and <code>.err</code> are not allowed.</p>
+Extensions <code>.log</code>, <code>.out</code>, <code>.err</code> and <code>.ret</code> are not allowed.</p>
           </div>
         </li>
     </ul>
@@ -701,7 +702,8 @@ Extensions <code>.log</code>, <code>.out</code> and <code>.err</code> are not al
 <span class="normal"><a href="#__codelineno-0-82">82</a></span>
 <span class="normal"><a href="#__codelineno-0-83">83</a></span>
 <span class="normal"><a href="#__codelineno-0-84">84</a></span>
-<span class="normal"><a href="#__codelineno-0-85">85</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="k">def</span><span class="w"> </span><span class="nf">sbatch</span><span class="p">(</span>
+<span class="normal"><a href="#__codelineno-0-85">85</a></span>
+<span class="normal"><a href="#__codelineno-0-86">86</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="k">def</span><span class="w"> </span><span class="nf">sbatch</span><span class="p">(</span>
 </span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a>    <span class="n">workdir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a>    <span class="o">*</span><span class="p">,</span>
 </span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a>    <span class="n">ext</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.sh&quot;</span><span class="p">,</span>
@@ -721,42 +723,43 @@ Extensions <code>.log</code>, <code>.out</code> and <code>.err</code> are not al
 </span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">    - `slurmjob.log` is StepUp Queue&#39;s log file keeping track of the job&#39;s status.</span>
 </span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">    - `slurmjob.out` is the job&#39;s output file (written by SLURM).</span>
 </span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">    - `slurmjob.err` is the job&#39;s error file (written by SLURM).</span>
-</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a>
-</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">    Hence, you can only have one job script per working directory,</span>
-</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">    and it is strongly recommended to use meaningful directory names.</span>
-</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">    Within the directory, try to use as much as possible exactly the same file names for all jobs.</span>
-</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a>
-</span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">    When the step is executed, it will submit the job or skip this if it was done before.</span>
-</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">    If submitted, the step will wait until the job is finished.</span>
-</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">    If already finished, the step will essentially be a no-op.</span>
-</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a>
-</span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">    See `step()` documentation in StepUp Core for all optional arguments.</span>
-</span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="sd">    and the return value.</span>
-</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a>
-</span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="sd">    Parameters</span>
-</span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">    ----------</span>
-</span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">    ext</span>
-</span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65"></a><span class="sd">        The filename extension of the jobscript.</span>
-</span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66"></a><span class="sd">        The full name is `f&quot;slurmjob{ext}&quot;`.</span>
-</span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67"></a><span class="sd">        Extensions `.log`, `.out` and `.err` are not allowed.</span>
-</span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-69"><a id="__codelineno-0-69" name="__codelineno-0-69"></a>    <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-</span><span id="__span-0-70"><a id="__codelineno-0-70" name="__codelineno-0-70"></a>        <span class="n">ext</span> <span class="o">=</span> <span class="s2">&quot;.sh&quot;</span>
-</span><span id="__span-0-71"><a id="__codelineno-0-71" name="__codelineno-0-71"></a>    <span class="k">elif</span> <span class="n">ext</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;.&quot;</span><span class="p">:</span>
-</span><span id="__span-0-72"><a id="__codelineno-0-72" name="__codelineno-0-72"></a>        <span class="n">ext</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;.</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span id="__span-0-73"><a id="__codelineno-0-73" name="__codelineno-0-73"></a>    <span class="k">if</span> <span class="n">ext</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;.log&quot;</span><span class="p">,</span> <span class="s2">&quot;.out&quot;</span><span class="p">,</span> <span class="s2">&quot;.err&quot;</span><span class="p">]:</span>
-</span><span id="__span-0-74"><a id="__codelineno-0-74" name="__codelineno-0-74"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid extension </span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">. The extension must not be .log, .out or .err.&quot;</span><span class="p">)</span>
-</span><span id="__span-0-75"><a id="__codelineno-0-75" name="__codelineno-0-75"></a>    <span class="k">return</span> <span class="n">step</span><span class="p">(</span>
-</span><span id="__span-0-76"><a id="__codelineno-0-76" name="__codelineno-0-76"></a>        <span class="s2">&quot;sbatch&quot;</span> <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;.sh&quot;</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;sbatch </span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-</span><span id="__span-0-77"><a id="__codelineno-0-77" name="__codelineno-0-77"></a>        <span class="n">inp</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;slurmjob</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">string_to_list</span><span class="p">(</span><span class="n">inp</span><span class="p">)],</span>
-</span><span id="__span-0-78"><a id="__codelineno-0-78" name="__codelineno-0-78"></a>        <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span>
-</span><span id="__span-0-79"><a id="__codelineno-0-79" name="__codelineno-0-79"></a>        <span class="n">out</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;slurmjob.out&quot;</span><span class="p">,</span> <span class="s2">&quot;slurmjob.err&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">string_to_list</span><span class="p">(</span><span class="n">out</span><span class="p">)],</span>
-</span><span id="__span-0-80"><a id="__codelineno-0-80" name="__codelineno-0-80"></a>        <span class="n">vol</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;slurmjob.log&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">string_to_list</span><span class="p">(</span><span class="n">vol</span><span class="p">)],</span>
-</span><span id="__span-0-81"><a id="__codelineno-0-81" name="__codelineno-0-81"></a>        <span class="n">workdir</span><span class="o">=</span><span class="n">workdir</span><span class="p">,</span>
-</span><span id="__span-0-82"><a id="__codelineno-0-82" name="__codelineno-0-82"></a>        <span class="n">optional</span><span class="o">=</span><span class="n">optional</span><span class="p">,</span>
-</span><span id="__span-0-83"><a id="__codelineno-0-83" name="__codelineno-0-83"></a>        <span class="n">pool</span><span class="o">=</span><span class="n">pool</span><span class="p">,</span>
-</span><span id="__span-0-84"><a id="__codelineno-0-84" name="__codelineno-0-84"></a>        <span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">,</span>
-</span><span id="__span-0-85"><a id="__codelineno-0-85" name="__codelineno-0-85"></a>    <span class="p">)</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">    - `slurmjob.ret` is the job&#39;s return code (written by a wrapper script).</span>
+</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a>
+</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">    Hence, you can only have one job script per working directory,</span>
+</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">    and it is strongly recommended to use meaningful directory names.</span>
+</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">    Within the directory, try to use as much as possible exactly the same file names for all jobs.</span>
+</span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a>
+</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">    When the step is executed, it will submit the job or skip this if it was done before.</span>
+</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">    If submitted, the step will wait until the job is finished.</span>
+</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">    If already finished, the step will essentially be a no-op.</span>
+</span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a>
+</span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="sd">    See `step()` documentation in StepUp Core for all optional arguments.</span>
+</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">    and the return value.</span>
+</span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62"></a>
+</span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">    Parameters</span>
+</span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">    ----------</span>
+</span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65"></a><span class="sd">    ext</span>
+</span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66"></a><span class="sd">        The filename extension of the jobscript.</span>
+</span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67"></a><span class="sd">        The full name is `f&quot;slurmjob{ext}&quot;`.</span>
+</span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68"></a><span class="sd">        Extensions `.log`, `.out`, `.err` and `.ret` are not allowed.</span>
+</span><span id="__span-0-69"><a id="__codelineno-0-69" name="__codelineno-0-69"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-70"><a id="__codelineno-0-70" name="__codelineno-0-70"></a>    <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+</span><span id="__span-0-71"><a id="__codelineno-0-71" name="__codelineno-0-71"></a>        <span class="n">ext</span> <span class="o">=</span> <span class="s2">&quot;.sh&quot;</span>
+</span><span id="__span-0-72"><a id="__codelineno-0-72" name="__codelineno-0-72"></a>    <span class="k">elif</span> <span class="n">ext</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;.&quot;</span><span class="p">:</span>
+</span><span id="__span-0-73"><a id="__codelineno-0-73" name="__codelineno-0-73"></a>        <span class="n">ext</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;.</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-0-74"><a id="__codelineno-0-74" name="__codelineno-0-74"></a>    <span class="k">if</span> <span class="n">ext</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;.log&quot;</span><span class="p">,</span> <span class="s2">&quot;.out&quot;</span><span class="p">,</span> <span class="s2">&quot;.err&quot;</span><span class="p">,</span> <span class="s2">&quot;.ret&quot;</span><span class="p">]:</span>
+</span><span id="__span-0-75"><a id="__codelineno-0-75" name="__codelineno-0-75"></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid extension </span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">. The extension must not be .log, .out or .err.&quot;</span><span class="p">)</span>
+</span><span id="__span-0-76"><a id="__codelineno-0-76" name="__codelineno-0-76"></a>    <span class="k">return</span> <span class="n">step</span><span class="p">(</span>
+</span><span id="__span-0-77"><a id="__codelineno-0-77" name="__codelineno-0-77"></a>        <span class="s2">&quot;sbatch&quot;</span> <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;.sh&quot;</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;sbatch </span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+</span><span id="__span-0-78"><a id="__codelineno-0-78" name="__codelineno-0-78"></a>        <span class="n">inp</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;slurmjob</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">string_to_list</span><span class="p">(</span><span class="n">inp</span><span class="p">)],</span>
+</span><span id="__span-0-79"><a id="__codelineno-0-79" name="__codelineno-0-79"></a>        <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span>
+</span><span id="__span-0-80"><a id="__codelineno-0-80" name="__codelineno-0-80"></a>        <span class="n">out</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;slurmjob.out&quot;</span><span class="p">,</span> <span class="s2">&quot;slurmjob.err&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">string_to_list</span><span class="p">(</span><span class="n">out</span><span class="p">)],</span>
+</span><span id="__span-0-81"><a id="__codelineno-0-81" name="__codelineno-0-81"></a>        <span class="n">vol</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;slurmjob.log&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">string_to_list</span><span class="p">(</span><span class="n">vol</span><span class="p">)],</span>
+</span><span id="__span-0-82"><a id="__codelineno-0-82" name="__codelineno-0-82"></a>        <span class="n">workdir</span><span class="o">=</span><span class="n">workdir</span><span class="p">,</span>
+</span><span id="__span-0-83"><a id="__codelineno-0-83" name="__codelineno-0-83"></a>        <span class="n">optional</span><span class="o">=</span><span class="n">optional</span><span class="p">,</span>
+</span><span id="__span-0-84"><a id="__codelineno-0-84" name="__codelineno-0-84"></a>        <span class="n">pool</span><span class="o">=</span><span class="n">pool</span><span class="p">,</span>
+</span><span id="__span-0-85"><a id="__codelineno-0-85" name="__codelineno-0-85"></a>        <span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">,</span>
+</span><span id="__span-0-86"><a id="__codelineno-0-86" name="__codelineno-0-86"></a>    <span class="p">)</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
