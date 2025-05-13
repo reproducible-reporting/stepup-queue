@@ -14,4 +14,4 @@ static("dynamic-template.sh")
 for i in range(1, 4):
     mkdir(f"dynamic{i}/")
     render_jinja("dynamic-template.sh", {"field": i}, f"dynamic{i}/slurmjob.sh")
-    sbatch(f"dynamic{i}/")
+    sbatch(f"dynamic{i}/", rc="module swap cluster/doduo")
