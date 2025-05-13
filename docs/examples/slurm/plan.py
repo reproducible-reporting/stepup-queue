@@ -4,8 +4,8 @@ from stepup.core.api import mkdir, render_jinja, static
 from stepup.queue.api import sbatch
 
 # First an example of a static job script, i.e. already present on disk.
-static("static/", "static/slurmjob.sh")
-sbatch("static")
+static("static/", "static/slurmjob.py")
+sbatch("static", ext=".py")
 
 # Now an example of a job script that is generated from a template.
 static("dynamic-template.sh")

@@ -39,8 +39,16 @@ POLLING_INTERVAL = int(os.getenv("STEPUP_SBATCH_POLLING_INTERVAL", "10"))
 TIME_MARGIN = int(os.getenv("STEPUP_SBATCH_TIME_MARGIN", "5"))
 
 
-def submit_once_and_wait(work_thread: WorkThread):
-    """Submit a job and wait for it to complete. When called a second time, just wait."""
+def submit_once_and_wait(work_thread: WorkThread, job_ext: str):
+    """Submit a job and wait for it to complete. When called a second time, just wait.
+
+    Parameters
+    ----------
+    work_thread
+        The work thread to use for launching the subprocesses.
+    job_ext
+        The file extension of the job script to be submitted.
+    """
     # Read previously logged steps
     path_log = Path("slurmjob.log")
     if path_log.is_file():
@@ -54,7 +62,7 @@ def submit_once_and_wait(work_thread: WorkThread):
     if status is None:
         # A new job must be submitted.
         submit_time = time.time()
-        sbatch_stdout = submit_job(work_thread)
+        sbatch_stdout = submit_job(work_thread, job_ext)
         log_step(path_log, f"Submitted {sbatch_stdout}")
         rndsleep()
     else:
@@ -176,10 +184,10 @@ def rndsleep():
     time.sleep(sleep_seconds)
 
 
-def submit_job(work_thread: WorkThread) -> str:
+def submit_job(work_thread: WorkThread, job_ext: str) -> str:
     """Submit a job with sbatch."""
     returncode, stdout, stderr = work_thread.runsh(
-        "sbatch --parsable -o slurmjob.out -e slurmjob.err slurmjob.sh"
+        f"sbatch --parsable -o slurmjob.out -e slurmjob.err slurmjob{job_ext}"
     )
     if returncode != 0:
         if not (stderr is None or stderr == ""):

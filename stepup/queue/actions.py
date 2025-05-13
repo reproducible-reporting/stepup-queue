@@ -25,7 +25,6 @@ from .sbatch import submit_once_and_wait
 
 
 def sbatch(argstr: str, work_thread: WorkThread) -> int:
-    if argstr != "":
-        raise ValueError("sbatch does not accept any arguments")
-    submit_once_and_wait(work_thread)
+    ext = ".sh" if argstr == "" else argstr
+    submit_once_and_wait(work_thread, ext)
     return 0

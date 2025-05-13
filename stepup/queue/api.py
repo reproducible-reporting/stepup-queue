@@ -24,10 +24,13 @@ from collections.abc import Collection
 from stepup.core.api import step
 from stepup.core.utils import string_to_list
 
+__all__ = ("sbatch",)
+
 
 def sbatch(
     workdir: str,
     *,
+    ext: str = ".sh",
     inp: Collection[str] | str = (),
     env: Collection[str] | str = (),
     out: Collection[str] | str = (),
@@ -40,10 +43,10 @@ def sbatch(
 
     The following filename conventions are used in the given working directory:
 
-    - `job.sh` is the job script to be submitted.
-    - `job.log` is StepUp Queue's log file keeping track of the job's status.
-    - `job.out` is the job's output file (written by SLURM).
-    - `job.err` is the job's error file (written by SLURM).
+    - `slurmjob{ext}` is the job script to be submitted.
+    - `slurmjob.log` is StepUp Queue's log file keeping track of the job's status.
+    - `slurmjob.out` is the job's output file (written by SLURM).
+    - `slurmjob.err` is the job's error file (written by SLURM).
 
     Hence, you can only have one job script per working directory,
     and it is strongly recommended to use meaningful directory names.
@@ -55,10 +58,23 @@ def sbatch(
 
     See `step()` documentation in StepUp Core for all optional arguments.
     and the return value.
+
+    Parameters
+    ----------
+    ext
+        The filename extension of the jobscript.
+        The full name is `f"slurmjob{ext}"`.
+        Extensions `.log`, `.out` and `.err` are not allowed.
     """
+    if ext == "":
+        ext = ".sh"
+    elif ext[0] != ".":
+        ext = f".{ext}"
+    if ext in [".log", ".out", ".err"]:
+        raise ValueError(f"Invalid extension {ext}. The extension must not be .log, .out or .err.")
     return step(
-        "sbatch",
-        inp=["slurmjob.sh", *string_to_list(inp)],
+        "sbatch" if ext == ".sh" else f"sbatch {ext}",
+        inp=[f"slurmjob{ext}", *string_to_list(inp)],
         env=env,
         out=["slurmjob.out", "slurmjob.err", *string_to_list(out)],
         vol=["slurmjob.log", *string_to_list(vol)],
