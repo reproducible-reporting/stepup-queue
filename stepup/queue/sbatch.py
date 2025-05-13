@@ -39,7 +39,9 @@ POLLING_INTERVAL = int(os.getenv("STEPUP_SBATCH_POLLING_INTERVAL", "10"))
 TIME_MARGIN = int(os.getenv("STEPUP_SBATCH_TIME_MARGIN", "5"))
 
 
-def submit_once_and_wait(work_thread: WorkThread, job_ext: str) -> int:
+def submit_once_and_wait(
+    work_thread: WorkThread, job_ext: str, sbatch_rc: str | None = None
+) -> int:
     """Submit a job and wait for it to complete. When called a second time, just wait.
 
     Parameters
@@ -48,6 +50,9 @@ def submit_once_and_wait(work_thread: WorkThread, job_ext: str) -> int:
         The work thread to use for launching the subprocesses.
     job_ext
         The file extension of the job script to be submitted.
+    sbatch_rc
+        A resource configuration needed before calling sbatch.
+        This is executed in the same shell, right before calling sbatch.
 
     Returns
     -------
@@ -68,7 +73,7 @@ def submit_once_and_wait(work_thread: WorkThread, job_ext: str) -> int:
     if status is None:
         # A new job must be submitted.
         submit_time = time.time()
-        sbatch_stdout = submit_job(work_thread, job_ext)
+        sbatch_stdout = submit_job(work_thread, job_ext, sbatch_rc)
         log_step(path_log, f"Submitted {sbatch_stdout}")
         rndsleep()
     else:
@@ -234,15 +239,18 @@ exot $RETURN_CODE
 """
 
 
-def submit_job(work_thread: WorkThread, job_ext: str) -> str:
+def submit_job(work_thread: WorkThread, job_ext: str, sbatch_rc: str | None = None) -> str:
     """Submit a job with sbatch."""
     # Copy the #SBATCH lines from the job script.
     path_job = f"slurmjob{job_ext}"
     with open(path_job) as f:
         sbatch_header = "\n".join(line for line in f if line.startswith("#SBATCH"))
 
+    command = "sbatch --parsable -o slurmjob.out -e slurmjob.err"
+    if sbatch_rc is not None:
+        command = f"{sbatch_rc} < /dev/null && {command}"
     returncode, stdout, stderr = work_thread.runsh(
-        "sbatch --parsable -o slurmjob.out -e slurmjob.err",
+        command,
         stdin=JOB_SCRIPT_WRAPPER.format(
             sbatch_header=sbatch_header,
             job_script=path_job,

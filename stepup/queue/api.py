@@ -19,6 +19,7 @@
 # --
 """StepUp Queue API functions to build workflows."""
 
+import shlex
 from collections.abc import Collection
 
 from stepup.core.api import step
@@ -31,6 +32,7 @@ def sbatch(
     workdir: str,
     *,
     ext: str = ".sh",
+    rc: str | None = None,
     inp: Collection[str] | str = (),
     env: Collection[str] | str = (),
     out: Collection[str] | str = (),
@@ -66,6 +68,14 @@ def sbatch(
         The filename extension of the jobscript.
         The full name is `f"slurmjob{ext}"`.
         Extensions `.log`, `.out`, `.err` and `.ret` are not allowed.
+    rc
+        A resource configuration to be executed before calling sbatch.
+        This will be executed in the same shell, right before the sbatch command.
+        For example, you can run `module swap cluster/something`
+        or prepare other resources.
+        If multiple instructions are needed, put them in a file, e.g. `rc.sh`
+        and pass it here as `source rc.sh`.
+        In this case, you usually also want to include `rc.sh` in the `inp` list.
     """
     if ext == "":
         ext = ".sh"
@@ -73,8 +83,13 @@ def sbatch(
         ext = f".{ext}"
     if ext in [".log", ".out", ".err", ".ret"]:
         raise ValueError(f"Invalid extension {ext}. The extension must not be .log, .out or .err.")
+    action = "sbatch"
+    if ext != ".sh":
+        action += f" {ext}"
+    if rc is not None:
+        action += f" --rc={shlex.quote(rc)}"
     return step(
-        "sbatch" if ext == ".sh" else f"sbatch {ext}",
+        action,
         inp=[f"slurmjob{ext}", *string_to_list(inp)],
         env=env,
         out=["slurmjob.out", "slurmjob.err", "slurmjob.ret", *string_to_list(out)],
