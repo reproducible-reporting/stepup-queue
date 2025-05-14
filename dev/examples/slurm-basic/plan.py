@@ -3,13 +3,13 @@
 from stepup.core.api import mkdir, render_jinja, static
 from stepup.queue.api import sbatch
 
-# First two examples of a static job script, i.e. already present on disk.
+# Two examples of a static job script, i.e. already present on disk.
 static("pass/", "pass/slurmjob.py")
 sbatch("pass", ext=".py")
 static("fail/", "fail/slurmjob.sh")
 sbatch("fail")
 
-# Now an example of a job script that is generated from a template.
+# Example of job scripts generated from a template.
 static("dynamic-template.sh")
 for i in range(1, 4):
     mkdir(f"dynamic{i}/")

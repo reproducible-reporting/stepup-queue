@@ -13,25 +13,25 @@
       
       
       
-        <link rel="prev" href="../installation/">
+        <link rel="prev" href="../../usage/">
       
       
-        <link rel="next" href="../examples/slurm-basic/">
+        <link rel="next" href="../slurm-perpetual/">
       
       
-      <link rel="icon" href="../assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
     
     
       
-        <title>Usage - StepUp Queue</title>
+        <title>Basic SLURM example - StepUp Queue</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.342714a4.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.342714a4.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -50,9 +50,9 @@
       
     
     
-      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#usage" class="md-skip">
+        <a href="#basic-slurm-example" class="md-skip">
           Skip to content
         </a>
       
@@ -93,12 +93,12 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   You're not viewing the documentation of the stable version.
-  <a href="../..">
+  <a href="../../..">
     <strong>Click here to go to stable.</strong>
   </a>
 
             </div>
-            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL(".."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
           </aside>
         
       </div>
@@ -110,7 +110,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="StepUp Queue" class="md-header__button md-logo" aria-label="StepUp Queue" data-md-component="logo">
+    <a href="../.." title="StepUp Queue" class="md-header__button md-logo" aria-label="StepUp Queue" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -130,7 +130,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Usage
+              Basic SLURM example
             
           </span>
         </div>
@@ -263,7 +263,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="StepUp Queue" class="md-nav__button md-logo" aria-label="StepUp Queue" data-md-component="logo">
+    <a href="../.." title="StepUp Queue" class="md-nav__button md-logo" aria-label="StepUp Queue" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -293,7 +293,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -315,12 +315,34 @@
   
   
     <li class="md-nav__item">
-      <a href="../installation/" class="md-nav__link">
+      <a href="../../installation/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     Installation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Usage
     
   </span>
   
@@ -351,7 +373,7 @@
   
   
   <span class="md-ellipsis">
-    Usage
+    Basic SLURM example
     
   </span>
   
@@ -364,7 +386,7 @@
   
   
   <span class="md-ellipsis">
-    Usage
+    Basic SLURM example
     
   </span>
   
@@ -387,36 +409,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-sbatch-function" class="md-nav__link">
+  <a href="#files" class="md-nav__link">
     <span class="md-ellipsis">
-      The sbatch Function
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#simple-examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      Simple Examples
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#killing-running-jobs" class="md-nav__link">
-    <span class="md-ellipsis">
-      Killing running jobs
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#technical-details" class="md-nav__link">
-    <span class="md-ellipsis">
-      Technical Details
+      Files
     </span>
   </a>
   
@@ -437,29 +432,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/slurm-basic/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Basic SLURM example
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/slurm-perpetual/" class="md-nav__link">
+      <a href="../slurm-perpetual/" class="md-nav__link">
         
   
   
@@ -481,7 +454,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../stepup.queue.api/" class="md-nav__link">
+      <a href="../../stepup.queue.api/" class="md-nav__link">
         
   
   
@@ -503,7 +476,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../changelog/" class="md-nav__link">
+      <a href="../../changelog/" class="md-nav__link">
         
   
   
@@ -525,7 +498,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../development/" class="md-nav__link">
+      <a href="../../development/" class="md-nav__link">
         
   
   
@@ -547,7 +520,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../license/" class="md-nav__link">
+      <a href="../../license/" class="md-nav__link">
         
   
   
@@ -589,36 +562,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-sbatch-function" class="md-nav__link">
+  <a href="#files" class="md-nav__link">
     <span class="md-ellipsis">
-      The sbatch Function
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#simple-examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      Simple Examples
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#killing-running-jobs" class="md-nav__link">
-    <span class="md-ellipsis">
-      Killing running jobs
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#technical-details" class="md-nav__link">
-    <span class="md-ellipsis">
-      Technical Details
+      Files
     </span>
   </a>
   
@@ -640,7 +586,7 @@
 
 
   
-    <a href="https://github.com/reproducible-reporting/stepup-queue/edit/main/docs/usage.md" title="Edit this page" class="md-content__button md-icon">
+    <a href="https://github.com/reproducible-reporting/stepup-queue/edit/main/docs/examples/slurm-basic/README.md" title="Edit this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -648,88 +594,79 @@
   
 
 
-<h1 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h1>
-<h2 id="the-sbatch-function">The <code>sbatch</code> Function<a class="headerlink" href="#the-sbatch-function" title="Permanent link">&para;</a></h2>
-<p>If you want to submit a job to the queue as part of a StepUp workflow,
-you must first prepare a directory with a job script called <code>slurmjob.sh</code>.
-This can be either a static file or the output of a previous step in the workflow.
-The function <a class="autorefs autorefs-internal" title="sbatch(workdir, *, ext='.sh', rc=None, inp=(), env=(), out=(), vol=(), optional=False, pool=None, block=False)" href="../stepup.queue.api/#stepup.queue.api.sbatch"><code>sbatch()</code></a> will then submit the job to the queue.
-For simplicity, the following example assumes that the job script is static:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">stepup.core.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">static</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">stepup.queue.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">sbatch</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">static</span><span class="p">(</span><span class="s2">&quot;compute/&quot;</span><span class="p">,</span> <span class="s2">&quot;compute/slurmjob.sh&quot;</span><span class="p">)</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">sbatch</span><span class="p">(</span><span class="s2">&quot;compute/&quot;</span><span class="p">)</span>
+<h1 id="basic-slurm-example">Basic SLURM example<a class="headerlink" href="#basic-slurm-example" title="Permanent link">&para;</a></h1>
+<p>The latest version of this example can be found at:
+<a href="https://github.com/reproducible-reporting/stepup-queue/tree/main/docs/examples/slurm-basic/">https://github.com/reproducible-reporting/stepup-queue/tree/main/docs/examples/slurm-basic/</a></p>
+<p>This example shows how to use StepUp to run job scripts written manually (static)
+and scripts generated from a template (dynamic).
+The jobs take only a few seconds and do not compute anything,
+allowing for a quick demonstration of the features of StepUp Queue.</p>
+<h2 id="files">Files<a class="headerlink" href="#files" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>.
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── dynamic-template.sh
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── fail
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│   └── slurmjob.sh
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>├── pass
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│   └── slurmjob.py
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>├── plan.py
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>└── README.md
 </span></code></pre></div>
-<p>All arguments to the <code>sbatch</code> command of SLURM
-must be included in the <code>slurmjob.sh</code> script with <code>#SBATCH</code> directives.
-You can only submit one job from a given directory.</p>
-<p>When the workflow is executed, the <code>sbatch</code> step will submit the job to the queue.
-It will then wait for the job to complete, just like <code>sbatch --wait</code>.
-Unlike <code>sbatch --wait</code>, it can also wait for a previously submitted job to complete.
-This can be useful when the workflow gets killed for some reason.</p>
-<p>The standard output and error of the job are written to <code>slurmjob.out</code> and <code>slurmjob.err</code>, respectively.</p>
-<p>The current status of the job is written to (and read from) the <code>slurmjob.log</code> file.
-By default, the job is not resubmitted if <code>slurmjob.log</code> exists.
-Instead, it waits for the job to complete without resubmitting it.
-You can remove <code>slurmjob.log</code> to ensure that the job is resubmitted,
-but this is obviously dangerous if the job is still running.</p>
-<p>If the inputs of the job specified with <code>sbatch("compute/", inp=["inp.txt"])</code> have changed,
-restarting the workflow will by default raise an exception.
-Ideally, you should clean up old outputs before restarting the workflow,
-and check that you really want to remove the data before doing so.
-If you feel this is overly cautious, you can set the <code>STEPUP_QUEUE_RESUBMIT_CHANGED_INPUTS</code>
-environment variable to <code>"yes"</code> to allow the workflow to resubmit jobs with changed inputs.
-Old outputs are not removed before resubmission.
-It is assumed that your job script will perform the necessary cleanup itself.</p>
-<h2 id="simple-examples">Simple Examples<a class="headerlink" href="#simple-examples" title="Permanent link">&para;</a></h2>
-<ul>
-<li>
-<p>A simple working example with static and dynamically generated job scripts
-  can be found in the <a href="../examples/slurm-basic/"><code>examples/slurm-basic/</code></a>.</p>
-</li>
-<li>
-<p>The example <a href="../examples/slurm-perpetual/"><code>examples/slurm-perpetual/</code></a>
-  shows how to run StepUp itself as a job in the queue,
-  which cancels and submits itself again when nearing the wall time limit,
-  if the workflow has not yet completed.</p>
-</li>
-</ul>
-<h2 id="killing-running-jobs">Killing running jobs<a class="headerlink" href="#killing-running-jobs" title="Permanent link">&para;</a></h2>
-<p>If you decide that you want to interrupt the workflow and cancel all running SLURM jobs,
-it is not enough to simply kill or stop StepUp.
-You must also cancel the jobs in the SLURM queue.
-This can be done by running the following command from the top-level directory of the workflow:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>stepup<span class="w"> </span>canceljobs
+<p><code>plan.py</code> is a Python script that defines the workflow:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="ch">#!/usr/bin/env python3</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">stepup.core.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">mkdir</span><span class="p">,</span> <span class="n">render_jinja</span><span class="p">,</span> <span class="n">static</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">stepup.queue.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">sbatch</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># Two examples of a static job script, i.e. already present on disk.</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">static</span><span class="p">(</span><span class="s2">&quot;pass/&quot;</span><span class="p">,</span> <span class="s2">&quot;pass/slurmjob.py&quot;</span><span class="p">)</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">sbatch</span><span class="p">(</span><span class="s2">&quot;pass&quot;</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="s2">&quot;.py&quot;</span><span class="p">)</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">static</span><span class="p">(</span><span class="s2">&quot;fail/&quot;</span><span class="p">,</span> <span class="s2">&quot;fail/slurmjob.sh&quot;</span><span class="p">)</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="n">sbatch</span><span class="p">(</span><span class="s2">&quot;fail&quot;</span><span class="p">)</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="c1"># Example of job scripts generated from a template.</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="n">static</span><span class="p">(</span><span class="s2">&quot;dynamic-template.sh&quot;</span><span class="p">)</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="n">mkdir</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;dynamic</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">)</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="n">render_jinja</span><span class="p">(</span><span class="s2">&quot;dynamic-template.sh&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="n">i</span><span class="p">},</span> <span class="sa">f</span><span class="s2">&quot;dynamic</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">/slurmjob.sh&quot;</span><span class="p">)</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="n">sbatch</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;dynamic</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="n">rc</span><span class="o">=</span><span class="s2">&quot;module swap cluster/doduo&quot;</span><span class="p">)</span>
 </span></code></pre></div>
-<p>It is part of the design of StepUp Queue&rsquo;s not to automatically cancel jobs when the workflow is interrupted.
-It is quite common for a workflow to be interrupted by accident or due to a technical problem.
-In this case, it would be inefficient to also cancel running jobs, which may still be doing useful work.
-Instead, they continue to run and you can restart the StepUp workflow to pick up where it left off.</p>
-<p>After having cancelled jobs, it is still your responsibility to clean up files in the workflow.
-Removing them is not always desirable, so this is not done automatically.</p>
-<h2 id="technical-details">Technical Details<a class="headerlink" href="#technical-details" title="Permanent link">&para;</a></h2>
-<p>The timestamps in the log file have a low resolution of about 1 minute.
-The job state is only checked every 30&ndash;40 seconds to avoid overloading the Job Scheduler.
-Information from <code>slurmjob.log</code> is maximally reused to avoid unnecessary <code>scontrol</code> calls.</p>
-<p>The status of the job is inferred from <code>scontrol show job</code>, if relevant with a <code>--cluster</code> argument.
-To further minimize the number of <code>scontrol</code> calls in a parallel workflow,
-its output is cached and stored in <code>~/.cache/stepup-queue</code>.
-The cached results are reused by all <code>sbatch</code> actions,
-so the number of <code>scontrol</code> calls is independent of the
-number of jobs running in parallel.</p>
-<p>The time between two <code>scontrol</code> calls (per cluster) can be controlled with the
-<code>STEPUP_SBATCH_CACHE_TIMEOUT</code> environment variable, which is <code>"30"</code> (seconds) by default.
-Increase this value if you want to reduce the burden on Slurm.</p>
-<p>The cached output of <code>scontrol</code> is checked with a randomized polling interval.
-The randomization guarantees that concurrent calls to <code>scontrol</code> (for multiple clusters)
-will not all coincide.
-The polling time can be controlled with two additional environment variables:</p>
-<ul>
-<li><code>STEPUP_SBATCH_POLLING_INTERVAL</code> = the minimal polling interval in seconds, default is <code>"10"</code>.</li>
-<li><code>STEPUP_SBATCH_TIME_MARGIN</code> = the width of the uniform distribution for the polling interval
-  in seconds, default is <code>"5"</code>.</li>
-</ul>
+<p>The job <code>fail/slurmjob.sh</code> is a static job script that fails with a non-zero exit code,
+which is correctly handled by StepUp Queue:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="ch">#!/usr/bin/env bash</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1">#SBATCH --job-name fail</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1">#SBATCH --nodes=1</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1">#SBATCH --num-tasks=1</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1">#SBATCH --cpus-per-task=1</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;This job will fail&quot;</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
+</span></code></pre></div>
+<p>The job <code>pass/slurmjob.py</code> shows how to write a Job script in Python:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="ch">#!/usr/bin/env python3</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="c1">#SBATCH --job-name pass</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1">#SBATCH --nodes=1</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1">#SBATCH --num-tasks=1</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="c1">#SBATCH --cpus-per-task=1</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">sleep</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello from static job&quot;</span><span class="p">)</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Goodbye from static job&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<p>The file <code>dynamic-template.sh</code> is a template from which actual job scripts are generated:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="ch">#!/usr/bin/env bash</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="c1">#SBATCH --job-name &#39;dyn{{ field }}&#39;</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1">#SBATCH --nodes=1</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1">#SBATCH --num-tasks=1</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="c1">#SBATCH --cpus-per-task=1</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Hello from dynamic job {{ field }}&quot;</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>sleep<span class="w"> </span><span class="m">5</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Goodbye from dynamic job {{ field }}&quot;</span>
+</span></code></pre></div>
+<p>Note that <code>render_jinja</code> can be used to render any kind of text-based file from a template,
+such as inputs to computational tools, configuration files, etc.</p>
 
 
 
@@ -782,10 +719,10 @@ The polling time can be controlled with two additional environment variables:</p
     
     
       
-      <script id="__config" type="application/json">{"base": "..", "features": ["search.highlight", "search.suggest", "search.share", "navigation.instant", "navigation.instant.prefetch", "content.code.copy", "content.action.edit"], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "default": "stable", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"base": "../..", "features": ["search.highlight", "search.suggest", "search.share", "navigation.instant", "navigation.instant.prefetch", "content.code.copy", "content.action.edit"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "default": "stable", "provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      <script src="../../assets/javascripts/bundle.13a4f30d.min.js"></script>
       
     
   </body>
