@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-#SBATCH -J 'dynamic {{ field }}'
-#SBATCH -N 1
+#SBATCH --job-name 'dyn{{ field }}'
+#SBATCH --nodes=1
+#SBATCH --num-tasks=1
+#SBATCH --cpus-per-task=1
 
 echo "Hello from dynamic job {{ field }}"
 sleep 5

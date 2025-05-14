@@ -13,14 +13,14 @@
       
       
       
-        <link rel="prev" href="../usage/">
+        <link rel="prev" href="../stepup.queue.api/">
       
       
         <link rel="next" href="../development/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.13">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
     
     
       
@@ -356,6 +356,72 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/slurm-basic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Basic SLURM example
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/slurm-perpetual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Perpetual SLURM Workflow Job
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stepup.queue.api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    stepup.queue.api
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -418,6 +484,30 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#v1.0.2" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.2 - 2025-05-14
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.2 - 2025-05-14">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1.0.1" class="md-nav__link">
     <span class="md-ellipsis">
       1.0.1 - 2025-05-11
@@ -437,7 +527,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#added" class="md-nav__link">
+  <a href="#added_1" class="md-nav__link">
     <span class="md-ellipsis">
       Added
     </span>
@@ -538,6 +628,30 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#v1.0.2" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.2 - 2025-05-14
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.2 - 2025-05-14">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1.0.1" class="md-nav__link">
     <span class="md-ellipsis">
       1.0.1 - 2025-05-11
@@ -557,7 +671,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#added" class="md-nav__link">
+  <a href="#added_1" class="md-nav__link">
     <span class="md-ellipsis">
       Added
     </span>
@@ -603,11 +717,20 @@ and this project adheres to <a href="https://jacobtomlinson.dev/effver/">Effort-
 (Changes to features documented as &ldquo;experimental&rdquo; will not increment macro and meso version numbers.)</p>
 <h2 id="unreleased"><a href="https://github.com/reproducible-reporting/stepup-queue">Unreleased</a><a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h2>
 <p>(no changes yet)</p>
+<h2 id="v1.0.2"><a href="https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.2">1.0.2</a> - 2025-05-14<a class="headerlink" href="#v1.0.2" title="Permanent link">&para;</a></h2>
+<h3 id="added">Added<a class="headerlink" href="#added" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Option to specify the extension of the job script.</li>
+<li>Wrap all job scripts to record their return code.</li>
+<li>Detect when inputs of jobs have changed + optional resubmission.</li>
+<li>Option to load resource configurations before sbatch is called.</li>
+<li>More detailed examples, including a self-submitting workflow job.</li>
+</ul>
 <h2 id="v1.0.1"><a href="https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.1">1.0.1</a> - 2025-05-11<a class="headerlink" href="#v1.0.1" title="Permanent link">&para;</a></h2>
 <p>This is a minor cleanup release, mainly testing the release process.</p>
 <h2 id="v1.0.0"><a href="https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.0">1.0.0</a> - 2025-05-11<a class="headerlink" href="#v1.0.0" title="Permanent link">&para;</a></h2>
 <p>This is an initial and experimental release of StepUp Queue.</p>
-<h3 id="added">Added<a class="headerlink" href="#added" title="Permanent link">&para;</a></h3>
+<h3 id="added_1">Added<a class="headerlink" href="#added_1" title="Permanent link">&para;</a></h3>
 <p>Initial release of StepUp Queue.
 The initial package is based on the <code>sbatch-wait</code> script from Parman.
 It was adapted to integrate well with StepUp Core 3.
