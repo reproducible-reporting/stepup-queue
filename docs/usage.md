@@ -42,9 +42,9 @@ environment variable to `"yes"` to allow the workflow to resubmit jobs with chan
 Old outputs are not removed before resubmission.
 It is assumed that your job script will perform the necessary cleanup itself.
 
-## Simple Examples
+## Examples
 
-- A simple working example with static and dynamically generated job scripts
+- A simple example with static and dynamically generated job scripts
   can be found in the [`examples/slurm-basic/`](examples/slurm-basic/README.md).
 
 - The example [`examples/slurm-perpetual/`](examples/slurm-perpetual/README.md)
@@ -64,9 +64,9 @@ stepup canceljobs
 ```
 
 It is part of the design of StepUp Queue's not to automatically cancel jobs when the workflow is interrupted.
-It is quite common for a workflow to be interrupted by accident or due to a technical problem.
+It is quite common for a workflow to be interrupted by accident or for technical reasons.
 In this case, it would be inefficient to also cancel running jobs, which may still be doing useful work.
-Instead, they continue to run and you can restart the StepUp workflow to pick up where it left off.
+Instead, jobs continue to run and you can restart the StepUp workflow to pick up where it left off.
 
 After having cancelled jobs, it is still your responsibility to clean up files in the workflow.
 Removing them is not always desirable, so this is not done automatically.

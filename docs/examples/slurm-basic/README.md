@@ -3,10 +3,10 @@
 The latest version of this example can be found at:
 <https://github.com/reproducible-reporting/stepup-queue/tree/main/docs/examples/slurm-basic/>
 
-This example shows how to use StepUp to run job scripts written manually (static)
-and scripts generated from a template (dynamic).
-The jobs take only a few seconds and do not compute anything,
-allowing for a quick demonstration of the features of StepUp Queue.
+This example shows how to use StepUp to run job scripts,
+which can be either manually written (static) or generated from a template (dynamic).
+Since these jobs only take a few seconds and don't perform any computations,
+they allow for a quick demonstration of StepUp Queue's features.
 
 ## Files
 
