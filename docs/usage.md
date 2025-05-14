@@ -42,15 +42,15 @@ environment variable to `"yes"` to allow the workflow to resubmit jobs with chan
 Old outputs are not removed before resubmission.
 It is assumed that your job script will perform the necessary cleanup itself.
 
-## Simple Example
+## Simple Examples
 
-A simple working example with static and dynamically generated job scripts
-can be found in the [`examples/slurm/`](https://github.com/reproducible-reporting/stepup-queue/tree/main/docs/examples/slurm/)
-directory.
+- A simple working example with static and dynamically generated job scripts
+  can be found in the [`examples/slurm-basic/`](examples/slurm-basic/README.md).
 
-```python
-{% include 'examples/slurm/plan.py' %}
-```
+- The example [`examples/slurm-perpetual/`](examples/slurm-perpetual/README.md)
+  shows how to run StepUp itself as a job in the queue,
+  which cancels and submits itself again when nearing the wall time limit,
+  if the workflow has not yet completed.
 
 ## Killing running jobs
 

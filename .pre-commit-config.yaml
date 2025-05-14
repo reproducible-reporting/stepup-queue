@@ -28,7 +28,7 @@ repos:
   rev: v0.8.4
   hooks:
     - id: ruff-format
-      exclude: "^docs/examples/slurm/pass/slurmjob.py$"
+      exclude: "^docs/examples/slurm-basic/pass/slurmjob.py$"
     - id: ruff
       args: ["--fix", "--show-fixes"]
 - repo: https://github.com/DavidAnson/markdownlint-cli2

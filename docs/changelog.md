@@ -18,6 +18,7 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
 - Wrap all job scripts to record their return code.
 - Detect when inputs of jobs have changed + optional resubmission.
 - Option to load resource configurations before sbatch is called.
+- More detailed examples, including a self-submitting workflow job.
 
 ## [1.0.1][] - 2025-05-11 {: #v1.0.1 }
 

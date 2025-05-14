@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-#SBATCH -J pass
-#SBATCH -N 1
+#SBATCH --job-name pass
+#SBATCH --nodes=1
+#SBATCH --num-tasks=1
+#SBATCH --cpus-per-task=1
 
 from time import sleep
 

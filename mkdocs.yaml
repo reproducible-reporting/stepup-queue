@@ -25,6 +25,8 @@ extra:
     provider: mike
     alias: true
     default: stable
+  # Workaround for showing an example with a Jinja2 placeholder
+  field: "{{ field }}"
 
 theme:
   name: material
@@ -64,6 +66,8 @@ nav:
   - Home: index.md
   - installation.md
   - usage.md
+  - examples/slurm-basic/README.md
+  - examples/slurm-perpetual/README.md
   - stepup.queue.api.md
   - changelog.md
   - development.md
