@@ -597,10 +597,10 @@
 <h1 id="basic-slurm-example">Basic SLURM example<a class="headerlink" href="#basic-slurm-example" title="Permanent link">&para;</a></h1>
 <p>The latest version of this example can be found at:
 <a href="https://github.com/reproducible-reporting/stepup-queue/tree/main/docs/examples/slurm-basic/">https://github.com/reproducible-reporting/stepup-queue/tree/main/docs/examples/slurm-basic/</a></p>
-<p>This example shows how to use StepUp to run job scripts written manually (static)
-and scripts generated from a template (dynamic).
-The jobs take only a few seconds and do not compute anything,
-allowing for a quick demonstration of the features of StepUp Queue.</p>
+<p>This example shows how to use StepUp to run job scripts,
+which can be either manually written (static) or generated from a template (dynamic).
+Since these jobs only take a few seconds and don&rsquo;t perform any computations,
+they allow for a quick demonstration of StepUp Queue&rsquo;s features.</p>
 <h2 id="files">Files<a class="headerlink" href="#files" title="Permanent link">&para;</a></h2>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>.
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── dynamic-template.sh
@@ -628,7 +628,9 @@ allowing for a quick demonstration of the features of StepUp Queue.</p>
 </span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>
 </span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="n">mkdir</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;dynamic</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">)</span>
 </span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="n">render_jinja</span><span class="p">(</span><span class="s2">&quot;dynamic-template.sh&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="n">i</span><span class="p">},</span> <span class="sa">f</span><span class="s2">&quot;dynamic</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">/slurmjob.sh&quot;</span><span class="p">)</span>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="n">sbatch</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;dynamic</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="n">rc</span><span class="o">=</span><span class="s2">&quot;module swap cluster/doduo&quot;</span><span class="p">)</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="c1"># You can use the rc option to load an environment before calling sbatch.</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="c1"># Use this only if it cannot be done in the job script itself.</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    <span class="n">sbatch</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;dynamic</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="n">rc</span><span class="o">=</span><span class="s2">&quot;module swap cluster/doduo&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 <p>The job <code>fail/slurmjob.sh</code> is a static job script that fails with a non-zero exit code,
 which is correctly handled by StepUp Queue:</p>

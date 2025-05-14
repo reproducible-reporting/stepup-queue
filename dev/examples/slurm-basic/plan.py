@@ -14,4 +14,6 @@ static("dynamic-template.sh")
 for i in range(1, 4):
     mkdir(f"dynamic{i}/")
     render_jinja("dynamic-template.sh", {"field": i}, f"dynamic{i}/slurmjob.sh")
+    # You can use the rc option to load an environment before calling sbatch.
+    # Use this only if it cannot be done in the job script itself.
     sbatch(f"dynamic{i}/", rc="module swap cluster/doduo")
