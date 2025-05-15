@@ -56,15 +56,17 @@ def test_parse_sbatch():
 def test_cached_run(path_tmp: Path):
     path_out = path_tmp / "date.txt"
     work_thread = WorkThread("<test>")
-    cache_time1, out1 = cached_run(work_thread, "date", path_out, 1)
-    cache_time2, out2 = cached_run(work_thread, "date", path_out, 10)
+    cache_time1, out1, ret1 = cached_run(work_thread, "date", path_out, 1)
+    cache_time2, out2, ret2 = cached_run(work_thread, "date", path_out, 10)
     assert cache_time1 == pytest.approx(cache_time2, 1e-4)
     assert out1 != ""
     assert out1 == out2
+    assert ret1 == ret2
     time.sleep(2)
-    cache_time3, out3 = cached_run(work_thread, "date", path_out, 1)
+    cache_time3, out3, ret3 = cached_run(work_thread, "date", path_out, 1)
     assert abs(cache_time1 - cache_time3) > 0.5
     assert out1 != out3
+    assert ret1 == ret3
 
 
 SCONTROL_OUT = """\

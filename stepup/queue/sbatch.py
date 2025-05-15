@@ -177,10 +177,10 @@ def _read_or_poll_status(
         # Call scontrol and parse its response.
         rndsleep()
         status_time, status = get_status(work_thread, jobid, cluster)
-        if status is not None and status != last_status:
+        if status != last_status:
             log_step(path_log, status)
     done = (status_time > submit_time + TIME_MARGIN) and (
-        status not in ["PENDING", "CONFIGURING", "RUNNING"]
+        status not in ["PENDING", "CONFIGURING", "RUNNING", "invalid"]
     )
     return status, done
 
@@ -281,7 +281,7 @@ def parse_sbatch(stdout: str) -> tuple[int, str | None]:
     raise ValueError(f"Cannot parse sbatch output: {stdout}")
 
 
-def get_status(work_thread: WorkThread, jobid: int, cluster: str | None) -> str | None:
+def get_status(work_thread: WorkThread, jobid: int, cluster: str | None) -> str:
     """Load cached scontrol output or run scontrol if outdated.
 
     Parameters
@@ -296,10 +296,9 @@ def get_status(work_thread: WorkThread, jobid: int, cluster: str | None) -> str 
     Returns
     -------
     status
-        A status reported by scontrol.
-        The "Invalid" status is returned when scontrol fails to find the jobid.
-        None is returned when scontrol fails in a way that is safe to ignore.
-        (Try again later.)
+        A status reported by scontrol,
+        or `invalid` if scontrol failed (retry scontrol later),
+        or `unlisted` if the job is not found (probably ended long ago).
     """
     # Load cached output or run again
     command = "scontrol show job"
@@ -309,11 +308,17 @@ def get_status(work_thread: WorkThread, jobid: int, cluster: str | None) -> str 
     else:
         command += f" --cluster={cluster}"
         path_out /= f"sbatch_wait.{cluster}.out"
-    status_time, scontrol_out = cached_run(work_thread, command, path_out, CACHE_TIMEOUT)
+    status_time, scontrol_out, returncode = cached_run(
+        work_thread, command, path_out, CACHE_TIMEOUT
+    )
+    if returncode != 0:
+        return status_time, "invalid"
     return status_time, parse_scontrol_out(scontrol_out, jobid)
 
 
-def cached_run(work_thread: WorkThread, command: str, path_out: Path, cache_timeout) -> str:
+def cached_run(
+    work_thread: WorkThread, command: str, path_out: Path, cache_timeout
+) -> tuple[float, str, int]:
     """Execute a command if its previous output is outdated.
 
     Parameters
@@ -329,8 +334,12 @@ def cached_run(work_thread: WorkThread, command: str, path_out: Path, cache_time
 
     Returns
     -------
+    cache_time
+        The time when the command was last executed.
     stdout
         The output of the file, either new or cached.
+    returncode
+        The return code of the (cached) command.
 
     Notes
     -----
@@ -345,7 +354,7 @@ def cached_run(work_thread: WorkThread, command: str, path_out: Path, cache_time
         fcntl.lockf(fh, fcntl.LOCK_EX)
         fh.seek(0)
         header = fh.read(CACHE_HEADER_LENGTH)
-        cache_time, _ = parse_cache_header(header)
+        cache_time, returncode = parse_cache_header(header)
         if cache_time is None or time.time() > cache_time + cache_timeout:
             returncode, stdout, _ = work_thread.runsh(command)
             # Go the the beginning of the file before truncating.
@@ -358,8 +367,8 @@ def cached_run(work_thread: WorkThread, command: str, path_out: Path, cache_time
             fh.write(stdout)
             fh.flush()
             os.fsync(fh.fileno())
-            return cache_time, stdout
-        return cache_time, fh.read()
+            return cache_time, stdout, returncode
+        return cache_time, fh.read(), returncode
 
 
 def make_cache_header(cache_time: float, returncode: int):
@@ -386,7 +395,7 @@ def parse_cache_header(header: str) -> tuple[float, int]:
 CACHE_HEADER_LENGTH = len(make_cache_header(time.time(), 0))
 
 
-def parse_scontrol_out(scontrol_out: str, jobid: int) -> str | None:
+def parse_scontrol_out(scontrol_out: str, jobid: int) -> str:
     """Get the job state for a specific from from the output of ``scontrol show job``.
 
     Parameters
@@ -399,10 +408,12 @@ def parse_scontrol_out(scontrol_out: str, jobid: int) -> str | None:
     Returns
     -------
     jobstate
-        The status of the job, or None of the job cannot be found.
+        The status of the job. This can be:
+
+        - Any of the SLURM job states.
+        - `unlisted` if the job cannot be found,
+          which practically means it has ended long ago.
     """
-    if scontrol_out == SCONTROL_FAILED:
-        return "Invalid"
     match = re.search(
         f"JobId={jobid}.*?JobState=(?P<state>[A-Z]+)",
         scontrol_out,
@@ -410,4 +421,4 @@ def parse_scontrol_out(scontrol_out: str, jobid: int) -> str | None:
     )
     if match is not None:
         return match.group("state")
-    return None
+    return "unlisted"
