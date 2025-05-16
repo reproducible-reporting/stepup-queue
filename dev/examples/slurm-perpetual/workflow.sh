@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-#SBATCH --job-name perpetual-workflow
+#SBATCH --job-name stepup
 #SBATCH --nodes=1
-#SBATCH --num-tasks=1
+#SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --output=workflow-%j.out
+#SBATCH --output=stepup-%j.out
 #SBATCH --time=00:01:00
 
-# In production, --time=00:12:00 is a reasonable time limit.
+# In production, --time=12:00:00 is a reasonable time limit.
+echo "StepUp workflow job starts:" $(date)
 
 # If needed, load required modules and activate a relevant virtual environment.
 # For example:
@@ -50,3 +51,5 @@ if [ -f ${STEPUP_QUEUE_FLAG_DIR}/resubmit ]; then
 else
     echo "Stepup was stopped gracefully."
 fi
+
+echo "StepUp workflow job ends:" $(date)
