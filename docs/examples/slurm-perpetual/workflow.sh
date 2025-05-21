@@ -34,14 +34,13 @@ echo "Starting background process to monitor wall time."
 BGPID=$!
 trap "kill $BGPID" EXIT
 
-# Start StepUp with 5 workers.
-# This means that at most 5 jobs will be submitted concurrently.
+NWORKER=5
+echo "Starting stepup with a maximum of ${NWORKER} concurrent jobs."
+stepup boot -n ${NWORKER}
+# This means that at most ${NWORKER} jobs will be submitted concurrently.
 # You can adjust the number of workers based on your needs.
 # In fact, because this example is simple, a single worker would be sufficient.
-# Note that the number of workers is unrelated
-# to the single core used by this workflow script.
-echo "Starting stepup with a maximum of 5 concurrent jobs."
-stepup boot -n 5
+# Note that the number of workers is unrelated to the single core used by this workflow script.
 
 # Use the temporary file to determine if the workflow script must be resubmitted.
 echo "Checking if stepup was forcibly stopped."
