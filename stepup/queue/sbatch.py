@@ -235,7 +235,7 @@ chmod +x '{job_script}'
 ./'{job_script}'
 RETURN_CODE=$?
 echo $RETURN_CODE > slurmjob.ret
-exot $RETURN_CODE
+exit $RETURN_CODE
 """
 
 
