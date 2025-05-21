@@ -653,7 +653,7 @@
 <p>If you want to submit a job to the queue as part of a StepUp workflow,
 you must first prepare a directory with a job script called <code>slurmjob.sh</code>.
 This can be either a static file or the output of a previous step in the workflow.
-The function <a class="autorefs autorefs-internal" title="sbatch(workdir, *, ext='.sh', rc=None, inp=(), env=(), out=(), vol=(), optional=False, pool=None, block=False)" href="../stepup.queue.api/#stepup.queue.api.sbatch"><code>sbatch()</code></a> will then submit the job to the queue.
+The function <a class="autorefs autorefs-internal" title="sbatch(workdir, *, ext='.sh', rc=None, inp=(), env=(), out=(), vol=(), onchange=None, optional=False, pool=None, block=False)" href="../stepup.queue.api/#stepup.queue.api.sbatch"><code>sbatch()</code></a> will then submit the job to the queue.
 For simplicity, the following example assumes that the job script is static:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">stepup.core.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">static</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">stepup.queue.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">sbatch</span>
@@ -669,19 +669,35 @@ It will then wait for the job to complete, just like <code>sbatch --wait</code>.
 Unlike <code>sbatch --wait</code>, it can also wait for a previously submitted job to complete.
 This can be useful when the workflow gets killed for some reason.</p>
 <p>The standard output and error of the job are written to <code>slurmjob.out</code> and <code>slurmjob.err</code>, respectively.</p>
-<p>The current status of the job is written to (and read from) the <code>slurmjob.log</code> file.
-By default, the job is not resubmitted if <code>slurmjob.log</code> exists.
-Instead, it waits for the job to complete without resubmitting it.
-You can remove <code>slurmjob.log</code> to ensure that the job is resubmitted,
-but this is obviously dangerous if the job is still running.</p>
-<p>If the inputs of the job specified with <code>sbatch("compute/", inp=["inp.txt"])</code> have changed,
-restarting the workflow will by default raise an exception.
-Ideally, you should clean up old outputs before restarting the workflow,
-and check that you really want to remove the data before doing so.
-If you feel this is overly cautious, you can set the <code>STEPUP_QUEUE_RESUBMIT_CHANGED_INPUTS</code>
-environment variable to <code>"yes"</code> to allow the workflow to resubmit jobs with changed inputs.
-Old outputs are not removed before resubmission.
-It is assumed that your job script will perform the necessary cleanup itself.</p>
+<p>The current status of the job is stored in the <code>slurmjob.log</code> file,
+which StepUp Queue both reads and writes.
+When you restart StepUp and <code>slurmjob.log</code> exists for a given <code>sbatch()</code> step,
+the job is not resubmitted; instead, StepUp waits for the existing job to finish.
+To force a job to be resubmitted, you must delete <code>slurmjob.log</code>
+and manually cancel the corresponding running job, before restarting StepUp.
+Deleting <code>slurmjob.log</code> without cancelling the job
+will cause inconsistencies that StepUp cannot detect.</p>
+<p>If the job&rsquo;s inputs change and StepUp is restarted,
+you can control how this situation is handled using
+the <code>STEPUP_QUEUE_ONCHANGE</code> environment variable or the <code>onchange</code> argument of <code>sbatch()</code>:</p>
+<ol>
+<li><code>onchange="raise"</code> (default):
+    Raises an exception and aborts the workflow.
+    This is the safest option, ensuring the workflow does not continue with inconsistent data.</li>
+<li><code>onchange="resubmit"</code>:
+    Cancels any running job and removes it from the queue,
+    then resubmits the job with the new inputs.
+    Old outputs are not deleted before resubmission;
+    it is assumed your job script will handle any necessary cleanup.</li>
+<li><code>onchange="ignore"</code>:
+    Does not resubmit the job; the workflow continues using any existing outputs.
+    This is useful if input changes do not affect outputs,
+    e.g., updating the job script to request more resources.
+    If outputs are missing but <code>slurmjob.log</code> exists, the step will fail.
+    If you manually remove <code>slurmjob.log</code> and cancel the running job,
+    the job will be resubmitted with the new inputs.
+    Use this option with caution, as it can lead to inconsistent workflow data.</li>
+</ol>
 <h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h2>
 <ul>
 <li>
