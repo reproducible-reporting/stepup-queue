@@ -26,7 +26,6 @@ import shlex
 
 from path import Path
 
-from stepup.core.utils import string_to_bool
 from stepup.core.worker import WorkThread
 
 from .canceljobs import read_jobid_cluster
@@ -38,9 +37,13 @@ def sbatch(argstr: str, work_thread: WorkThread) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("ext", nargs="?", default=".sh")
     parser.add_argument("--rc", default=None)
+    default_onchange = os.getenv("STEPUP_QUEUE_ONCHANGE", "raise")
+    parser.add_argument(
+        "--onchange", default=default_onchange, choices=["raise", "resubmit", "ignore"]
+    )
     args = parser.parse_args(shlex.split(argstr))
 
-    if string_to_bool(os.getenv("STEPUP_QUEUE_RESUBMIT_CHANGED_INPUTS", "0")):
+    if args.onchange == "resubmit":
         with contextlib.suppress(InpDigestError):
             return submit_once_and_wait(work_thread, args.ext, args.rc)
         # Cancel running job (if any), clean log and resubmit
@@ -48,4 +51,4 @@ def sbatch(argstr: str, work_thread: WorkThread) -> int:
         job_id, cluster = read_jobid_cluster(path_log)
         work_thread.runsh(f"scancel -M {cluster} {job_id}")
         path_log.remove_p()
-    return submit_once_and_wait(work_thread, args.ext, args.rc)
+    return submit_once_and_wait(work_thread, args.ext, args.rc, args.onchange != "ignore")

@@ -37,6 +37,7 @@ def sbatch(
     env: Collection[str] | str = (),
     out: Collection[str] | str = (),
     vol: Collection[str] | str = (),
+    onchange: str | None = None,
     optional: bool = False,
     pool: str | None = None,
     block: bool = False,
@@ -76,6 +77,9 @@ def sbatch(
         If multiple instructions are needed, put them in a file, e.g. `rc.sh`
         and pass it here as `source rc.sh`.
         In this case, you usually also want to include `rc.sh` in the `inp` list.
+    onchange
+        Policy when a the inputs of a previously submitted job have changed.
+        Must be one of `"raise"`, `"resubmit"` or `"ignore"`.
     """
     if ext == "":
         ext = ".sh"
@@ -88,6 +92,10 @@ def sbatch(
         action += f" {ext}"
     if rc is not None:
         action += f" --rc={shlex.quote(rc)}"
+    if onchange is not None:
+        if onchange not in ["raise", "resubmit", "ignore"]:
+            raise ValueError(f"Invalid onchange policy {onchange}.")
+        action += f" --onchange={onchange}"
     return step(
         action,
         inp=[f"slurmjob{ext}", *string_to_list(inp)],

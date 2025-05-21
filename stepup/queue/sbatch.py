@@ -40,7 +40,10 @@ TIME_MARGIN = int(os.getenv("STEPUP_SBATCH_TIME_MARGIN", "5"))
 
 
 def submit_once_and_wait(
-    work_thread: WorkThread, job_ext: str, sbatch_rc: str | None = None
+    work_thread: WorkThread,
+    job_ext: str,
+    sbatch_rc: str | None = None,
+    validate_inp_digest: bool = True,
 ) -> int:
     """Submit a job and wait for it to complete. When called a second time, just wait.
 
@@ -53,6 +56,9 @@ def submit_once_and_wait(
     sbatch_rc
         A resource configuration needed before calling sbatch.
         This is executed in the same shell, right before calling sbatch.
+    validate_inp_digest
+        If False, the input digest is not checked.
+        This is useful when the job script is modified but the changes are harmless.
 
     Returns
     -------
@@ -63,7 +69,7 @@ def submit_once_and_wait(
     # Read previously logged steps
     path_log = Path("slurmjob.log")
     if path_log.is_file():
-        previous_lines = _read_log(path_log)
+        previous_lines = read_log(path_log, validate_inp_digest)
     else:
         previous_lines = []
         _init_log(path_log)
@@ -105,7 +111,7 @@ def submit_once_and_wait(
     return int(returncode)
 
 
-def _read_log(path_log: str) -> list[str]:
+def read_log(path_log: str, do_inp_digest: bool = True) -> list[str]:
     """Read lines from a previously created log file."""
     lines = []
     with open(path_log) as f:
@@ -114,9 +120,11 @@ def _read_log(path_log: str) -> list[str]:
         except StopIteration as exc:
             raise ValueError("Existing log file is empty.") from exc
         try:
-            check_log_inp_digest(next(f).strip())
+            inp_digest = next(f).strip()
         except StopIteration as exc:
-            raise ValueError("Existing log file is empty.") from exc
+            raise ValueError("Existing has no input digest.") from exc
+        if do_inp_digest:
+            check_log_inp_digest(inp_digest)
         for line in f:
             line = line.strip()
             lines.append(line)

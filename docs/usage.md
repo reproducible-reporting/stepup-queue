@@ -27,20 +27,35 @@ This can be useful when the workflow gets killed for some reason.
 
 The standard output and error of the job are written to `slurmjob.out` and `slurmjob.err`, respectively.
 
-The current status of the job is written to (and read from) the `slurmjob.log` file.
-By default, the job is not resubmitted if `slurmjob.log` exists.
-Instead, it waits for the job to complete without resubmitting it.
-You can remove `slurmjob.log` to ensure that the job is resubmitted,
-but this is obviously dangerous if the job is still running.
+The current status of the job is stored in the `slurmjob.log` file,
+which StepUp Queue both reads and writes.
+When you restart StepUp and `slurmjob.log` exists for a given `sbatch()` step,
+the job is not resubmitted; instead, StepUp waits for the existing job to finish.
+To force a job to be resubmitted, you must delete `slurmjob.log`
+and manually cancel the corresponding running job, before restarting StepUp.
+Deleting `slurmjob.log` without cancelling the job
+will cause inconsistencies that StepUp cannot detect.
 
-If the inputs of the job specified with `sbatch("compute/", inp=["inp.txt"])` have changed,
-restarting the workflow will by default raise an exception.
-Ideally, you should clean up old outputs before restarting the workflow,
-and check that you really want to remove the data before doing so.
-If you feel this is overly cautious, you can set the `STEPUP_QUEUE_RESUBMIT_CHANGED_INPUTS`
-environment variable to `"yes"` to allow the workflow to resubmit jobs with changed inputs.
-Old outputs are not removed before resubmission.
-It is assumed that your job script will perform the necessary cleanup itself.
+If the job's inputs change and StepUp is restarted,
+you can control how this situation is handled using
+the `STEPUP_QUEUE_ONCHANGE` environment variable or the `onchange` argument of `sbatch()`:
+
+1. `onchange="raise"` (default):
+    Raises an exception and aborts the workflow.
+    This is the safest option, ensuring the workflow does not continue with inconsistent data.
+2. `onchange="resubmit"`:
+    Cancels any running job and removes it from the queue,
+    then resubmits the job with the new inputs.
+    Old outputs are not deleted before resubmission;
+    it is assumed your job script will handle any necessary cleanup.
+3. `onchange="ignore"`:
+    Does not resubmit the job; the workflow continues using any existing outputs.
+    This is useful if input changes do not affect outputs,
+    e.g., updating the job script to request more resources.
+    If outputs are missing but `slurmjob.log` exists, the step will fail.
+    If you manually remove `slurmjob.log` and cancel the running job,
+    the job will be resubmitted with the new inputs.
+    Use this option with caution, as it can lead to inconsistent workflow data.
 
 ## Examples
 
