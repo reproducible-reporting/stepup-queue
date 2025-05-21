@@ -12,6 +12,13 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
 
 (no changes yet)
 
+## [1.0.4][] - 2025-05-21 {: #v1.0.4 }
+
+### Fixed
+
+- Minor typo fix in slurm wrapper script.
+- Improved example perpetual workflow job script.
+
 ## [1.0.3][] - 2025-05-16 {: #v1.0.3 }
 
 ### Fixed
@@ -47,6 +54,7 @@ It was adapted to integrate well with StepUp Core 3.
 This release also features the `stepup canceljobs` tool, which was not present in Parman.
 
 [Unreleased]: https://github.com/reproducible-reporting/stepup-queue
+[1.0.4]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.4
 [1.0.3]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.3
 [1.0.2]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.2
 [1.0.1]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.1
