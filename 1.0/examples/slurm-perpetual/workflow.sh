@@ -25,10 +25,10 @@ trap 'rm -rv "$STEPUP_QUEUE_FLAG_DIR"' EXIT
 # The second will forcefully terminate remaining running steps.
 echo "Starting background process to monitor wall time."
 (
-    sleep 30;  # In production, 39600 seconds is reasonable.
-    touch ${STEPUP_QUEUE_FLAG_DIR}/resubmit;
-    stepup shutdown;
-    sleep 10;  # In production, 300 seconds is reasonable.
+    sleep 30  # In production, wall time minus 1800 seconds (half hour) is reasonable.
+    touch ${STEPUP_QUEUE_FLAG_DIR}/resubmit
+    stepup shutdown
+    sleep 10  # In production, 300 seconds (5 minutes) is reasonable.
     stepup shutdown
 ) &
 BGPID=$!
@@ -49,7 +49,7 @@ if [ -f ${STEPUP_QUEUE_FLAG_DIR}/resubmit ]; then
     echo "Resubmitting job script to let StepUp finalize the workflow."
     sbatch workflow.sh
 else
-    echo "Stepup was stopped gracefully."
+    echo "Stepup stopped by itself."
 fi
 
 echo "StepUp workflow job ends:" $(date)
