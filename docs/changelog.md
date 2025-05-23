@@ -12,6 +12,13 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
 
 (no changes yet)
 
+## [1.0.5][] - 2025-05-23 {: #v1.0.4 }
+
+### Changed
+
+- Replaced the old `STEPUP_QUEUE_RESUBMIT_CHANGED_INPUTS` environment variable
+  by the more powerful `STEPUP_QUEUE_ONCHANGE`.
+
 ## [1.0.4][] - 2025-05-21 {: #v1.0.4 }
 
 ### Fixed
@@ -54,6 +61,7 @@ It was adapted to integrate well with StepUp Core 3.
 This release also features the `stepup canceljobs` tool, which was not present in Parman.
 
 [Unreleased]: https://github.com/reproducible-reporting/stepup-queue
+[1.0.5]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.5
 [1.0.4]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.4
 [1.0.3]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.3
 [1.0.2]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.2
