@@ -1,2 +1,2 @@
 # Ensure changes to these dependencies are reflected in pyproject.toml
-stepup==3.0.0
+stepup==3.0.7
