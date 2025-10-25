@@ -27,7 +27,6 @@ import time
 from datetime import datetime
 
 from path import Path
-
 from stepup.core.utils import string_to_bool
 from stepup.core.worker import WorkThread
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from stepup.core.api import mkdir, render_jinja, static
+
 from stepup.queue.api import sbatch
 
 # Two examples of a static job script, i.e. already present on disk.

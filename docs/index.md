@@ -5,3 +5,8 @@ StepUp Queue is an experimental extension of
 to integrate queued jobs into a workflow.
 Currently, it only supports integration with [SLURM](https://slurm.schedmd.com/),
 but it is designed to be extensible to other job schedulers.
+
+A simple example of a dataset created with StepUp Queue,
+is the
+[Sodium Chloride Electrolyte Equilibrium Molecular Dynamics Simulations](https://doi.org/10.5281/zenodo.15699683)
+dataset on Zenodo.
