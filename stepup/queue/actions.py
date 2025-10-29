@@ -25,6 +25,7 @@ import os
 import shlex
 
 from path import Path
+
 from stepup.core.worker import WorkThread
 
 from .canceljobs import read_jobid_cluster

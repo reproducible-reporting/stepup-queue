@@ -23,8 +23,8 @@ import time
 
 import pytest
 from path import Path
-from stepup.core.worker import WorkThread
 
+from stepup.core.worker import WorkThread
 from stepup.queue.sbatch import (
     cached_run,
     make_cache_header,
