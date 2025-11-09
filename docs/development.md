@@ -31,8 +31,8 @@ Finally, run the following commands:
 ```bash
 direnv allow
 pip install -U pip
-pip install -e .
-pip install -e ../stepup-core[dev] --config-settings editable_mode=strict  # optional
+pip install -e .[dev]
+pip install -e ../stepup-core --config-settings editable_mode=strict  # optional
 ```
 
 ## Tests
