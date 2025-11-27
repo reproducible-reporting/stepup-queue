@@ -62,6 +62,9 @@ def sbatch(
 
     See `step()` documentation in StepUp Core for all optional arguments.
     and the return value.
+    Note that the `inp`, `out` and `vol` arguments are extended
+    with the files mentioned above and that any additional files you specify
+    are interpreted relative to the working directory.
 
     Parameters
     ----------
