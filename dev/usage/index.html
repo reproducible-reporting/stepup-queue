@@ -431,10 +431,32 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#stopping-the-workflow-gracefully" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stopping the Workflow Gracefully
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#killing-running-jobs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Killing running jobs
+        Killing Running Jobs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#useful-settings-when-developing-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Useful Settings when Developing Workflows
       
     </span>
   </a>
@@ -671,10 +693,32 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#stopping-the-workflow-gracefully" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stopping the Workflow Gracefully
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#killing-running-jobs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Killing running jobs
+        Killing Running Jobs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#useful-settings-when-developing-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Useful Settings when Developing Workflows
       
     </span>
   </a>
@@ -780,12 +824,34 @@ the <code>STEPUP_QUEUE_ONCHANGE</code> environment variable or the <code>onchang
   if the workflow has not yet completed.</p>
 </li>
 </ul>
-<h2 id="killing-running-jobs">Killing running jobs<a class="headerlink" href="#killing-running-jobs" title="Permanent link">&para;</a></h2>
-<p>If you decide that you want to interrupt the workflow and cancel all running SLURM jobs,
-it is not enough to simply kill or stop StepUp.
-You must also cancel the jobs in the SLURM queue.
-This can be done by running the following command from the top-level directory of the workflow:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>stepup<span class="w"> </span>canceljobs
+<h2 id="stopping-the-workflow-gracefully">Stopping the Workflow Gracefully<a class="headerlink" href="#stopping-the-workflow-gracefully" title="Permanent link">&para;</a></h2>
+<p>When running StepUp interactively, and the workflow is just waiting for jobs to complete,
+you can stop it gracefully by pressing <code>q</code> twice.
+This will interrupt the worker processes that are waiting for SLURM jobs to be completed.
+The actual SLURM jobs will continue to run.
+You can later restart StepUp to continue waiting for the jobs to complete.</p>
+<p>If you are running StepUp itself also as a SLURM job, you have no keyboard interaction to stop it.
+In this case, you can achieve the same effect by logging into the node where StepUp is running,
+and running the <code>stepup shutdown</code> command twice in the directory where StepUp is running.
+If this is needed often, e.g. when debugging, you can automate this with a script.
+The following is a simple example, which you may need to adapt for your setup:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="ch">#!/usr/bin/bash</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nv">JOBID</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span><span class="w"> </span><span class="si">${</span><span class="nv">1</span><span class="si">}</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>-dc<span class="w"> </span><span class="s1">&#39;0-9&#39;</span><span class="k">)</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nv">NODE</span><span class="o">=</span><span class="k">$(</span>squeue<span class="w"> </span>-j<span class="w"> </span><span class="si">${</span><span class="nv">JOBID</span><span class="si">}</span><span class="w"> </span>-h<span class="w"> </span>-o<span class="w"> </span>%N<span class="k">)</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nv">WORKDIR</span><span class="o">=</span><span class="k">$(</span>squeue<span class="w"> </span>-j<span class="w"> </span><span class="si">${</span><span class="nv">JOBID</span><span class="si">}</span><span class="w"> </span>-h<span class="w"> </span>-o<span class="w"> </span>%Z<span class="k">)</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="nv">SCRIPT</span><span class="o">=</span><span class="s2">&quot;cd </span><span class="si">${</span><span class="nv">WORKDIR</span><span class="si">}</span><span class="s2">/.. &amp;&amp; source activate &amp;&amp; cd </span><span class="si">${</span><span class="nv">WORKDIR</span><span class="si">}</span><span class="s2"> &amp;&amp; stepup shutdown &amp;&amp; stepup shutdown&quot;</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="nv">COMMAND</span><span class="o">=</span><span class="s2">&quot;bash -l -c &#39;</span><span class="si">${</span><span class="nv">SCRIPT</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Executing on node </span><span class="si">${</span><span class="nv">NODE</span><span class="si">}</span><span class="s2">: </span><span class="si">${</span><span class="nv">COMMAND</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>ssh<span class="w"> </span><span class="si">${</span><span class="nv">NODE</span><span class="si">}</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">COMMAND</span><span class="si">}</span><span class="s2">&quot;</span>
+</span></code></pre></div>
+<p>The script takes a SLURM job ID (or the out file, like <code>slurm-&lt;jobid&gt;.out</code>) as an argument,
+determines the node and working directory of the job,
+and runs <code>stepup shutdown</code> twice in that directory via <code>ssh</code>.
+The way the software environment is activated may differ from your setup.</p>
+<h2 id="killing-running-jobs">Killing Running Jobs<a class="headerlink" href="#killing-running-jobs" title="Permanent link">&para;</a></h2>
+<p>If you need to cancel all running SLURM jobs, typically after interrupting StepUp,
+you can run the following command from the top-level directory of the workflow:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>stepup<span class="w"> </span>canceljobs
 </span></code></pre></div>
 <p>It is part of the design of StepUp Queue&rsquo;s not to automatically cancel jobs when the workflow is interrupted.
 It is quite common for a workflow to be interrupted by accident or for technical reasons.
@@ -793,6 +859,17 @@ In this case, it would be inefficient to also cancel running jobs, which may sti
 Instead, jobs continue to run and you can restart the StepUp workflow to pick up where it left off.</p>
 <p>After having cancelled jobs, it is still your responsibility to clean up files in the workflow.
 Removing them is not always desirable, so this is not done automatically.</p>
+<h2 id="useful-settings-when-developing-workflows">Useful Settings when Developing Workflows<a class="headerlink" href="#useful-settings-when-developing-workflows" title="Permanent link">&para;</a></h2>
+<p>When developing and testing workflows that use <code>sbatch()</code>,
+it can be useful to configure StepUp to be less rigorous about reproducibility and file cleaning.
+The following environment variables can help with this:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Do not remove outdated output files after a successful completion of the workflow.</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">STEPUP_CLEAN</span><span class="o">=</span><span class="m">0</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1"># Ignore changes in inputs to sbatch() steps and do not resubmit jobs.</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Just assume that existing outputs are still valid, despite changed inputs.</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">STEPUP_QUEUE_ONCHANGE</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span>
+</span></code></pre></div>
+<p>These settings are not recommended for production workflows.</p>
 <h2 id="technical-details">Technical Details<a class="headerlink" href="#technical-details" title="Permanent link">&para;</a></h2>
 <p>The timestamps in the log file have a low resolution of about 1 minute.
 The job state is only checked every 30&ndash;40 seconds to avoid overloading the Job Scheduler.
@@ -811,9 +888,9 @@ The randomization guarantees that concurrent calls to <code>scontrol</code> (for
 will not all coincide.
 The polling time can be controlled with two additional environment variables:</p>
 <ul>
-<li><code>STEPUP_SBATCH_POLLING_INTERVAL</code> = the minimal polling interval in seconds, default is <code>"10"</code>.</li>
+<li><code>STEPUP_SBATCH_POLLING_INTERVAL</code> = the minimal polling interval in seconds, default is <code>10</code>.</li>
 <li><code>STEPUP_SBATCH_TIME_MARGIN</code> = the width of the uniform distribution for the polling interval
-  in seconds, default is <code>"5"</code>.</li>
+  in seconds, default is <code>15</code>.</li>
 </ul>
 
 
