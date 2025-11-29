@@ -83,7 +83,8 @@ The following is a simple example, which you may need to adapt for your setup:
 
 ```bash
 #!/usr/bin/bash
-JOBID=$(echo ${1} | tr -dc '0-9')
+if [ -z "$1" ]; then echo "Usage: $0 <jobid>"; exit 1; fi
+JOBID=$(echo "${1}" | tr -dc '0-9')
 NODE=$(squeue -j ${JOBID} -h -o %N)
 WORKDIR=$(squeue -j ${JOBID} -h -o %Z)
 SCRIPT="cd ${WORKDIR}/.. && source activate && cd ${WORKDIR} && stepup shutdown && stepup shutdown"
@@ -96,6 +97,10 @@ The script takes a SLURM job ID (or the out file, like `slurm-<jobid>.out`) as a
 determines the node and working directory of the job,
 and runs `stepup shutdown` twice in that directory via `ssh`.
 The way the software environment is activated may differ from your setup.
+
+A less sophisticated approach is to simply cancel the StepUp job via `scancel <jobid>`.
+This will stop StepUp immediately but it may not have the chance to write its state to disk.
+Normally, this should be fine, as it uses SQLite, which is robust against crashes.
 
 ## Killing Running Jobs
 
