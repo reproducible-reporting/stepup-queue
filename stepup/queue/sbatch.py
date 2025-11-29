@@ -36,7 +36,7 @@ SCONTROL_FAILED = "The command `scontrol show job` failed!\n"
 DEBUG = string_to_bool(os.getenv("STEPUP_SBATCH_DEBUG", "0"))
 CACHE_TIMEOUT = int(os.getenv("STEPUP_SBATCH_CACHE_TIMEOUT", "30"))
 POLLING_INTERVAL = int(os.getenv("STEPUP_SBATCH_POLLING_INTERVAL", "10"))
-TIME_MARGIN = int(os.getenv("STEPUP_SBATCH_TIME_MARGIN", "5"))
+TIME_MARGIN = int(os.getenv("STEPUP_SBATCH_TIME_MARGIN", "15"))
 
 
 def submit_once_and_wait(
@@ -185,7 +185,9 @@ def _read_or_poll_status(
         # Call scontrol and parse its response.
         rndsleep()
         status_time, status = get_status(work_thread, jobid, cluster)
-        if status != last_status:
+        # Log only if the status changed, and is not invalid or unlisted.
+        # These two statuses are (potentially) transient and should not be logged.
+        if status != last_status and status not in ["invalid", "unlisted"]:
             log_step(path_log, status)
     done = (status_time > submit_time + TIME_MARGIN) and (
         status not in ["PENDING", "CONFIGURING", "RUNNING", "invalid"]

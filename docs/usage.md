@@ -67,12 +67,40 @@ the `STEPUP_QUEUE_ONCHANGE` environment variable or the `onchange` argument of `
   which cancels and submits itself again when nearing the wall time limit,
   if the workflow has not yet completed.
 
-## Killing running jobs
+## Stopping the Workflow Gracefully
 
-If you decide that you want to interrupt the workflow and cancel all running SLURM jobs,
-it is not enough to simply kill or stop StepUp.
-You must also cancel the jobs in the SLURM queue.
-This can be done by running the following command from the top-level directory of the workflow:
+When running StepUp interactively, and the workflow is just waiting for jobs to complete,
+you can stop it gracefully by pressing `q` twice.
+This will interrupt the worker processes that are waiting for SLURM jobs to be completed.
+The actual SLURM jobs will continue to run.
+You can later restart StepUp to continue waiting for the jobs to complete.
+
+If you are running StepUp itself also as a SLURM job, you have no keyboard interaction to stop it.
+In this case, you can achieve the same effect by logging into the node where StepUp is running,
+and running the `stepup shutdown` command twice in the directory where StepUp is running.
+If this is needed often, e.g. when debugging, you can automate this with a script.
+The following is a simple example, which you may need to adapt for your setup:
+
+```bash
+#!/usr/bin/bash
+JOBID=$(echo ${1} | tr -dc '0-9')
+NODE=$(squeue -j ${JOBID} -h -o %N)
+WORKDIR=$(squeue -j ${JOBID} -h -o %Z)
+SCRIPT="cd ${WORKDIR}/.. && source activate && cd ${WORKDIR} && stepup shutdown && stepup shutdown"
+COMMAND="bash -l -c '${SCRIPT}'"
+echo "Executing on node ${NODE}: ${COMMAND}"
+ssh ${NODE} "${COMMAND}"
+```
+
+The script takes a SLURM job ID (or the out file, like `slurm-<jobid>.out`) as an argument,
+determines the node and working directory of the job,
+and runs `stepup shutdown` twice in that directory via `ssh`.
+The way the software environment is activated may differ from your setup.
+
+## Killing Running Jobs
+
+If you need to cancel all running SLURM jobs, typically after interrupting StepUp,
+you can run the following command from the top-level directory of the workflow:
 
 ```bash
 stepup canceljobs
@@ -85,6 +113,22 @@ Instead, jobs continue to run and you can restart the StepUp workflow to pick up
 
 After having cancelled jobs, it is still your responsibility to clean up files in the workflow.
 Removing them is not always desirable, so this is not done automatically.
+
+## Useful Settings when Developing Workflows
+
+When developing and testing workflows that use `sbatch()`,
+it can be useful to configure StepUp to be less rigorous about reproducibility and file cleaning.
+The following environment variables can help with this:
+
+```bash
+# Do not remove outdated output files after a successful completion of the workflow.
+export STEPUP_CLEAN=0
+# Ignore changes in inputs to sbatch() steps and do not resubmit jobs.
+# Just assume that existing outputs are still valid, despite changed inputs.
+export STEPUP_QUEUE_ONCHANGE="ignore"
+```
+
+These settings are not recommended for production workflows.
 
 ## Technical Details
 
@@ -108,6 +152,6 @@ The randomization guarantees that concurrent calls to `scontrol` (for multiple c
 will not all coincide.
 The polling time can be controlled with two additional environment variables:
 
-- `STEPUP_SBATCH_POLLING_INTERVAL` = the minimal polling interval in seconds, default is `"10"`.
+- `STEPUP_SBATCH_POLLING_INTERVAL` = the minimal polling interval in seconds, default is `10`.
 - `STEPUP_SBATCH_TIME_MARGIN` = the width of the uniform distribution for the polling interval
-  in seconds, default is `"5"`.
+  in seconds, default is `15`.

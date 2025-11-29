@@ -12,7 +12,22 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
 
 (no changes yet)
 
-## [1.0.5][] - 2025-05-23 {: #v1.0.4 }
+## [1.0.6][] - 2025-11-29 {: #v1.0.6 }
+
+### Changed
+
+- Document how to interrupt StepUp gracefully while jobs are running.
+- Document convenient settings during workflow development or debugging.
+- Increased the default value of `STEPUP_SBATCH_TIME_MARGIN` from 5 to 15 seconds.
+- CI testing for Python 3.14 instead of 3.13.
+- Smaller package size on PyPI.
+- Increased StepUp Core dependency to >=3.1.3 to ensure usage instructions work.
+
+### Fixed
+
+- Removed logging of potentially transient job states.
+
+## [1.0.5][] - 2025-05-23 {: #v1.0.5 }
 
 ### Changed
 
@@ -61,6 +76,7 @@ It was adapted to integrate well with StepUp Core 3.
 This release also features the `stepup canceljobs` tool, which was not present in Parman.
 
 [Unreleased]: https://github.com/reproducible-reporting/stepup-queue
+[1.0.6]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.6
 [1.0.5]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.5
 [1.0.4]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.4
 [1.0.3]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.3
