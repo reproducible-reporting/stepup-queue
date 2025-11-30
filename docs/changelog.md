@@ -12,7 +12,9 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
 
 (no changes yet)
 
-## [1.0.6][] - 2025-11-29 {: #v1.0.6 }
+## [1.0.6][] - 2025-11-30 {: #v1.0.6 }
+
+Documentation updates and one bug fix.
 
 ### Changed
 
