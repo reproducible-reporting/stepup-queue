@@ -222,12 +222,12 @@ def _read_or_poll_status(
         True when the waiting is over.
     """
     # First try to replay previously logged steps
-    status_time, status = read_step(previous_lines)
+    _, status = read_step(previous_lines)
     if status is None:
         # All previously logged steps are processed.
         # Call sacct and parse its response.
         rndsleep()
-        status_time, status = get_status(work_thread, jobid, cluster)
+        _, status = get_status(work_thread, jobid, cluster)
         # Log only if the status changed, and is not invalid or unlisted.
         # These two statuses are (potentially) transient and should not be logged.
         if status != last_status and status not in ["invalid", "unlisted"]:
