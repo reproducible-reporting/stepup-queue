@@ -28,15 +28,14 @@ from datetime import datetime
 
 from path import Path
 
-from stepup.core.utils import string_to_bool
 from stepup.core.worker import WorkThread
 
 FIRST_LINE = "StepUp Queue sbatch wait log format version 2"
-DEBUG = string_to_bool(os.getenv("STEPUP_SBATCH_DEBUG", "0"))
 CACHE_TIMEOUT = int(os.getenv("STEPUP_SBATCH_CACHE_TIMEOUT", "30"))
-POLLING_INTERVAL = int(os.getenv("STEPUP_SBATCH_POLLING_INTERVAL", "10"))
-TIME_MARGIN = int(os.getenv("STEPUP_SBATCH_TIME_MARGIN", "15"))
+POLLING_MIN = int(os.getenv("STEPUP_SBATCH_POLLING_MIN", "10"))
+POLLING_MAX = max(int(os.getenv("STEPUP_SBATCH_POLLING_MAX", "20")), POLLING_MIN)
 SACCT_START = os.getenv("STEPUP_SACCT_START_TIME", "now-7days")
+UNLISTED_TIMEOUT = int(os.getenv("STEPUP_SBATCH_UNLISTED_TIMEOUT", "600"))
 
 
 def submit_once_and_wait(
@@ -239,6 +238,7 @@ def _read_or_poll_status(
             log_step(path_log, status)
     if status not in KNOWN_JOB_STATES:
         raise ValueError(f"Unknown job status '{status}' obtained from scheduler.")
+
     # Determine if the job is done
     done = status in [
         "BOOT_FAIL",
@@ -255,6 +255,11 @@ def _read_or_poll_status(
         "REVOKED",
         "STOPPED",
     ]
+    if status == "unlisted" and time.time() > submit_time + UNLISTED_TIMEOUT:
+        # If the job remains unlisted for too long, we declare it failed.
+        # This prevents an infinite loop if the job ID was wrong or purged.
+        done = True
+
     return status, done
 
 
@@ -295,7 +300,7 @@ def read_step(lines: list[str]) -> str | None:
 
 def rndsleep():
     """Randomized sleep to distribute I/O load evenly."""
-    sleep_seconds = 1 if DEBUG else random.randint(POLLING_INTERVAL, POLLING_INTERVAL + TIME_MARGIN)
+    sleep_seconds = random.randint(POLLING_MIN, POLLING_MAX)
     time.sleep(sleep_seconds)
 
 
@@ -313,6 +318,7 @@ exit $RETURN_CODE
 
 RE_SBATCH_STDOUT = re.compile(r"#\s*SBATCH\b.*(--output|-o)")
 RE_SBATCH_STDERR = re.compile(r"#\s*SBATCH\b.*(--error|-e)")
+RE_SBATCH_ARRAY = re.compile(r"#\s*SBATCH\b.*(--array|-a)")
 RE_SBATCH = re.compile(r"#\s*SBATCH\b")
 
 
@@ -327,6 +333,8 @@ def submit_job(work_thread: WorkThread, job_ext: str, sbatch_rc: str | None = No
                 raise ValueError("The job script must not contain a #SBATCH --output/-o line.")
             if RE_SBATCH_STDERR.match(line):
                 raise ValueError("The job script must not contain a #SBATCH --error/-e line.")
+            if RE_SBATCH_ARRAY.match(line):
+                raise ValueError("StepUp Queue does not support array jobs. (Found -a or --array)")
             if RE_SBATCH.match(line):
                 sbatch_header.append(line.strip())
         sbatch_header = "\n".join(sbatch_header)
@@ -381,7 +389,7 @@ def get_status(work_thread: WorkThread, jobid: int, cluster: str | None) -> str:
         or `unlisted` if the job is not found (probably ended long ago).
     """
     # Load cached output or run again
-    command = f"sacct -o 'jobidraw,state' -PXn -S {SACCT_START}"
+    command = f"sacct -o 'jobid,state' -PXn -S {SACCT_START}"
     path_out = Path(os.getenv("ROOT")) / ".stepup/queue"
     if cluster is None:
         path_out /= "sbatch_wait_sacct.out"
@@ -474,12 +482,12 @@ CACHE_HEADER_LENGTH = len(make_cache_header(time.time(), 0))
 
 
 def parse_sacct_out(sacct_out: str, jobid: int) -> str:
-    """Get the job state for a specific from from the output of ``sacct --json``.
+    """Get the job state for a specific from from the output of ``sacct -o 'jobid,state' -PXn``.
 
     Parameters
     ----------
     sacct_out
-        A string with the output of ``sacct --json``.
+        A string with the output of ``sacct -o 'jobid,state' -PXn``.
     jobid
         The jobid of interest.
 

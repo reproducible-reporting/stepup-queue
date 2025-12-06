@@ -21,6 +21,8 @@ Improved robustness for workflows with many concurrent jobs.
 - Improved perpetual workflow example.
 - Increased StepUp Core dependency to >=3.1.4 because it fixes a bug that is likely to occur
   in combination with StepUp Queue.
+- Explicitly raise an error for array jobs, as these are not supported.
+- More intuitive environment variables for polling.
 
 ### Fixed
 
@@ -32,6 +34,7 @@ Improved robustness for workflows with many concurrent jobs.
   To avoid confusion `#STBATCH -o/--output` and `#SBATCH -e/--error` will raise an error.
   (StepUp Queue overrides these options internally to capture job output and error logs.)
 - Fix parsing bug in `canceljobs` tool.
+- Prevent infinite loop for jobs that are unlisted for too long.
 
 ## [1.0.6][] - 2025-11-30 {: #v1.0.6 }
 

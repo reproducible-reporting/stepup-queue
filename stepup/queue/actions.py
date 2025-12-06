@@ -49,6 +49,9 @@ def sbatch(argstr: str, work_thread: WorkThread) -> int:
         # Cancel running job (if any), clean log and resubmit
         path_log = Path("slurmjob.log")
         job_id, cluster = read_jobid_cluster(path_log)
-        work_thread.runsh(f"scancel -M {cluster} {job_id}")
+        if cluster is None:
+            work_thread.runsh(f"scancel {job_id}")
+        else:
+            work_thread.runsh(f"scancel -M {cluster} {job_id}")
         path_log.remove_p()
     return submit_once_and_wait(work_thread, args.ext, args.rc, args.onchange != "ignore")

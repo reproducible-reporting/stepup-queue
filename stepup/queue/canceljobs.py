@@ -63,7 +63,7 @@ def canceljobs_tool(args: argparse.Namespace) -> int:
             command_args = ["scancel"]
             if cluster is not None:
                 command_args.extend(["-M", cluster])
-            command_args.extend(cancel_ids)
+            command_args.extend(str(job_id) for job_id in cancel_ids)
 
             # Using subprocess.run for better control and error handling
             print(f"Executing: {' '.join(command_args)}")
