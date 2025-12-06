@@ -877,18 +877,18 @@ The following environment variables can help with this:</p>
 <h2 id="technical-details">Technical Details<a class="headerlink" href="#technical-details" title="Permanent link">&para;</a></h2>
 <p>The timestamps in the log file have a low resolution of about 1 minute.
 The job state is only checked every 30&ndash;40 seconds to avoid overloading the Job Scheduler.
-Information from <code>slurmjob.log</code> is maximally reused to avoid unnecessary <code>scontrol</code> calls.</p>
-<p>The status of the job is inferred from <code>scontrol show job</code>, if relevant with a <code>--cluster</code> argument.
-To further minimize the number of <code>scontrol</code> calls in a parallel workflow,
-its output is cached and stored in <code>~/.cache/stepup-queue</code>.
+Information from <code>slurmjob.log</code> is maximally reused to avoid unnecessary <code>sacct</code> calls.</p>
+<p>The status of the job is inferred from <code>sacct --json</code>, if relevant with a <code>--cluster</code> argument.
+To further minimize the number of <code>sacct</code> calls in a parallel workflow,
+its output is cached and stored in <code>.stepup/queue</code> in the workflow directory.
 The cached results are reused by all <code>sbatch</code> actions,
-so the number of <code>scontrol</code> calls is independent of the
+so the number of <code>sacct</code> calls is independent of the
 number of jobs running in parallel.</p>
-<p>The time between two <code>scontrol</code> calls (per cluster) can be controlled with the
+<p>The time between two <code>sacct</code> calls (per cluster) can be controlled with the
 <code>STEPUP_SBATCH_CACHE_TIMEOUT</code> environment variable, which is <code>"30"</code> (seconds) by default.
 Increase this value if you want to reduce the burden on Slurm.</p>
-<p>The cached output of <code>scontrol</code> is checked with a randomized polling interval.
-The randomization guarantees that concurrent calls to <code>scontrol</code> (for multiple clusters)
+<p>The cached output of <code>sacct</code> is checked with a randomized polling interval.
+The randomization guarantees that concurrent calls to <code>sacct</code> (for multiple clusters)
 will not all coincide.
 The polling time can be controlled with two additional environment variables:</p>
 <ul>

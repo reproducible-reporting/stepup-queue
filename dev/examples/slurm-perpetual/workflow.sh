@@ -4,9 +4,16 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --output=stepup-%j.out
-#SBATCH --time=00:01:00
 
 # In production, --time=12:00:00 is a reasonable time limit.
+#SBATCH --time=00:01:00
+
+# Time-out settings
+# SOFT: In production, 1800 seconds (before the wall limit) is reasonable.
+export STEPUP_SHUTDOWN_TIMEOUT_SOFT=30
+# HARD: In production, 600 seconds (before the wall limit) is reasonable.
+export STEPUP_SHUTDOWN_TIMEOUT_HARD=10
+
 echo "StepUp workflow job starts:" $(date)
 
 # If needed, load required modules and activate a relevant virtual environment.
@@ -25,10 +32,10 @@ trap 'rm -rv "$STEPUP_QUEUE_FLAG_DIR"' EXIT
 # The second will forcefully terminate remaining running steps.
 echo "Starting background process to monitor wall time."
 (
-    sleep 30  # In production, wall time minus 1800 seconds (half hour) is reasonable.
+    sleep $((${SLURM_JOB_END_TIME} - ${SLURM_JOB_START_TIME} - ${STEPUP_SHUTDOWN_TIMEOUT_SOFT}))
     touch ${STEPUP_QUEUE_FLAG_DIR}/resubmit
     stepup shutdown
-    sleep 10  # In production, 300 seconds (5 minutes) is reasonable.
+    sleep ${STEPUP_SHUTDOWN_TIMEOUT_HARD}
     stepup shutdown
 ) &
 BGPID=$!
