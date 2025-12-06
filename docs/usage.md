@@ -139,21 +139,21 @@ These settings are not recommended for production workflows.
 
 The timestamps in the log file have a low resolution of about 1 minute.
 The job state is only checked every 30--40 seconds to avoid overloading the Job Scheduler.
-Information from `slurmjob.log` is maximally reused to avoid unnecessary `scontrol` calls.
+Information from `slurmjob.log` is maximally reused to avoid unnecessary `sacct` calls.
 
-The status of the job is inferred from `scontrol show job`, if relevant with a `--cluster` argument.
-To further minimize the number of `scontrol` calls in a parallel workflow,
-its output is cached and stored in `~/.cache/stepup-queue`.
+The status of the job is inferred from `sacct --json`, if relevant with a `--cluster` argument.
+To further minimize the number of `sacct` calls in a parallel workflow,
+its output is cached and stored in `.stepup/queue` in the workflow directory.
 The cached results are reused by all `sbatch` actions,
-so the number of `scontrol` calls is independent of the
+so the number of `sacct` calls is independent of the
 number of jobs running in parallel.
 
-The time between two `scontrol` calls (per cluster) can be controlled with the
+The time between two `sacct` calls (per cluster) can be controlled with the
 `STEPUP_SBATCH_CACHE_TIMEOUT` environment variable, which is `"30"` (seconds) by default.
 Increase this value if you want to reduce the burden on Slurm.
 
-The cached output of `scontrol` is checked with a randomized polling interval.
-The randomization guarantees that concurrent calls to `scontrol` (for multiple clusters)
+The cached output of `sacct` is checked with a randomized polling interval.
+The randomization guarantees that concurrent calls to `sacct` (for multiple clusters)
 will not all coincide.
 The polling time can be controlled with two additional environment variables:
 

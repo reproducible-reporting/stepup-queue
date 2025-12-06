@@ -29,8 +29,8 @@ from stepup.queue.sbatch import (
     cached_run,
     make_cache_header,
     parse_cache_header,
+    parse_sacct_out,
     parse_sbatch,
-    parse_scontrol_out,
 )
 
 
@@ -69,19 +69,50 @@ def test_cached_run(path_tmp: Path):
     assert ret1 == ret3
 
 
-SCONTROL_OUT = """\
-JobId=123 JobName=bash
-   UserId=boo GroupId=baa MCS_label=N/A
-   Priority=123 Nice=0 Account=blabla QOS=normal
-   JobState=RUNNING Reason=None Dependency=(null)
-
-JobId=456 JobName=bash
-   UserId=boo GroupId=baa MCS_label=N/A
-   Priority=123 Nice=0 Account=blabla QOS=normal
-   JobState=PENDING Reason=None Dependency=(null)
+sacct_out = """\
+{
+  "jobs": [
+    {
+      "job_id": 123456,
+      "comment": {
+        "administrator": "",
+        "job": "stdout=foo.bar",
+        "system": ""
+      },
+      "allocation_nodes": 1,
+      "cluster": "phony",
+      "state": {
+        "current": [
+          "COMPLETED"
+        ],
+        "reason": "None"
+      },
+      "submit_line": "sbatch jobs.sh"
+    },
+    {
+      "job_id": 121212,
+      "comment": {
+        "administrator": "",
+        "job": "stdout=spam.bar",
+        "system": ""
+      },
+      "allocation_nodes": 2,
+      "cluster": "phony",
+      "state": {
+        "current": [
+          "FAILED"
+        ],
+        "reason": "None"
+      },
+      "submit_line": "sbatch try.sh"
+    }
+  ]
+}
 """
 
 
-def test_parse_scontrol_out():
-    assert parse_scontrol_out(SCONTROL_OUT, 123) == "RUNNING"
-    assert parse_scontrol_out(SCONTROL_OUT, 456) == "PENDING"
+def test_parse_sacct_out():
+    assert parse_sacct_out(sacct_out, 123456) == "COMPLETED"
+    assert parse_sacct_out(sacct_out, 121212) == "FAILED"
+    assert parse_sacct_out(sacct_out, 999999) == "unlisted"
+    assert parse_sacct_out("blibli", 123456) == "invalid"

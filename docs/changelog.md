@@ -12,6 +12,26 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
 
 (no changes yet)
 
+## [1.0.7][] - 2025-12-07 {: #v1.0.7 }
+
+Improved robustness for workflows with many concurrent jobs.
+
+### Changed
+
+- Improved perpetual workflow example.
+- Increased StepUp Core dependency to >=3.1.4 because it fixes a bug that is likely to occur
+  in combination with StepUp Queue.
+
+### Fixed
+
+- Improved robustness for workflow with many concurrent jobs, by using `sacct`
+  instead of `scontrol` to query job states.
+  This avoids the ambiguity that an unlisted job may either be pending or already finished long ago.
+  With `sact`, unlisted jobs are always (aboute to become) pending.
+- Improved parsing of `#SBATCH` lines in job scripts.
+  To avoid confusion `#STBATCH -o/--output` and `#SBATCH -e/--error` will raise an error.
+  (StepUp Queue overrides these options internally to capture job output and error logs.)
+
 ## [1.0.6][] - 2025-11-30 {: #v1.0.6 }
 
 Documentation updates and one bug fix.
@@ -78,6 +98,7 @@ It was adapted to integrate well with StepUp Core 3.
 This release also features the `stepup canceljobs` tool, which was not present in Parman.
 
 [Unreleased]: https://github.com/reproducible-reporting/stepup-queue
+[1.0.7]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.7
 [1.0.6]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.6
 [1.0.5]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.5
 [1.0.4]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.4

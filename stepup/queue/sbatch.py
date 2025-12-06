@@ -20,6 +20,7 @@
 """An sbatch wrapper to submit only on the first call, and to wait until a job has finished."""
 
 import fcntl
+import json
 import os
 import random
 import re
@@ -32,7 +33,6 @@ from stepup.core.utils import string_to_bool
 from stepup.core.worker import WorkThread
 
 FIRST_LINE = "StepUp Queue sbatch wait log format version 2"
-SCONTROL_FAILED = "The command `scontrol show job` failed!\n"
 DEBUG = string_to_bool(os.getenv("STEPUP_SBATCH_DEBUG", "0"))
 CACHE_TIMEOUT = int(os.getenv("STEPUP_SBATCH_CACHE_TIMEOUT", "30"))
 POLLING_INTERVAL = int(os.getenv("STEPUP_SBATCH_POLLING_INTERVAL", "10"))
@@ -141,6 +141,50 @@ def _init_log(path_log: str):
         print(inp_digest, file=fh)
 
 
+# From: https://slurm.schedmd.com/job_state_codes.html
+KNOWN_JOB_STATES = [
+    # -- Job states
+    # done
+    "BOOT_FAIL",
+    "CANCELLED",
+    "COMPLETED",
+    "DEADLINE",
+    "FAILED",
+    "NODE_FAIL",
+    "OUT_OF_MEMORY",
+    "PREEMPTED",
+    "TIMEOUT",
+    # waiting or running
+    "PENDING",
+    "RUNNING",
+    "SUSPENDED",
+    # -- Job flags
+    # done
+    "LAUNCH_FAILED",
+    "RECONFIG_FAIL",
+    "REVOKED",
+    "STOPPED",
+    # waiting or running
+    "COMPLETING",
+    "CONFIGURING",
+    "EXPEDITING",
+    "POWER_UP_NODE",
+    "REQUEUED",
+    "REQUEUE_FED",
+    "REQUEUE_HOLD",
+    "RESIZING",
+    "RESV_DEL_HOLD",
+    "SIGNALING",
+    "SPECIAL_EXIT",
+    "STAGE_OUT",
+    "UPDATE_DB",
+    # -- Specific to this script
+    # to be ignored (same as waiting or running), must not be logged
+    "invalid",
+    "unlisted",
+]
+
+
 def _read_or_poll_status(
     work_thread: WorkThread,
     submit_time: float,
@@ -155,7 +199,7 @@ def _read_or_poll_status(
     Parameters
     ----------
     work_thread
-        The work thread to use for launching the scontrol command.
+        The work thread to use for launching the sacct command.
     submit_time
         The timestamp when the job was submitted.
     jobid
@@ -165,7 +209,6 @@ def _read_or_poll_status(
     previous_lines
         Lines from an existing log file to be processed first.
         (It will be gradually emptied.)
-    path_log
         The log file to write new polling results to.
     last_status
         The status from the previous iteration.
@@ -182,16 +225,31 @@ def _read_or_poll_status(
     status_time, status = read_step(previous_lines)
     if status is None:
         # All previously logged steps are processed.
-        # Call scontrol and parse its response.
+        # Call sacct and parse its response.
         rndsleep()
         status_time, status = get_status(work_thread, jobid, cluster)
         # Log only if the status changed, and is not invalid or unlisted.
         # These two statuses are (potentially) transient and should not be logged.
         if status != last_status and status not in ["invalid", "unlisted"]:
             log_step(path_log, status)
-    done = (status_time > submit_time + TIME_MARGIN) and (
-        status not in ["PENDING", "CONFIGURING", "RUNNING", "invalid"]
-    )
+    if status not in KNOWN_JOB_STATES:
+        raise ValueError(f"Unknown job status '{status}' obtained from scheduler.")
+    # Determine if the job is done
+    done = status in [
+        "BOOT_FAIL",
+        "CANCELLED",
+        "COMPLETED",
+        "DEADLINE",
+        "FAILED",
+        "NODE_FAIL",
+        "OUT_OF_MEMORY",
+        "PREEMPTED",
+        "TIMEOUT",
+        "LAUNCH_FAILED",
+        "RECONFIG_FAIL",
+        "REVOKED",
+        "STOPPED",
+    ]
     return status, done
 
 
@@ -248,24 +306,31 @@ echo $RETURN_CODE > slurmjob.ret
 exit $RETURN_CODE
 """
 
+RE_SBATCH_STDOUT = re.compile(r"#\s*SBATCH\b.*(--output|-o)")
+RE_SBATCH_STDERR = re.compile(r"#\s*SBATCH\b.*(--error|-e)")
+RE_SBATCH = re.compile(r"#\s*SBATCH\b")
+
 
 def submit_job(work_thread: WorkThread, job_ext: str, sbatch_rc: str | None = None) -> str:
     """Submit a job with sbatch."""
     # Copy the #SBATCH lines from the job script.
     path_job = f"slurmjob{job_ext}"
     with open(path_job) as f:
-        sbatch_header = "\n".join(line for line in f if line.startswith("#SBATCH"))
+        sbatch_header = []
+        for line in f:
+            if RE_SBATCH_STDOUT.match(line):
+                raise ValueError("The job script must not contain a #SBATCH --output/-o line.")
+            if RE_SBATCH_STDERR.match(line):
+                raise ValueError("The job script must not contain a #SBATCH --error/-e line.")
+            if RE_SBATCH.match(line):
+                sbatch_header.append(line.strip())
+        sbatch_header = "\n".join(sbatch_header)
 
     command = "sbatch --parsable -o slurmjob.out -e slurmjob.err"
     if sbatch_rc is not None:
         command = f"{sbatch_rc} < /dev/null && {command}"
-    returncode, stdout, stderr = work_thread.runsh(
-        command,
-        stdin=JOB_SCRIPT_WRAPPER.format(
-            sbatch_header=sbatch_header,
-            job_script=path_job,
-        ),
-    )
+    stdin = JOB_SCRIPT_WRAPPER.format(sbatch_header=sbatch_header, job_script=path_job)
+    returncode, stdout, stderr = work_thread.runsh(command, stdin=stdin)
     if returncode != 0:
         if not (stderr is None or stderr == ""):
             print(stderr)
@@ -292,12 +357,12 @@ def parse_sbatch(stdout: str) -> tuple[int, str | None]:
 
 
 def get_status(work_thread: WorkThread, jobid: int, cluster: str | None) -> str:
-    """Load cached scontrol output or run scontrol if outdated.
+    """Load cached sacct output or run sacct if outdated.
 
     Parameters
     ----------
     work_thread
-        The work thread to use for launching the scontrol command.
+        The work thread to use for launching the sacct command.
     jobid
         The job to wait for.
     cluster
@@ -306,24 +371,22 @@ def get_status(work_thread: WorkThread, jobid: int, cluster: str | None) -> str:
     Returns
     -------
     status
-        A status reported by scontrol,
-        or `invalid` if scontrol failed (retry scontrol later),
+        A status reported by sacct,
+        or `invalid` if sacct failed (retry sacct later),
         or `unlisted` if the job is not found (probably ended long ago).
     """
     # Load cached output or run again
-    command = "scontrol show job"
-    path_out = Path(os.getenv("HOME")) / ".cache/stepup-queue"
+    command = "sacct --json"
+    path_out = Path(os.getenv("ROOT")) / ".stepup/queue"
     if cluster is None:
-        path_out /= "sbatch_wait.out"
+        path_out /= "sbatch_wait_sacct.out"
     else:
         command += f" --cluster={cluster}"
-        path_out /= f"sbatch_wait.{cluster}.out"
-    status_time, scontrol_out, returncode = cached_run(
-        work_thread, command, path_out, CACHE_TIMEOUT
-    )
+        path_out /= f"sbatch_wait_sacct.{cluster}.out"
+    status_time, sacct_out, returncode = cached_run(work_thread, command, path_out, CACHE_TIMEOUT)
     if returncode != 0:
         return status_time, "invalid"
-    return status_time, parse_scontrol_out(scontrol_out, jobid)
+    return status_time, parse_sacct_out(sacct_out, jobid)
 
 
 def cached_run(
@@ -405,13 +468,13 @@ def parse_cache_header(header: str) -> tuple[float, int]:
 CACHE_HEADER_LENGTH = len(make_cache_header(time.time(), 0))
 
 
-def parse_scontrol_out(scontrol_out: str, jobid: int) -> str:
-    """Get the job state for a specific from from the output of ``scontrol show job``.
+def parse_sacct_out(sacct_out: str, jobid: int) -> str:
+    """Get the job state for a specific from from the output of ``sacct --json``.
 
     Parameters
     ----------
-    scontrol_out
-        A string with the output of ``scontrol show job``.
+    sacct_out
+        A string with the output of ``sacct --json``.
     jobid
         The jobid of interest.
 
@@ -423,12 +486,16 @@ def parse_scontrol_out(scontrol_out: str, jobid: int) -> str:
         - Any of the SLURM job states.
         - `unlisted` if the job cannot be found,
           which practically means it has ended long ago.
+        - `invalid` if the sacct output cannot be parsed.
     """
-    match = re.search(
-        f"JobId={jobid}.*?JobState=(?P<state>[A-Z]+)",
-        scontrol_out,
-        flags=re.MULTILINE | re.DOTALL,
-    )
-    if match is not None:
-        return match.group("state")
+    try:
+        data = json.loads(sacct_out)
+    except json.JSONDecodeError:
+        return "invalid"
+    try:
+        for job in data["jobs"]:
+            if job["job_id"] == jobid:
+                return job["state"]["current"][0]
+    except (KeyError, TypeError):
+        return "invalid"
     return "unlisted"

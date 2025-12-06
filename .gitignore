@@ -1,4 +1,5 @@
 # Local dev environment
+activate
 .envrc
 .idea
 .local
