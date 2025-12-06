@@ -160,3 +160,7 @@ The polling time can be controlled with two additional environment variables:
 - `STEPUP_SBATCH_POLLING_INTERVAL` = the minimal polling interval in seconds, default is `10`.
 - `STEPUP_SBATCH_TIME_MARGIN` = the width of the uniform distribution for the polling interval
   in seconds, default is `15`.
+
+By default, `sacct` queries job information for the last 7 days.
+You can change this by setting the `STEPUP_SACCT_START_TIME` environment variable
+to a different value understood by `sacct -S`, e.g., `now-4days` or `2025-01-01T00:00:00`.

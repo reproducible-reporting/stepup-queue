@@ -20,7 +20,6 @@
 """An sbatch wrapper to submit only on the first call, and to wait until a job has finished."""
 
 import fcntl
-import json
 import os
 import random
 import re
@@ -37,6 +36,7 @@ DEBUG = string_to_bool(os.getenv("STEPUP_SBATCH_DEBUG", "0"))
 CACHE_TIMEOUT = int(os.getenv("STEPUP_SBATCH_CACHE_TIMEOUT", "30"))
 POLLING_INTERVAL = int(os.getenv("STEPUP_SBATCH_POLLING_INTERVAL", "10"))
 TIME_MARGIN = int(os.getenv("STEPUP_SBATCH_TIME_MARGIN", "15"))
+SACCT_START = os.getenv("STEPUP_SACCT_START_TIME", "now-7days")
 
 
 def submit_once_and_wait(
@@ -103,12 +103,17 @@ def submit_once_and_wait(
             work_thread, submit_time, jobid, cluster, previous_lines, path_log, status
         )
 
-    # Get the return code from the job
-    with open("slurmjob.ret") as fh:
-        returncode = fh.read().strip()
-    if returncode == "":
-        raise ValueError("The job did not return a return code, e.g. because it was cancelled.")
-    return int(returncode)
+    if status == "COMPLETED":
+        # Get the return code from the job
+        with open("slurmjob.ret") as fh:
+            returncode = fh.read().strip()
+        try:
+            return int(returncode)
+        except ValueError as exc:
+            raise ValueError(
+                f"Could not parse return code from slurmjob.ret. Got '{returncode}'"
+            ) from exc
+    raise RuntimeError(f"Job ended with status '{status}'.")
 
 
 def read_log(path_log: str, do_inp_digest: bool = True) -> list[str]:
@@ -376,7 +381,7 @@ def get_status(work_thread: WorkThread, jobid: int, cluster: str | None) -> str:
         or `unlisted` if the job is not found (probably ended long ago).
     """
     # Load cached output or run again
-    command = "sacct --json"
+    command = f"sacct -o 'jobidraw,state' -PXn -S {SACCT_START}"
     path_out = Path(os.getenv("ROOT")) / ".stepup/queue"
     if cluster is None:
         path_out /= "sbatch_wait_sacct.out"
@@ -489,13 +494,10 @@ def parse_sacct_out(sacct_out: str, jobid: int) -> str:
         - `invalid` if the sacct output cannot be parsed.
     """
     try:
-        data = json.loads(sacct_out)
-    except json.JSONDecodeError:
-        return "invalid"
-    try:
-        for job in data["jobs"]:
-            if job["job_id"] == jobid:
-                return job["state"]["current"][0]
-    except (KeyError, TypeError):
+        for line in sacct_out.splitlines():
+            columns = line.strip().split("|")
+            if int(columns[0]) == jobid:
+                return columns[1].strip().split()[0]
+    except (ValueError, IndexError):
         return "invalid"
     return "unlisted"

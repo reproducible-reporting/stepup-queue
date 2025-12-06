@@ -70,49 +70,25 @@ def test_cached_run(path_tmp: Path):
 
 
 sacct_out = """\
-{
-  "jobs": [
-    {
-      "job_id": 123456,
-      "comment": {
-        "administrator": "",
-        "job": "stdout=foo.bar",
-        "system": ""
-      },
-      "allocation_nodes": 1,
-      "cluster": "phony",
-      "state": {
-        "current": [
-          "COMPLETED"
-        ],
-        "reason": "None"
-      },
-      "submit_line": "sbatch jobs.sh"
-    },
-    {
-      "job_id": 121212,
-      "comment": {
-        "administrator": "",
-        "job": "stdout=spam.bar",
-        "system": ""
-      },
-      "allocation_nodes": 2,
-      "cluster": "phony",
-      "state": {
-        "current": [
-          "FAILED"
-        ],
-        "reason": "None"
-      },
-      "submit_line": "sbatch try.sh"
-    }
-  ]
-}
+246748|CANCELLED by 2540019
+246912|RUNNING
+246913|COMPLETED
+246914|FAILED
+246916|COMPLETED
+246917|COMPLETED
+246918|COMPLETED
+007|SHAKEN
 """
 
 
 def test_parse_sacct_out():
-    assert parse_sacct_out(sacct_out, 123456) == "COMPLETED"
-    assert parse_sacct_out(sacct_out, 121212) == "FAILED"
+    assert parse_sacct_out(sacct_out, 246748) == "CANCELLED"
+    assert parse_sacct_out(sacct_out, 246912) == "RUNNING"
+    assert parse_sacct_out(sacct_out, 246913) == "COMPLETED"
+    assert parse_sacct_out(sacct_out, 246914) == "FAILED"
+    assert parse_sacct_out(sacct_out, 246916) == "COMPLETED"
+    assert parse_sacct_out(sacct_out, 246917) == "COMPLETED"
+    assert parse_sacct_out(sacct_out, 246918) == "COMPLETED"
+    assert parse_sacct_out(sacct_out, 7) == "SHAKEN"
     assert parse_sacct_out(sacct_out, 999999) == "unlisted"
     assert parse_sacct_out("blibli", 123456) == "invalid"
