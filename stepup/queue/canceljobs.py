@@ -24,7 +24,7 @@ import subprocess
 
 from path import Path
 
-from .sbatch import FIRST_LINE, parse_sbatch_stdout
+from .sbatch import FIRST_LINE, parse_sbatch
 
 
 def canceljobs_tool(args: argparse.Namespace) -> int:
@@ -79,7 +79,7 @@ def read_jobid_cluster(job_log: Path) -> tuple[str, str]:
         lines = f.readlines()
         if len(lines) < 3 or lines[0][:-1] != FIRST_LINE:
             raise ValueError(f"Invalid first line in {job_log}.")
-        return parse_sbatch_stdout(lines[2].split()[-1])
+        return parse_sbatch(lines[2].split()[-1])
 
 
 def canceljobs_subcommand(subparser: argparse.ArgumentParser) -> callable:
