@@ -878,27 +878,31 @@ The following environment variables can help with this:</p>
 <p>The timestamps in the log file have a low resolution of about 1 minute.
 The job state is only checked every 30&ndash;40 seconds to avoid overloading the Job Scheduler.
 Information from <code>slurmjob.log</code> is maximally reused to avoid unnecessary <code>sacct</code> calls.</p>
-<p>The status of the job is inferred from <code>sacct --json</code>, if relevant with a <code>--cluster</code> argument.
-To further minimize the number of <code>sacct</code> calls in a parallel workflow,
+<p>The status of the job is inferred from <code>sacct -o 'jobidraw,state' -PXn</code>,
+if relevant with a <code>--cluster</code> argument.
+In addition a confirable <code>-S</code> argument is passed to <code>sacct</code>.
+To minimize the number of <code>sacct</code> calls in a parallel workflow,
 its output is cached and stored in <code>.stepup/queue</code> in the workflow directory.
 The cached results are reused by all <code>sbatch</code> actions,
 so the number of <code>sacct</code> calls is independent of the
 number of jobs running in parallel.</p>
 <p>The time between two <code>sacct</code> calls (per cluster) can be controlled with the
 <code>STEPUP_SBATCH_CACHE_TIMEOUT</code> environment variable, which is <code>"30"</code> (seconds) by default.
-Increase this value if you want to reduce the burden on Slurm.</p>
+Increase this value if you want to reduce the burden on SLURM.</p>
 <p>The cached output of <code>sacct</code> is checked with a randomized polling interval.
 The randomization guarantees that concurrent calls to <code>sacct</code> (for multiple clusters)
 will not all coincide.
 The polling time can be controlled with two additional environment variables:</p>
 <ul>
-<li><code>STEPUP_SBATCH_POLLING_INTERVAL</code> = the minimal polling interval in seconds, default is <code>10</code>.</li>
-<li><code>STEPUP_SBATCH_TIME_MARGIN</code> = the width of the uniform distribution for the polling interval
-  in seconds, default is <code>15</code>.</li>
+<li><code>STEPUP_SBATCH_POLLING_MIN</code> = the minimal polling interval in seconds, default is <code>10</code>.</li>
+<li><code>STEPUP_SBATCH_POLLING_MAX</code> = the maximal polling interval in seconds, default is <code>20</code>.</li>
 </ul>
 <p>By default, <code>sacct</code> queries job information for the last 7 days.
 You can change this by setting the <code>STEPUP_SACCT_START_TIME</code> environment variable
 to a different value understood by <code>sacct -S</code>, e.g., <code>now-4days</code> or <code>2025-01-01T00:00:00</code>.</p>
+<p>To avoid an infinite loop for jobs that are unlisted for too long,
+a job is considered to be failed if it is not listed for more than
+<code>STEPUP_SBATCH_UNLISTED_TIMEOUT</code> seconds, which is <code>600</code> (10 minutes) by default.</p>
 
 
 
