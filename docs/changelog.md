@@ -31,6 +31,7 @@ Improved robustness for workflows with many concurrent jobs.
 - Improved parsing of `#SBATCH` lines in job scripts.
   To avoid confusion `#STBATCH -o/--output` and `#SBATCH -e/--error` will raise an error.
   (StepUp Queue overrides these options internally to capture job output and error logs.)
+- Fix parsing bug in `canceljobs` tool.
 
 ## [1.0.6][] - 2025-11-30 {: #v1.0.6 }
 

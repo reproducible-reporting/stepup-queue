@@ -20,16 +20,17 @@
 """Tool to cancel jobs."""
 
 import argparse
-import os
+import subprocess
 
 from path import Path
 
-from .sbatch import FIRST_LINE
+from .sbatch import FIRST_LINE, parse_sbatch_stdout
 
 
 def canceljobs_tool(args: argparse.Namespace) -> int:
     if len(args.paths) == 0:
         args.paths = [Path(".")]
+
     # Iterate over all slurmjob.log files in the specified directories, and kill them.
     job_ids = {}
     for path in args.paths:
@@ -40,16 +41,36 @@ def canceljobs_tool(args: argparse.Namespace) -> int:
             print(f"Path {path} is not a directory.")
             continue
         for job_log in path.glob("**/slurmjob.log"):
-            job_id, cluster = read_jobid_cluster(job_log)
-            print(f"Found job {job_id} on cluster {cluster} in {job_log}")
-            job_ids.setdefault(cluster, []).append(job_id)
-    # Cancel 100 at a time to avoid exceeding the command line length limit.
+            try:
+                job_id, cluster = read_jobid_cluster(job_log)
+                msg = f"Found job {job_id} in {job_log}"
+                if cluster is not None:
+                    msg += f" on cluster {cluster}"
+                print(msg)
+                job_ids.setdefault(cluster, []).append(job_id)
+            except ValueError as e:
+                print(f"Warning: Could not read job ID from {job_log}: {e}")
+                continue
+
+    returncode = 0
+    # Cancel at most 100 at a time to avoid exceeding the command line length limit,
+    # and to play nice with SLURM.
     for cluster, cluster_job_ids in job_ids.items():
         while len(cluster_job_ids) > 0:
-            command = f"scancel -M {cluster} " + " ".join(cluster_job_ids[:100])
-            print(command)
-            os.system(command)
+            cancel_ids = cluster_job_ids[:100]
             cluster_job_ids[:] = cluster_job_ids[100:]
+
+            command_args = ["scancel"]
+            if cluster is not None:
+                command_args.extend(["-M", cluster])
+            command_args.extend(cancel_ids)
+
+            # Using subprocess.run for better control and error handling
+            print(f"Executing: {' '.join(command_args)}")
+            result = subprocess.run(command_args, check=False)
+            if result.returncode != 0:
+                returncode = 1
+    return returncode
 
 
 def read_jobid_cluster(job_log: Path) -> tuple[str, str]:
@@ -58,8 +79,7 @@ def read_jobid_cluster(job_log: Path) -> tuple[str, str]:
         lines = f.readlines()
         if len(lines) < 3 or lines[0][:-1] != FIRST_LINE:
             raise ValueError(f"Invalid first line in {job_log}.")
-        job_id, cluster = lines[2].split()[-1].split(";")
-    return job_id, cluster
+        return parse_sbatch_stdout(lines[2].split()[-1])
 
 
 def canceljobs_subcommand(subparser: argparse.ArgumentParser) -> callable:
