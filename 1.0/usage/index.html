@@ -412,7 +412,7 @@
   <a href="#the-sbatch-function" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The sbatch Function
+        The sbatch() Function
       
     </span>
   </a>
@@ -464,10 +464,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#technical-details" class="md-nav__link">
+  <a href="#hints-for-writing-job-scripts" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Technical Details
+        Hints for writing Job Scripts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technical-details-of-stepup-queues-interaction-with-slurm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technical Details of StepUp Queue&rsquo;s interaction with SLURM
       
     </span>
   </a>
@@ -674,7 +685,7 @@
   <a href="#the-sbatch-function" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The sbatch Function
+        The sbatch() Function
       
     </span>
   </a>
@@ -726,10 +737,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#technical-details" class="md-nav__link">
+  <a href="#hints-for-writing-job-scripts" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Technical Details
+        Hints for writing Job Scripts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technical-details-of-stepup-queues-interaction-with-slurm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technical Details of StepUp Queue&rsquo;s interaction with SLURM
       
     </span>
   </a>
@@ -762,7 +784,7 @@
 
 
 <h1 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h1>
-<h2 id="the-sbatch-function">The <code>sbatch</code> Function<a class="headerlink" href="#the-sbatch-function" title="Permanent link">&para;</a></h2>
+<h2 id="the-sbatch-function">The <code>sbatch()</code> Function<a class="headerlink" href="#the-sbatch-function" title="Permanent link">&para;</a></h2>
 <p>If you want to submit a job to the queue as part of a StepUp workflow,
 you must first prepare a directory with a job script called <code>slurmjob.sh</code>.
 This can be either a static file or the output of a previous step in the workflow.
@@ -776,12 +798,23 @@ For simplicity, the following example assumes that the job script is static:</p>
 </span></code></pre></div>
 <p>All arguments to the <code>sbatch</code> command of SLURM
 must be included in the <code>slurmjob.sh</code> script with <code>#SBATCH</code> directives.
-You can only submit one job from a given directory.</p>
+There are some constraints to keep in mind:</p>
+<ul>
+<li>You can only submit one job from a given directory.</li>
+<li>The job script must be called <code>slurmjob.sh</code>,
+  or may have a different extension if it is not a shell script.</li>
+<li>The job script must be executable and have a shebang line (e.g. <code>#!/usr/bin/env bash</code>).</li>
+<li>The job script cannot specify an output or error file.
+  These will be specified by the <code>sbatch()</code> function
+  as <code>slurmjob.out</code> and <code>slurmjob.err</code>, respectively.</li>
+<li>Array jobs are not supported.
+  Presence of the <code>--array</code> option in the <code>sbatch</code> command will raise an exception.</li>
+</ul>
 <p>When the workflow is executed, the <code>sbatch</code> step will submit the job to the queue.
 It will then wait for the job to complete, just like <code>sbatch --wait</code>.
 Unlike <code>sbatch --wait</code>, it can also wait for a previously submitted job to complete.
-This can be useful when the workflow gets killed for some reason.</p>
-<p>The standard output and error of the job are written to <code>slurmjob.out</code> and <code>slurmjob.err</code>, respectively.</p>
+This is useful when the workflow gets killed for some reason,
+e.g. due to a wall time limit.</p>
 <p>The current status of the job is stored in the <code>slurmjob.log</code> file,
 which StepUp Queue both reads and writes.
 When you restart StepUp and <code>slurmjob.log</code> exists for a given <code>sbatch()</code> step,
@@ -801,7 +834,7 @@ the <code>STEPUP_QUEUE_ONCHANGE</code> environment variable or the <code>onchang
     Cancels any running job and removes it from the queue,
     then resubmits the job with the new inputs.
     Old outputs are not deleted before resubmission;
-    it is assumed your job script will handle any necessary cleanup.</li>
+    it is assumed that your job script will handle any necessary cleanup.</li>
 <li><code>onchange="ignore"</code>:
     Does not resubmit the job; the workflow continues using any existing outputs.
     This is useful if input changes do not affect outputs,
@@ -857,7 +890,7 @@ Normally, this should be fine, as it uses SQLite, which is robust against crashe
 you can run the following command from the top-level directory of the workflow:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>stepup<span class="w"> </span>canceljobs
 </span></code></pre></div>
-<p>It is part of the design of StepUp Queue&rsquo;s not to automatically cancel jobs when the workflow is interrupted.
+<p>StepUp Queue will not automatically cancel jobs when the workflow is interrupted.
 It is quite common for a workflow to be interrupted by accident or for technical reasons.
 In this case, it would be inefficient to also cancel running jobs, which may still be doing useful work.
 Instead, jobs continue to run and you can restart the StepUp workflow to pick up where it left off.</p>
@@ -874,27 +907,80 @@ The following environment variables can help with this:</p>
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">STEPUP_QUEUE_ONCHANGE</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span>
 </span></code></pre></div>
 <p>These settings are not recommended for production workflows.</p>
-<h2 id="technical-details">Technical Details<a class="headerlink" href="#technical-details" title="Permanent link">&para;</a></h2>
-<p>The timestamps in the log file have a low resolution of about 1 minute.
-The job state is only checked every 30&ndash;40 seconds to avoid overloading the Job Scheduler.
-Information from <code>slurmjob.log</code> is maximally reused to avoid unnecessary <code>scontrol</code> calls.</p>
-<p>The status of the job is inferred from <code>scontrol show job</code>, if relevant with a <code>--cluster</code> argument.
-To further minimize the number of <code>scontrol</code> calls in a parallel workflow,
-its output is cached and stored in <code>~/.cache/stepup-queue</code>.
-The cached results are reused by all <code>sbatch</code> actions,
-so the number of <code>scontrol</code> calls is independent of the
+<h2 id="hints-for-writing-job-scripts">Hints for writing Job Scripts<a class="headerlink" href="#hints-for-writing-job-scripts" title="Permanent link">&para;</a></h2>
+<p>When writing job scripts for any type of workflow (not only StepUp),
+and the cluster is using a distributed file system (like IBM Spectrum Scale or Lustre),
+you should not assume that files created by one job are immediately visible to subsequent jobs.
+When the cluster load is high, there can be significant delays
+in the file metadata synchronization, sometimes several minutes.
+To mitigate this issue, you can add a waiting function to your job scripts, like this:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>wait_for_file<span class="o">()</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="c1"># Waiting function to deal with file synchronization issues.</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">file</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$1</span><span class="s2">&quot;</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">timeout</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">2</span><span class="k">:-</span><span class="nv">600</span><span class="si">}</span><span class="s2">&quot;</span><span class="w">   </span><span class="c1"># timeout in seconds (default 10 min)</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">interval</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">5</span><span class="k">:-</span><span class="nv">2</span><span class="si">}</span><span class="s2">&quot;</span><span class="w">    </span><span class="c1"># poll interval in seconds (default 5 sec)</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">elapsed</span><span class="o">=</span><span class="m">0</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span>!<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$file</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="o">((</span><span class="w"> </span>elapsed<span class="w"> </span>&gt;<span class="o">=</span><span class="w"> </span>timeout<span class="w"> </span><span class="o">))</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">      </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;ERROR: Timeout waiting for file: </span><span class="nv">$file</span><span class="s2">&quot;</span><span class="w"> </span>&gt;<span class="p">&amp;</span><span class="m">2</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="m">1</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">    </span><span class="k">fi</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">    </span>sleep<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$interval</span><span class="s2">&quot;</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">    </span><span class="o">((</span><span class="w"> </span><span class="nv">elapsed</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span>interval<span class="w"> </span><span class="o">))</span>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">  </span><span class="k">done</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="m">0</span>
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="o">}</span>
+</span></code></pre></div>
+<p>Further down in the job script, this function can be used as follows:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Wait for input.dat to appear or exit with error after timeout.</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>wait_for_file<span class="w"> </span><span class="s2">&quot;input.dat&quot;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
+</span></code></pre></div>
+<h2 id="technical-details-of-stepup-queues-interaction-with-slurm">Technical Details of StepUp Queue&rsquo;s interaction with SLURM<a class="headerlink" href="#technical-details-of-stepup-queues-interaction-with-slurm" title="Permanent link">&para;</a></h2>
+<p>The timestamps in the <code>slurmjob.log</code> are inherently inaccurate (order one minute)
+due to the caching mechanism of SLURM.
+Checking more job states frequently with <code>sacct</code> (SLURM accounting tool)
+would also put too much load on SLURM, which is not desirable.
+StepUp Queue will therefore run <code>sacct</code> only occasionally and cache its output on disk.
+Furthermore, a <code>slurmjob.log</code> file is written for each job to keep track of
+its submission time, job ID, and previous states.</p>
+<p>The status of the jobs is inferred from <code>sacct -o 'jobidraw,state' -PXn</code>,
+if relevant with a <code>--cluster</code> argument.
+In addition a configurable <code>-S</code> argument is passed to <code>sacct</code>.
+Its output is cached in a subdirectory <code>.stepup/queue</code> of the workflow root.
+The cached result is reused by all <code>sbatch</code> actions,
+so the number of <code>sacct</code> calls is independent of the
 number of jobs running in parallel.</p>
-<p>The time between two <code>scontrol</code> calls (per cluster) can be controlled with the
+<p>The time between two <code>sacct</code> calls (per cluster) can be controlled with the
 <code>STEPUP_SBATCH_CACHE_TIMEOUT</code> environment variable, which is <code>"30"</code> (seconds) by default.
-Increase this value if you want to reduce the burden on Slurm.</p>
-<p>The cached output of <code>scontrol</code> is checked with a randomized polling interval.
-The randomization guarantees that concurrent calls to <code>scontrol</code> (for multiple clusters)
+Increase this value if you want to reduce the burden on SLURM.</p>
+<p>The cached output of <code>sacct</code> is checked by the <code>sbatch</code> actions with a randomized polling interval.
+If any of these actions needs notices that the cached file is too old,
+it will aquire a lock on the cache file and update it by calling <code>sacct</code>.
+The randomization guarantees that concurrent calls to <code>sacct</code> (for multiple clusters)
 will not all coincide.
 The polling time can be controlled with two additional environment variables:</p>
 <ul>
-<li><code>STEPUP_SBATCH_POLLING_INTERVAL</code> = the minimal polling interval in seconds, default is <code>10</code>.</li>
-<li><code>STEPUP_SBATCH_TIME_MARGIN</code> = the width of the uniform distribution for the polling interval
-  in seconds, default is <code>15</code>.</li>
+<li><code>STEPUP_SBATCH_POLLING_MIN</code> = the minimal polling interval in seconds, default is <code>10</code>.</li>
+<li><code>STEPUP_SBATCH_POLLING_MAX</code> = the maximal polling interval in seconds, default is <code>20</code>.</li>
+</ul>
+<p>By default, <code>sacct</code> queries job information of the last 7 days.
+You can change this by setting the <code>STEPUP_SACCT_START_TIME</code> environment variable
+to a different value understood by <code>sacct -S</code>, e.g., <code>now-4days</code> or <code>2025-01-01T00:00:00</code>.</p>
+<p>To avoid an infinite loop for jobs that are unlisted for too long,
+a job is considered to be failed if it is not listed for more than
+<code>STEPUP_SBATCH_UNLISTED_TIMEOUT</code> seconds, which is <code>600</code> (10 minutes) by default.</p>
+<p>Sometimes, job submission with <code>sbatch</code> can fail due to transient issues,
+such as temporary communication problems with the SLURM controller.
+To improve robustness, StepUp Queue will retry the <code>sbatch</code> command
+a number of times before giving up.
+You can control the retry behavior with the following environment variables:</p>
+<ul>
+<li><code>STEPUP_SBATCH_RETRY_NUM</code>: Number of retry attempts (default is <code>5</code>).</li>
+<li><code>STEPUP_SBATCH_RETRY_DELAY_MIN</code>: Minimum delay between retries in seconds (default is <code>60</code>).</li>
+<li><code>STEPUP_SBATCH_RETRY_DELAY_MAX</code>: Maximum delay between retries in seconds (default is <code>120</code>).</li>
 </ul>
 
 
