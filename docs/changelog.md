@@ -23,6 +23,7 @@ Improved robustness for workflows with many concurrent jobs.
   in combination with StepUp Queue.
 - Explicitly raise an error for array jobs, as these are not supported.
 - More intuitive environment variables for polling.
+- Retry `sbatch` on failure before giving up. (Default is 5 attempts with 1-2 minute delays.)
 - Improved usage documentation and hints.
 
 ### Fixed

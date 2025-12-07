@@ -173,18 +173,21 @@ Further down in the job script, this function can be used as follows:
 wait_for_file "input.dat" || exit 1
 ```
 
-## Technical Details
+## Technical Details of StepUp Queue's interaction with SLURM
 
-The timestamps in the log file have a low resolution of about 1 minute.
-The job state is only checked every 30--40 seconds to avoid overloading the Job Scheduler.
-Information from `slurmjob.log` is maximally reused to avoid unnecessary `sacct` calls.
+The timestamps in the `slurmjob.log` are inherently inacurate (order one minute)
+due to the caching mechanism of SLURM.
+Checking more job states frequently with `sacct` (SLURM accounting tool)
+would also put too much load on SLURM, which is not desirable.
+StepUp Queue will therefore run `sact` only occasionally and cache its output on disk.
+Furthermore, a `slurmjob.log` file is written for each job to keep track of
+its submission time, job ID, and previous states.
 
-The status of the job is inferred from `sacct -o 'jobidraw,state' -PXn`,
+The status of the jobs is inferred from `sacct -o 'jobidraw,state' -PXn`,
 if relevant with a `--cluster` argument.
-In addition a confirable `-S` argument is passed to `sacct`.
-To minimize the number of `sacct` calls in a parallel workflow,
-its output is cached and stored in `.stepup/queue` in the workflow directory.
-The cached results are reused by all `sbatch` actions,
+In addition a configurable `-S` argument is passed to `sacct`.
+Its output is cached in a subdirectory `.stepup/queue` of the workflow root.
+The cached result is reused by all `sbatch` actions,
 so the number of `sacct` calls is independent of the
 number of jobs running in parallel.
 
@@ -192,7 +195,9 @@ The time between two `sacct` calls (per cluster) can be controlled with the
 `STEPUP_SBATCH_CACHE_TIMEOUT` environment variable, which is `"30"` (seconds) by default.
 Increase this value if you want to reduce the burden on SLURM.
 
-The cached output of `sacct` is checked with a randomized polling interval.
+The cached output of `sacct` is checked by the `sbatch` actions with a randomized polling interval.
+If any of these actions needs notices that the cached file is too old,
+it will aquire a lock on the cache file and update it by calling `sacct`.
 The randomization guarantees that concurrent calls to `sacct` (for multiple clusters)
 will not all coincide.
 The polling time can be controlled with two additional environment variables:
@@ -200,10 +205,20 @@ The polling time can be controlled with two additional environment variables:
 - `STEPUP_SBATCH_POLLING_MIN` = the minimal polling interval in seconds, default is `10`.
 - `STEPUP_SBATCH_POLLING_MAX` = the maximal polling interval in seconds, default is `20`.
 
-By default, `sacct` queries job information for the last 7 days.
+By default, `sacct` queries job information of the last 7 days.
 You can change this by setting the `STEPUP_SACCT_START_TIME` environment variable
 to a different value understood by `sacct -S`, e.g., `now-4days` or `2025-01-01T00:00:00`.
 
 To avoid an infinite loop for jobs that are unlisted for too long,
 a job is considered to be failed if it is not listed for more than
 `STEPUP_SBATCH_UNLISTED_TIMEOUT` seconds, which is `600` (10 minutes) by default.
+
+Sometimes, job submission with `sbatch` can fail due to transient issues,
+such as temporary communication problems with the SLURM controller.
+To improve robustness, StepUp Queue will retry the `sbatch` command
+a number of times before giving up.
+You can control the retry behavior with the following environment variables:
+
+- `STEPUP_SBATCH_RETRY_NUM`: Number of retry attempts (default is `5`).
+- `STEPUP_SBATCH_RETRY_DELAY_MIN`: Minimum delay between retries in seconds (default is `60`).
+- `STEPUP_SBATCH_RETRY_DELAY_MAX`: Maximum delay between retries in seconds (default is `120`).

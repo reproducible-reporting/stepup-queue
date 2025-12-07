@@ -31,6 +31,9 @@ from path import Path
 from stepup.core.worker import WorkThread
 
 FIRST_LINE = "StepUp Queue sbatch wait log format version 2"
+SBATCH_RETRY_NUM = int(os.getenv("STEPUP_SBATCH_RETRY_NUM", "5"))
+SBATCH_RETRY_DELAY_MIN = int(os.getenv("STEPUP_SBATCH_RETRY_DELAY_MIN", "60"))
+SBATCH_RETRY_DELAY_MAX = int(os.getenv("STEPUP_SBATCH_RETRY_DELAY_MAX", "120"))
 CACHE_TIMEOUT = int(os.getenv("STEPUP_SBATCH_CACHE_TIMEOUT", "30"))
 POLLING_MIN = int(os.getenv("STEPUP_SBATCH_POLLING_MIN", "10"))
 POLLING_MAX = max(int(os.getenv("STEPUP_SBATCH_POLLING_MAX", "20")), POLLING_MIN)
@@ -341,12 +344,16 @@ def submit_job(work_thread: WorkThread, job_ext: str, sbatch_rc: str | None = No
     if sbatch_rc is not None:
         command = f"{sbatch_rc} < /dev/null && {command}"
     stdin = JOB_SCRIPT_WRAPPER.format(sbatch_header=sbatch_header, job_script=path_job)
-    returncode, stdout, stderr = work_thread.runsh(command, stdin=stdin)
-    if returncode != 0:
+    for _ in range(SBATCH_RETRY_NUM):
+        returncode, stdout, stderr = work_thread.runsh(command, stdin=stdin)
+        if returncode == 0:
+            return stdout.strip()
         if not (stderr is None or stderr == ""):
             print(stderr)
-        raise RuntimeError(f"sbatch failed with return code {returncode}.")
-    return stdout.strip()
+        delay = random.randint(SBATCH_RETRY_DELAY_MIN, SBATCH_RETRY_DELAY_MAX)
+        print(f"sbatch failed with return code {returncode}. Retrying in {delay} seconds.")
+        time.sleep(delay)
+    raise RuntimeError(f"sbatch failed {SBATCH_RETRY_NUM} times. Giving up.")
 
 
 def log_step(path_log: Path, step: str):
