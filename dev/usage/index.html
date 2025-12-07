@@ -475,10 +475,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#technical-details" class="md-nav__link">
+  <a href="#technical-details-of-stepup-queues-interaction-with-slurm" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Technical Details
+        Technical Details of StepUp Queue&rsquo;s interaction with SLURM
       
     </span>
   </a>
@@ -748,10 +748,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#technical-details" class="md-nav__link">
+  <a href="#technical-details-of-stepup-queues-interaction-with-slurm" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Technical Details
+        Technical Details of StepUp Queue&rsquo;s interaction with SLURM
       
     </span>
   </a>
@@ -927,22 +927,27 @@ To mitigate this issue, you can add a waiting function to your job scripts, like
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Wait for input.dat to appear or exit with error after timeout.</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>wait_for_file<span class="w"> </span><span class="s2">&quot;input.dat&quot;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
 </span></code></pre></div>
-<h2 id="technical-details">Technical Details<a class="headerlink" href="#technical-details" title="Permanent link">&para;</a></h2>
-<p>The timestamps in the log file have a low resolution of about 1 minute.
-The job state is only checked every 30&ndash;40 seconds to avoid overloading the Job Scheduler.
-Information from <code>slurmjob.log</code> is maximally reused to avoid unnecessary <code>sacct</code> calls.</p>
-<p>The status of the job is inferred from <code>sacct -o 'jobidraw,state' -PXn</code>,
+<h2 id="technical-details-of-stepup-queues-interaction-with-slurm">Technical Details of StepUp Queue&rsquo;s interaction with SLURM<a class="headerlink" href="#technical-details-of-stepup-queues-interaction-with-slurm" title="Permanent link">&para;</a></h2>
+<p>The timestamps in the <code>slurmjob.log</code> are inherently inacurate (order one minute)
+due to the caching mechanism of SLURM.
+Checking more job states frequently with <code>sacct</code> (SLURM accounting tool)
+would also put too much load on SLURM, which is not desirable.
+StepUp Queue will therefore run <code>sact</code> only occasionally and cache its output on disk.
+Furthermore, a <code>slurmjob.log</code> file is written for each job to keep track of
+its submission time, job ID, and previous states.</p>
+<p>The status of the jobs is inferred from <code>sacct -o 'jobidraw,state' -PXn</code>,
 if relevant with a <code>--cluster</code> argument.
-In addition a confirable <code>-S</code> argument is passed to <code>sacct</code>.
-To minimize the number of <code>sacct</code> calls in a parallel workflow,
-its output is cached and stored in <code>.stepup/queue</code> in the workflow directory.
-The cached results are reused by all <code>sbatch</code> actions,
+In addition a configurable <code>-S</code> argument is passed to <code>sacct</code>.
+Its output is cached in a subdirectory <code>.stepup/queue</code> of the workflow root.
+The cached result is reused by all <code>sbatch</code> actions,
 so the number of <code>sacct</code> calls is independent of the
 number of jobs running in parallel.</p>
 <p>The time between two <code>sacct</code> calls (per cluster) can be controlled with the
 <code>STEPUP_SBATCH_CACHE_TIMEOUT</code> environment variable, which is <code>"30"</code> (seconds) by default.
 Increase this value if you want to reduce the burden on SLURM.</p>
-<p>The cached output of <code>sacct</code> is checked with a randomized polling interval.
+<p>The cached output of <code>sacct</code> is checked by the <code>sbatch</code> actions with a randomized polling interval.
+If any of these actions needs notices that the cached file is too old,
+it will aquire a lock on the cache file and update it by calling <code>sacct</code>.
 The randomization guarantees that concurrent calls to <code>sacct</code> (for multiple clusters)
 will not all coincide.
 The polling time can be controlled with two additional environment variables:</p>
@@ -950,12 +955,22 @@ The polling time can be controlled with two additional environment variables:</p
 <li><code>STEPUP_SBATCH_POLLING_MIN</code> = the minimal polling interval in seconds, default is <code>10</code>.</li>
 <li><code>STEPUP_SBATCH_POLLING_MAX</code> = the maximal polling interval in seconds, default is <code>20</code>.</li>
 </ul>
-<p>By default, <code>sacct</code> queries job information for the last 7 days.
+<p>By default, <code>sacct</code> queries job information of the last 7 days.
 You can change this by setting the <code>STEPUP_SACCT_START_TIME</code> environment variable
 to a different value understood by <code>sacct -S</code>, e.g., <code>now-4days</code> or <code>2025-01-01T00:00:00</code>.</p>
 <p>To avoid an infinite loop for jobs that are unlisted for too long,
 a job is considered to be failed if it is not listed for more than
 <code>STEPUP_SBATCH_UNLISTED_TIMEOUT</code> seconds, which is <code>600</code> (10 minutes) by default.</p>
+<p>Sometimes, job submission with <code>sbatch</code> can fail due to transient issues,
+such as temporary communication problems with the SLURM controller.
+To improve robustness, StepUp Queue will retry the <code>sbatch</code> command
+a number of times before giving up.
+You can control the retry behavior with the following environment variables:</p>
+<ul>
+<li><code>STEPUP_SBATCH_RETRY_NUM</code>: Number of retry attempts (default is <code>5</code>).</li>
+<li><code>STEPUP_SBATCH_RETRY_DELAY_MIN</code>: Minimum delay between retries in seconds (default is <code>60</code>).</li>
+<li><code>STEPUP_SBATCH_RETRY_DELAY_MAX</code>: Maximum delay between retries in seconds (default is <code>120</code>).</li>
+</ul>
 
 
 
