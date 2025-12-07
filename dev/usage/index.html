@@ -464,6 +464,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#hints-for-writing-job-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hints for writing Job Scripts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#technical-details" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -726,6 +737,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#hints-for-writing-job-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hints for writing Job Scripts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#technical-details" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -857,7 +879,7 @@ Normally, this should be fine, as it uses SQLite, which is robust against crashe
 you can run the following command from the top-level directory of the workflow:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>stepup<span class="w"> </span>canceljobs
 </span></code></pre></div>
-<p>It is part of the design of StepUp Queue&rsquo;s not to automatically cancel jobs when the workflow is interrupted.
+<p>StepUp Queue will not automatically cancel jobs when the workflow is interrupted.
 It is quite common for a workflow to be interrupted by accident or for technical reasons.
 In this case, it would be inefficient to also cancel running jobs, which may still be doing useful work.
 Instead, jobs continue to run and you can restart the StepUp workflow to pick up where it left off.</p>
@@ -874,6 +896,37 @@ The following environment variables can help with this:</p>
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">STEPUP_QUEUE_ONCHANGE</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span>
 </span></code></pre></div>
 <p>These settings are not recommended for production workflows.</p>
+<h2 id="hints-for-writing-job-scripts">Hints for writing Job Scripts<a class="headerlink" href="#hints-for-writing-job-scripts" title="Permanent link">&para;</a></h2>
+<p>When writing job scripts for any type of workflow (not only StepUp),
+and the cluster is using a distributed file system (like IBM Spectrum Scale or Lustre),
+you should not assume that files created by one job are immediately visible to subsequent jobs.
+When the cluster load is high, there can be significant delays
+in the file metadata synchronization, sometimes several minutes.
+To mitigate this issue, you can add a waiting function to your job scripts, like this:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>wait_for_file<span class="o">()</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="c1"># Waiting function to deal with file synchronization issues.</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">file</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$1</span><span class="s2">&quot;</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">timeout</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">2</span><span class="k">:-</span><span class="nv">600</span><span class="si">}</span><span class="s2">&quot;</span><span class="w">   </span><span class="c1"># timeout in seconds (default 10 min)</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">interval</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">5</span><span class="k">:-</span><span class="nv">2</span><span class="si">}</span><span class="s2">&quot;</span><span class="w">    </span><span class="c1"># poll interval in seconds (default 5 sec)</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">elapsed</span><span class="o">=</span><span class="m">0</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span>!<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$file</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="o">((</span><span class="w"> </span>elapsed<span class="w"> </span>&gt;<span class="o">=</span><span class="w"> </span>timeout<span class="w"> </span><span class="o">))</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">      </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;ERROR: Timeout waiting for file: </span><span class="nv">$file</span><span class="s2">&quot;</span><span class="w"> </span>&gt;<span class="p">&amp;</span><span class="m">2</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="m">1</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">    </span><span class="k">fi</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">    </span>sleep<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$interval</span><span class="s2">&quot;</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">    </span><span class="o">((</span><span class="w"> </span><span class="nv">elapsed</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span>interval<span class="w"> </span><span class="o">))</span>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">  </span><span class="k">done</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="m">0</span>
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="o">}</span>
+</span></code></pre></div>
+<p>Further down in the job script, this function can be used as follows:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Wait for input.dat to appear or exit with error after timeout.</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>wait_for_file<span class="w"> </span><span class="s2">&quot;input.dat&quot;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
+</span></code></pre></div>
 <h2 id="technical-details">Technical Details<a class="headerlink" href="#technical-details" title="Permanent link">&para;</a></h2>
 <p>The timestamps in the log file have a low resolution of about 1 minute.
 The job state is only checked every 30&ndash;40 seconds to avoid overloading the Job Scheduler.
