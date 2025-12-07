@@ -33,9 +33,8 @@ There are some constraints to keep in mind:
 When the workflow is executed, the `sbatch` step will submit the job to the queue.
 It will then wait for the job to complete, just like `sbatch --wait`.
 Unlike `sbatch --wait`, it can also wait for a previously submitted job to complete.
-This can be useful when the workflow gets killed for some reason.
-
-The standard output and error of the job are written to `slurmjob.out` and `slurmjob.err`, respectively.
+This is useful when the workflow gets killed for some reason,
+e.g. due to a wall time limit.
 
 The current status of the job is stored in the `slurmjob.log` file,
 which StepUp Queue both reads and writes.
@@ -57,7 +56,7 @@ the `STEPUP_QUEUE_ONCHANGE` environment variable or the `onchange` argument of `
     Cancels any running job and removes it from the queue,
     then resubmits the job with the new inputs.
     Old outputs are not deleted before resubmission;
-    it is assumed your job script will handle any necessary cleanup.
+    it is assumed that your job script will handle any necessary cleanup.
 3. `onchange="ignore"`:
     Does not resubmit the job; the workflow continues using any existing outputs.
     This is useful if input changes do not affect outputs,
