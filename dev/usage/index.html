@@ -813,8 +813,8 @@ There are some constraints to keep in mind:</p>
 <p>When the workflow is executed, the <code>sbatch</code> step will submit the job to the queue.
 It will then wait for the job to complete, just like <code>sbatch --wait</code>.
 Unlike <code>sbatch --wait</code>, it can also wait for a previously submitted job to complete.
-This can be useful when the workflow gets killed for some reason.</p>
-<p>The standard output and error of the job are written to <code>slurmjob.out</code> and <code>slurmjob.err</code>, respectively.</p>
+This is useful when the workflow gets killed for some reason,
+e.g. due to a wall time limit.</p>
 <p>The current status of the job is stored in the <code>slurmjob.log</code> file,
 which StepUp Queue both reads and writes.
 When you restart StepUp and <code>slurmjob.log</code> exists for a given <code>sbatch()</code> step,
@@ -834,7 +834,7 @@ the <code>STEPUP_QUEUE_ONCHANGE</code> environment variable or the <code>onchang
     Cancels any running job and removes it from the queue,
     then resubmits the job with the new inputs.
     Old outputs are not deleted before resubmission;
-    it is assumed your job script will handle any necessary cleanup.</li>
+    it is assumed that your job script will handle any necessary cleanup.</li>
 <li><code>onchange="ignore"</code>:
     Does not resubmit the job; the workflow continues using any existing outputs.
     This is useful if input changes do not affect outputs,
