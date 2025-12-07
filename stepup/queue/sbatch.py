@@ -67,11 +67,7 @@ def submit_once_and_wait(
     """
     # Read previously logged steps
     path_log = Path("slurmjob.log")
-    if path_log.is_file():
-        previous_lines = read_log(path_log, validate_inp_digest)
-    else:
-        previous_lines = []
-        _init_log(path_log)
+    previous_lines = read_log(path_log, validate_inp_digest) if path_log.is_file() else []
 
     # Go through or skip steps.
     submit_time, status = read_step(previous_lines)
@@ -79,6 +75,8 @@ def submit_once_and_wait(
         # A new job must be submitted.
         submit_time = time.time()
         sbatch_stdout = submit_job(work_thread, job_ext, sbatch_rc)
+        # Create a new log file after submitting the job.
+        _init_log(path_log)
         log_step(path_log, f"Submitted {sbatch_stdout}")
         rndsleep()
     else:
