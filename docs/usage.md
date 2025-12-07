@@ -1,6 +1,6 @@
 # Usage
 
-## The `sbatch` Function
+## The `sbatch()` Function
 
 If you want to submit a job to the queue as part of a StepUp workflow,
 you must first prepare a directory with a job script called `slurmjob.sh`.
@@ -18,7 +18,17 @@ sbatch("compute/")
 
 All arguments to the `sbatch` command of SLURM
 must be included in the `slurmjob.sh` script with `#SBATCH` directives.
-You can only submit one job from a given directory.
+There are some constraints to keep in mind:
+
+- You can only submit one job from a given directory.
+- The job script must be called `slurmjob.sh`,
+  or may have a different extension if it is not a shell script.
+- The job script must be executable and have a shebang line (e.g. `#!/usr/bin/env bash`).
+- The job script cannot specify an output or error file.
+  These will be specified by the `sbatch()` function
+  as `slurmjob.out` and `slurmjob.err`, respectively.
+- Array jobs are not supported.
+  Presence of the `--array` option in the `sbatch` command will raise an exception.
 
 When the workflow is executed, the `sbatch` step will submit the job to the queue.
 It will then wait for the job to complete, just like `sbatch --wait`.
@@ -175,11 +185,11 @@ wait_for_file "input.dat" || exit 1
 
 ## Technical Details of StepUp Queue's interaction with SLURM
 
-The timestamps in the `slurmjob.log` are inherently inacurate (order one minute)
+The timestamps in the `slurmjob.log` are inherently inaccurate (order one minute)
 due to the caching mechanism of SLURM.
 Checking more job states frequently with `sacct` (SLURM accounting tool)
 would also put too much load on SLURM, which is not desirable.
-StepUp Queue will therefore run `sact` only occasionally and cache its output on disk.
+StepUp Queue will therefore run `sacct` only occasionally and cache its output on disk.
 Furthermore, a `slurmjob.log` file is written for each job to keep track of
 its submission time, job ID, and previous states.
 

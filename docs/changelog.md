@@ -25,6 +25,7 @@ Improved robustness for workflows with many concurrent jobs.
 - More intuitive environment variables for polling.
 - Retry `sbatch` on failure before giving up. (Default is 5 attempts with 1-2 minute delays.)
 - Improved usage documentation and hints.
+- Check that job scripts are executable and have a shebang line.
 
 ### Fixed
 

@@ -310,7 +310,6 @@ JOB_SCRIPT_WRAPPER = """\
 {sbatch_header}
 
 touch slurmjob.ret
-chmod +x '{job_script}'
 ./'{job_script}'
 RETURN_CODE=$?
 echo $RETURN_CODE > slurmjob.ret
@@ -325,10 +324,17 @@ RE_SBATCH = re.compile(r"#\s*SBATCH\b")
 
 def submit_job(work_thread: WorkThread, job_ext: str, sbatch_rc: str | None = None) -> str:
     """Submit a job with sbatch."""
-    # Copy the #SBATCH lines from the job script.
+    # Verify that the job script is executable.
     path_job = f"slurmjob{job_ext}"
+    if not os.access(path_job, os.X_OK):
+        raise ValueError("The job script must be executable.")
+
+    # Copy the #SBATCH lines from the job script and perform some checks.
     with open(path_job) as f:
         sbatch_header = []
+        first_line = next(f)
+        if not first_line.startswith("#!"):
+            raise ValueError("The job script must start with a shebang line.")
         for line in f:
             if RE_SBATCH_STDOUT.match(line):
                 raise ValueError("The job script must not contain a #SBATCH --output/-o line.")
