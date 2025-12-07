@@ -23,6 +23,7 @@ Improved robustness for workflows with many concurrent jobs.
   in combination with StepUp Queue.
 - Explicitly raise an error for array jobs, as these are not supported.
 - More intuitive environment variables for polling.
+- Improved usage documentation and hints.
 
 ### Fixed
 
@@ -35,6 +36,7 @@ Improved robustness for workflows with many concurrent jobs.
   (StepUp Queue overrides these options internally to capture job output and error logs.)
 - Fix parsing bug in `canceljobs` tool.
 - Prevent infinite loop for jobs that are unlisted for too long.
+- Make `stepup canceljobs` work correctly without arguments.
 
 ## [1.0.6][] - 2025-11-30 {: #v1.0.6 }
 

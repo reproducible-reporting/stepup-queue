@@ -40,7 +40,11 @@ def canceljobs_tool(args: argparse.Namespace) -> int:
         if not path.is_dir():
             print(f"Path {path} is not a directory.")
             continue
-        for job_log in path.glob("**/slurmjob.log"):
+        print(f"Searching recursively in {path}")
+        paths_log = list(path.glob("**/slurmjob.log"))
+        if (path / "slurmjob.log").is_file():
+            paths_log.append(path / "slurmjob.log")
+        for job_log in paths_log:
             try:
                 job_id, cluster = read_jobid_cluster(job_log)
                 msg = f"Found job {job_id} in {job_log}"
