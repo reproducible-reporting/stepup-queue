@@ -412,7 +412,7 @@
   <a href="#the-sbatch-function" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The sbatch Function
+        The sbatch() Function
       
     </span>
   </a>
@@ -685,7 +685,7 @@
   <a href="#the-sbatch-function" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The sbatch Function
+        The sbatch() Function
       
     </span>
   </a>
@@ -784,7 +784,7 @@
 
 
 <h1 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h1>
-<h2 id="the-sbatch-function">The <code>sbatch</code> Function<a class="headerlink" href="#the-sbatch-function" title="Permanent link">&para;</a></h2>
+<h2 id="the-sbatch-function">The <code>sbatch()</code> Function<a class="headerlink" href="#the-sbatch-function" title="Permanent link">&para;</a></h2>
 <p>If you want to submit a job to the queue as part of a StepUp workflow,
 you must first prepare a directory with a job script called <code>slurmjob.sh</code>.
 This can be either a static file or the output of a previous step in the workflow.
@@ -798,7 +798,18 @@ For simplicity, the following example assumes that the job script is static:</p>
 </span></code></pre></div>
 <p>All arguments to the <code>sbatch</code> command of SLURM
 must be included in the <code>slurmjob.sh</code> script with <code>#SBATCH</code> directives.
-You can only submit one job from a given directory.</p>
+There are some constraints to keep in mind:</p>
+<ul>
+<li>You can only submit one job from a given directory.</li>
+<li>The job script must be called <code>slurmjob.sh</code>,
+  or may have a different extension if it is not a shell script.</li>
+<li>The job script must be executable and have a shebang line (e.g. <code>#!/usr/bin/env bash</code>).</li>
+<li>The job script cannot specify an output or error file.
+  These will be specified by the <code>sbatch()</code> function
+  as <code>slurmjob.out</code> and <code>slurmjob.err</code>, respectively.</li>
+<li>Array jobs are not supported.
+  Presence of the <code>--array</code> option in the <code>sbatch</code> command will raise an exception.</li>
+</ul>
 <p>When the workflow is executed, the <code>sbatch</code> step will submit the job to the queue.
 It will then wait for the job to complete, just like <code>sbatch --wait</code>.
 Unlike <code>sbatch --wait</code>, it can also wait for a previously submitted job to complete.
@@ -928,11 +939,11 @@ To mitigate this issue, you can add a waiting function to your job scripts, like
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>wait_for_file<span class="w"> </span><span class="s2">&quot;input.dat&quot;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
 </span></code></pre></div>
 <h2 id="technical-details-of-stepup-queues-interaction-with-slurm">Technical Details of StepUp Queue&rsquo;s interaction with SLURM<a class="headerlink" href="#technical-details-of-stepup-queues-interaction-with-slurm" title="Permanent link">&para;</a></h2>
-<p>The timestamps in the <code>slurmjob.log</code> are inherently inacurate (order one minute)
+<p>The timestamps in the <code>slurmjob.log</code> are inherently inaccurate (order one minute)
 due to the caching mechanism of SLURM.
 Checking more job states frequently with <code>sacct</code> (SLURM accounting tool)
 would also put too much load on SLURM, which is not desirable.
-StepUp Queue will therefore run <code>sact</code> only occasionally and cache its output on disk.
+StepUp Queue will therefore run <code>sacct</code> only occasionally and cache its output on disk.
 Furthermore, a <code>slurmjob.log</code> file is written for each job to keep track of
 its submission time, job ID, and previous states.</p>
 <p>The status of the jobs is inferred from <code>sacct -o 'jobidraw,state' -PXn</code>,
