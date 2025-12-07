@@ -111,7 +111,7 @@ you can run the following command from the top-level directory of the workflow:
 stepup canceljobs
 ```
 
-It is part of the design of StepUp Queue's not to automatically cancel jobs when the workflow is interrupted.
+StepUp Queue will not automatically cancel jobs when the workflow is interrupted.
 It is quite common for a workflow to be interrupted by accident or for technical reasons.
 In this case, it would be inefficient to also cancel running jobs, which may still be doing useful work.
 Instead, jobs continue to run and you can restart the StepUp workflow to pick up where it left off.
@@ -134,6 +134,44 @@ export STEPUP_QUEUE_ONCHANGE="ignore"
 ```
 
 These settings are not recommended for production workflows.
+
+## Hints for writing Job Scripts
+
+When writing job scripts for any type of workflow (not only StepUp),
+and the cluster is using a distributed file system (like IBM Spectrum Scale or Lustre),
+you should not assume that files created by one job are immediately visible to subsequent jobs.
+When the cluster load is high, there can be significant delays
+in the file metadata synchronization, sometimes several minutes.
+To mitigate this issue, you can add a waiting function to your job scripts, like this:
+
+```bash
+wait_for_file() {
+  # Waiting function to deal with file synchronization issues.
+  local file="$1"
+  local timeout="${2:-600}"   # timeout in seconds (default 10 min)
+  local interval="${5:-2}"    # poll interval in seconds (default 5 sec)
+
+  local elapsed=0
+
+  while [[ ! -e "$file" ]]; do
+    if (( elapsed >= timeout )); then
+      echo "ERROR: Timeout waiting for file: $file" >&2
+      return 1
+    fi
+    sleep "$interval"
+    (( elapsed += interval ))
+  done
+
+  return 0
+}
+```
+
+Further down in the job script, this function can be used as follows:
+
+```bash
+# Wait for input.dat to appear or exit with error after timeout.
+wait_for_file "input.dat" || exit 1
+```
 
 ## Technical Details
 
