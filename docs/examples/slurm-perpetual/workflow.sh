@@ -2,11 +2,20 @@
 #SBATCH --job-name stepup
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1
 #SBATCH --output=stepup-%j.out
 
-# In production, --time=12:00:00 is a reasonable time limit.
+# The SBATCH parameters in this example are kept minimal for demonstration purposes.
+# In production, they need to be scaled up appropriately.
+# For example, for NWORKER=100, reasonable settings would be:
+# --cpus-per-task=8 --time=12:00:00 --mem=16G
+
+#SBATCH --cpus-per-task=1
 #SBATCH --time=00:01:00
+#SBATCH --mem=4G
+
+# Number of concurrent StepUp workers, which corresponds to the number of
+# concurrently submitted jobs in the Slurm queue:
+NWORKER=5
 
 # Time-out settings
 # SOFT: In production, 1800 seconds (before the wall limit) is reasonable.
@@ -41,7 +50,6 @@ echo "Starting background process to monitor wall time."
 BGPID=$!
 trap "kill $BGPID" EXIT
 
-NWORKER=5
 echo "Starting stepup with a maximum of ${NWORKER} concurrent jobs."
 stepup boot -n ${NWORKER}
 # This means that at most ${NWORKER} jobs will be submitted concurrently.
