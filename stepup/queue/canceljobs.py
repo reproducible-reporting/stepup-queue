@@ -21,13 +21,14 @@
 
 import argparse
 import subprocess
+import sys
 
 from path import Path
 
 from .sbatch import FIRST_LINE, parse_sbatch
 
 
-def canceljobs_tool(args: argparse.Namespace) -> int:
+def canceljobs_tool(args: argparse.Namespace):
     if len(args.paths) == 0:
         args.paths = [Path(".")]
 
@@ -56,7 +57,7 @@ def canceljobs_tool(args: argparse.Namespace) -> int:
                 print(f"Warning: Could not read job ID from {job_log}: {e}")
                 continue
 
-    returncode = 0
+    all_good = True
     # Cancel at most 100 at a time to avoid exceeding the command line length limit,
     # and to play nice with SLURM.
     for cluster, cluster_job_ids in job_ids.items():
@@ -72,9 +73,10 @@ def canceljobs_tool(args: argparse.Namespace) -> int:
             # Using subprocess.run for better control and error handling
             print(f"Executing: {' '.join(command_args)}")
             result = subprocess.run(command_args, check=False)
-            if result.returncode != 0:
-                returncode = 1
-    return returncode
+            all_good &= result.returncode == 0
+    if not all_good:
+        print("Some jobs could not be cancelled. See messages above.")
+        sys.exit(1)
 
 
 def read_jobid_cluster(job_log: Path) -> tuple[str, str]:

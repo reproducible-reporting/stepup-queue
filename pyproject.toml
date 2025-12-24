@@ -58,7 +58,7 @@ sbatch = "stepup.queue.actions:sbatch"
 canceljobs = "stepup.queue.canceljobs:canceljobs_subcommand"
 
 [tool.pytest.ini_options]
-addopts = "-n auto -W error -W ignore::ResourceWarning"
+addopts = "-n auto --dist worksteal -W error -W ignore::ResourceWarning"
 asyncio_default_fixture_loop_scope = "function"
 
 [tool.ruff]
