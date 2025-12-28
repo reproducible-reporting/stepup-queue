@@ -94,6 +94,6 @@ def removejobs_subcommand(subparser: argparse.ArgumentParser) -> callable:
         "--all",
         action="store_true",
         default=False,
-        help="Remove all completed jobs, not only failed jobs.",
+        help="Remove all jobs, not only failed jobs.",
     )
     return removejobs_tool
