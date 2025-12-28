@@ -77,9 +77,12 @@ def read_jobid_cluster_status(path_log: str) -> tuple[int, str | None, str | Non
     if len(lines) < 1:
         raise ValueError(f"Incomplete file: {path_log}.")
     words = lines[0].split()
-    if len(words) < 1:
+    if len(words) != 3:
         raise ValueError(f"Could not read job ID from first status line: {lines[0]}")
-    job_id, cluster = parse_sbatch(words[-1])
+    _, status, job_id_cluster = lines[0].split()
+    if status != "Submitted":
+        raise ValueError(f"No 'Submitted' on first status line: {lines[0]}")
+    job_id, cluster = parse_sbatch(job_id_cluster)
     status = read_status(lines[-1:])[1]
     return job_id, cluster, status
 

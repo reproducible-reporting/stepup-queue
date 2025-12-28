@@ -84,9 +84,10 @@ def submit_once_and_wait(
         rndsleep()
     else:
         # The first state, if present in the log, is the submission.
-        word, sbatch_stdout = status.split()
-        if word != "Submitted":
-            raise ValueError(f"Expected 'Submitted' in log, found '{word}'")
+        words = status.split()
+        if len(words) != 2 or words[0] != "Submitted":
+            raise ValueError(f"Expected 'Submitted' in log, found '{status}'")
+        sbatch_stdout = words[1]
     jobid, cluster = parse_sbatch(sbatch_stdout)
 
     # Wait for the job to complete

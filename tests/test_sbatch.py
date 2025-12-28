@@ -143,7 +143,7 @@ def test_regexes_array(line):
 
 
 def test_regexes_array_not():
-    assert not RE_SBATCH_STDERR.match("#SBATCH --export=NONE")
+    assert not RE_SBATCH_ARRAY.match("#SBATCH --account=special")
 
 
 @pytest.mark.parametrize(
