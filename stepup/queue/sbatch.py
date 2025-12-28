@@ -68,25 +68,25 @@ def submit_once_and_wait(
         The return code of the job.
         0 if successful, 1 if the job failed.
     """
-    # Read previously logged steps
+    # Read previously logged job states
     path_log = Path("slurmjob.log")
     previous_lines = read_log(path_log, validate_inp_digest) if path_log.is_file() else []
 
-    # Go through or skip steps.
-    submit_time, status = read_step(previous_lines)
+    # Go through or skip states.
+    submit_time, status = read_status(previous_lines)
     if status is None:
         # A new job must be submitted.
         submit_time = time.time()
         sbatch_stdout = submit_job(work_thread, job_ext, sbatch_rc)
         # Create a new log file after submitting the job.
         _init_log(path_log)
-        log_step(path_log, f"Submitted {sbatch_stdout}")
+        log_status(path_log, f"Submitted {sbatch_stdout}")
         rndsleep()
     else:
-        # The first step, if present in the log, is the submission.
-        step, sbatch_stdout = status.split()
-        if step != "Submitted":
-            raise ValueError(f"Expected 'Submitted' in log, found '{step}'")
+        # The first state, if present in the log, is the submission.
+        word, sbatch_stdout = status.split()
+        if word != "Submitted":
+            raise ValueError(f"Expected 'Submitted' in log, found '{word}'")
     jobid, cluster = parse_sbatch(sbatch_stdout)
 
     # Wait for the job to complete
@@ -127,13 +127,21 @@ def read_log(path_log: str, do_inp_digest: bool = True) -> list[str]:
         try:
             inp_digest = next(f).strip()
         except StopIteration as exc:
-            raise ValueError("Existing has no input digest.") from exc
+            raise ValueError("Existing log file has no input digest.") from exc
         if do_inp_digest:
             check_log_inp_digest(inp_digest)
         for line in f:
             line = line.strip()
             lines.append(line)
     return lines
+
+
+def check_log_version(line: str):
+    """Validate the log version, abort if there is a mismatch."""
+    if line != FIRST_LINE:
+        raise ValueError(
+            f"The first line of the log is wrong. Expected: '{FIRST_LINE}' Found: '{line}'"
+        )
 
 
 def _init_log(path_log: str):
@@ -147,7 +155,7 @@ def _init_log(path_log: str):
 
 
 # From: https://slurm.schedmd.com/job_state_codes.html
-KNOWN_JOB_STATES = [
+KNOWN_JOB_STATES = {
     # -- Job states
     # done
     "BOOT_FAIL",
@@ -187,7 +195,23 @@ KNOWN_JOB_STATES = [
     # to be ignored (same as waiting or running), must not be logged
     "invalid",
     "unlisted",
-]
+}
+
+DONE_STATES = {
+    "BOOT_FAIL",
+    "CANCELLED",
+    "COMPLETED",
+    "DEADLINE",
+    "FAILED",
+    "NODE_FAIL",
+    "OUT_OF_MEMORY",
+    "PREEMPTED",
+    "TIMEOUT",
+    "LAUNCH_FAILED",
+    "RECONFIG_FAIL",
+    "REVOKED",
+    "STOPPED",
+}
 
 
 def _read_or_poll_status(
@@ -226,50 +250,28 @@ def _read_or_poll_status(
     done
         True when the waiting is over.
     """
-    # First try to replay previously logged steps
-    _, status = read_step(previous_lines)
+    # First try to replay previously logged states
+    _, status = read_status(previous_lines)
     if status is None:
-        # All previously logged steps are processed.
+        # All previously logged states are processed.
         # Call sacct and parse its response.
         rndsleep()
         _, status = get_status(work_thread, jobid, cluster)
         # Log only if the status changed, and is not invalid or unlisted.
         # These two statuses are (potentially) transient and should not be logged.
         if status != last_status and status not in ["invalid", "unlisted"]:
-            log_step(path_log, status)
+            log_status(path_log, status)
     if status not in KNOWN_JOB_STATES:
         raise ValueError(f"Unknown job status '{status}' obtained from scheduler.")
 
     # Determine if the job is done
-    done = status in [
-        "BOOT_FAIL",
-        "CANCELLED",
-        "COMPLETED",
-        "DEADLINE",
-        "FAILED",
-        "NODE_FAIL",
-        "OUT_OF_MEMORY",
-        "PREEMPTED",
-        "TIMEOUT",
-        "LAUNCH_FAILED",
-        "RECONFIG_FAIL",
-        "REVOKED",
-        "STOPPED",
-    ]
+    done = status in DONE_STATES
     if status == "unlisted" and time.time() > submit_time + UNLISTED_TIMEOUT:
         # If the job remains unlisted for too long, we declare it failed.
         # This prevents an infinite loop if the job ID was wrong or purged.
         done = True
 
     return status, done
-
-
-def check_log_version(line: str):
-    """Validate the log version, abort if there is a mismatch."""
-    if line != FIRST_LINE:
-        raise ValueError(
-            f"The first line of the log is wrong. Expected: '{FIRST_LINE}' Found: '{line}'"
-        )
 
 
 class InpDigestError(ValueError):
@@ -288,15 +290,15 @@ def check_log_inp_digest(line: str):
         )
 
 
-def read_step(lines: list[str]) -> str | None:
-    """Read a step from the log file."""
+def read_status(lines: list[str]) -> tuple[float | None, str | None]:
+    """Read a status from the log file."""
     if len(lines) == 0:
         return None, None
     line = lines.pop(0)
     words = line.split(maxsplit=1)
     if len(words) != 2:
-        raise ValueError(f"Expected a step in log but found line '{line}'.")
-    return datetime.fromisoformat(words[0]).timestamp(), words[1]
+        raise ValueError(f"Expected a status in log but found line '{line}'.")
+    return datetime.fromisoformat(words[0]).timestamp(), words[1].strip()
 
 
 def rndsleep():
@@ -316,10 +318,16 @@ echo $RETURN_CODE > slurmjob.ret
 exit $RETURN_CODE
 """
 
-RE_SBATCH_STDOUT = re.compile(r"#\s*SBATCH\b.*(--output|-o)")
-RE_SBATCH_STDERR = re.compile(r"#\s*SBATCH\b.*(--error|-e)")
-RE_SBATCH_ARRAY = re.compile(r"#\s*SBATCH\b.*(--array|-a)")
-RE_SBATCH = re.compile(r"#\s*SBATCH\b")
+RE_SBATCH_STDOUT = re.compile(r"\s*#\s*SBATCH\b.*(--output|-o)\b")
+RE_SBATCH_STDERR = re.compile(r"\s*#\s*SBATCH\b.*(--error|-e)\b")
+RE_SBATCH_ARRAY = re.compile(r"\s*#\s*SBATCH\b.*(--array|-a)\b")
+RE_SBATCH = re.compile(r"\s*#\s*SBATCH\b")
+UNSUPPORTED_DIRECTIVES = [
+    re.compile(r"\s*#\s*PBS\b"),
+    re.compile(r"\s*#\s*BSUB\b"),
+    re.compile(r"\s*#\s*COBALT\b"),
+    re.compile(r"\s*#$"),
+]
 
 
 def submit_job(work_thread: WorkThread, job_ext: str, sbatch_rc: str | None = None) -> str:
@@ -344,6 +352,12 @@ def submit_job(work_thread: WorkThread, job_ext: str, sbatch_rc: str | None = No
                 raise ValueError("StepUp Queue does not support array jobs. (Found -a or --array)")
             if RE_SBATCH.match(line):
                 sbatch_header.append(line.strip())
+            else:
+                for pattern in UNSUPPORTED_DIRECTIVES:
+                    if pattern.match(line):
+                        raise ValueError(
+                            f"Detected unsupported scheduler directive: {line.strip()}."
+                        )
         sbatch_header = "\n".join(sbatch_header)
 
     command = "sbatch --parsable -o slurmjob.out -e slurmjob.err"
@@ -362,11 +376,11 @@ def submit_job(work_thread: WorkThread, job_ext: str, sbatch_rc: str | None = No
     raise RuntimeError(f"sbatch failed {SBATCH_RETRY_NUM} times. Giving up.")
 
 
-def log_step(path_log: Path, step: str):
-    """Write a step to the log."""
+def log_status(path_log: Path, status: str):
+    """Write a status to the log."""
     dt = datetime.now().isoformat()
     with open(path_log, "a") as f:
-        line = f"{dt} {step}"
+        line = f"{dt} {status}"
         f.write(f"{line}\n")
 
 
@@ -380,7 +394,7 @@ def parse_sbatch(stdout: str) -> tuple[int, str | None]:
     raise ValueError(f"Cannot parse sbatch output: {stdout}")
 
 
-def get_status(work_thread: WorkThread, jobid: int, cluster: str | None) -> str:
+def get_status(work_thread: WorkThread, jobid: int, cluster: str | None) -> tuple[float, str]:
     """Load cached sacct output or run sacct if outdated.
 
     Parameters
@@ -394,6 +408,8 @@ def get_status(work_thread: WorkThread, jobid: int, cluster: str | None) -> str:
 
     Returns
     -------
+    timestamp
+        The time when the status was last retrieved.
     status
         A status reported by sacct,
         or `invalid` if sacct failed (retry sacct later),
@@ -401,7 +417,7 @@ def get_status(work_thread: WorkThread, jobid: int, cluster: str | None) -> str:
     """
     # Load cached output or run again
     command = f"sacct -o 'jobid,state' -PXn -S {SACCT_START}"
-    path_out = Path(os.getenv("ROOT")) / ".stepup/queue"
+    path_out = Path(os.getenv("ROOT", ".")) / ".stepup/queue"
     if cluster is None:
         path_out /= "sbatch_wait_sacct.out"
     else:
@@ -472,11 +488,14 @@ def make_cache_header(cache_time: float, returncode: int):
     """Prepare a header for the file containing the cached output of a cached execution."""
     iso = datetime.fromtimestamp(cache_time).isoformat()
     if len(iso) != 26:
-        raise AssertionError
-    return f"v1 datetime={iso} returncode={returncode:+04d}\n"
+        raise RuntimeError("ISO datetime string has unexpected length.")
+    returnstr = f"{returncode:+04d}"
+    if len(returnstr) != 4:
+        raise RuntimeError("Return code string has unexpected length.")
+    return f"v1 datetime={iso} returncode={returnstr}\n"
 
 
-def parse_cache_header(header: str) -> tuple[float, int]:
+def parse_cache_header(header: str) -> tuple[float, int] | tuple[None, None]:
     """Read the header of a cached output and return the timestamp and returncode."""
     if len(header) == 0 or header == "\x00" * CACHE_HEADER_LENGTH:
         return None, None
@@ -504,7 +523,7 @@ def parse_sacct_out(sacct_out: str, jobid: int) -> str:
 
     Returns
     -------
-    jobstate
+    status
         The status of the job. This can be:
 
         - Any of the SLURM job states.

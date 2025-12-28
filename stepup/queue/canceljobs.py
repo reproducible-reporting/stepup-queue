@@ -25,67 +25,63 @@ import sys
 
 from path import Path
 
-from .sbatch import FIRST_LINE, parse_sbatch
+from .sbatch import DONE_STATES, parse_sbatch, read_log, read_status
+from .utils import search_jobs
 
 
 def canceljobs_tool(args: argparse.Namespace):
-    if len(args.paths) == 0:
-        args.paths = [Path(".")]
-
-    # Iterate over all slurmjob.log files in the specified directories, and kill them.
-    job_ids = {}
-    for path in args.paths:
-        if not path.exists():
-            print(f"Path {path} does not exist.")
+    """Iterate over all slurmjob.log files in the specified directories, and kill them."""
+    jobs = {}
+    for path_log in search_jobs(args.paths, verbose=True):
+        try:
+            job_id, cluster, status = read_jobid_cluster_status(path_log)
+        except ValueError as e:
+            print(f"# WARNING: Could not read job ID from {path_log}: {e}")
             continue
-        if not path.is_dir():
-            print(f"Path {path} is not a directory.")
-            continue
-        print(f"Searching recursively in {path}")
-        paths_log = list(path.glob("**/slurmjob.log"))
-        if (path / "slurmjob.log").is_file():
-            paths_log.append(path / "slurmjob.log")
-        for job_log in paths_log:
-            try:
-                job_id, cluster = read_jobid_cluster(job_log)
-                msg = f"Found job {job_id} in {job_log}"
-                if cluster is not None:
-                    msg += f" on cluster {cluster}"
-                print(msg)
-                job_ids.setdefault(cluster, []).append(job_id)
-            except ValueError as e:
-                print(f"Warning: Could not read job ID from {job_log}: {e}")
-                continue
+        if args.all or status not in DONE_STATES:
+            jobs.setdefault(cluster, []).append((job_id, path_log, status))
 
     all_good = True
-    # Cancel at most 100 at a time to avoid exceeding the command line length limit,
-    # and to play nice with SLURM.
-    for cluster, cluster_job_ids in job_ids.items():
-        while len(cluster_job_ids) > 0:
-            cancel_ids = cluster_job_ids[:100]
-            cluster_job_ids[:] = cluster_job_ids[100:]
+    for cluster, cluster_jobs in jobs.items():
+        if args.commit:
+            # Cancel at most 100 at a time to avoid exceeding the command line length limit,
+            # and to play nice with SLURM.
+            while len(cluster_jobs) > 0:
+                cancel_jobs = cluster_jobs[:100]
+                cluster_jobs[:] = cluster_jobs[100:]
 
-            command_args = ["scancel"]
-            if cluster is not None:
-                command_args.extend(["-M", cluster])
-            command_args.extend(str(job_id) for job_id in cancel_ids)
+                command_args = ["scancel"]
+                if cluster is not None:
+                    command_args.extend(["-M", cluster])
+                command_args.extend(str(job_id) for job_id, _, _ in cancel_jobs)
 
-            # Using subprocess.run for better control and error handling
-            print(f"Executing: {' '.join(command_args)}")
-            result = subprocess.run(command_args, check=False)
-            all_good &= result.returncode == 0
+                # Using subprocess.run for better control and error handling
+                print(" ".join(command_args))
+                result = subprocess.run(command_args, check=False)
+                all_good &= result.returncode == 0
+        else:
+            for job_id, path_log, status in cluster_jobs:
+                command = "scancel"
+                if cluster is not None:
+                    command += f" -M {cluster}"
+                command += f" {job_id}  # {path_log} {status}"
+                print(command)
     if not all_good:
         print("Some jobs could not be cancelled. See messages above.")
         sys.exit(1)
 
 
-def read_jobid_cluster(job_log: Path) -> tuple[str, str]:
+def read_jobid_cluster_status(path_log: str) -> tuple[int, str | None, str | None]:
     """Read the job ID and cluster from the job log file."""
-    with open(job_log) as f:
-        lines = f.readlines()
-        if len(lines) < 3 or lines[0][:-1] != FIRST_LINE:
-            raise ValueError(f"Invalid first line in {job_log}.")
-        return parse_sbatch(lines[2].split()[-1])
+    lines = read_log(path_log, False)
+    if len(lines) < 1:
+        raise ValueError(f"Incomplete file: {path_log}.")
+    words = lines[0].split()
+    if len(words) < 1:
+        raise ValueError(f"Could not read job ID from first status line: {lines[0]}")
+    job_id, cluster = parse_sbatch(words[-1])
+    status = read_status(lines[-1:])[1]
+    return job_id, cluster, status
 
 
 def canceljobs_subcommand(subparser: argparse.ArgumentParser) -> callable:
@@ -96,8 +92,23 @@ def canceljobs_subcommand(subparser: argparse.ArgumentParser) -> callable:
     parser.add_argument(
         "paths",
         nargs="*",
+        default=[Path(".")],
         type=Path,
         help="Paths to the jobs to cancel. Subdirectories are searched recursively. "
         "If not specified, the current directory is used.",
+    )
+    parser.add_argument(
+        "-c",
+        "--commit",
+        action="store_true",
+        default=False,
+        help="Execute the cancellation of jobs instead of only showing what would be done.",
+    )
+    parser.add_argument(
+        "-a",
+        "--all",
+        action="store_true",
+        default=False,
+        help="Select all jobs, including the ones that seem to be done already.",
     )
     return canceljobs_tool

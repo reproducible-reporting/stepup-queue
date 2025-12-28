@@ -26,6 +26,10 @@ from path import Path
 
 from stepup.core.worker import WorkThread
 from stepup.queue.sbatch import (
+    RE_SBATCH,
+    RE_SBATCH_ARRAY,
+    RE_SBATCH_STDERR,
+    RE_SBATCH_STDOUT,
     cached_run,
     make_cache_header,
     parse_cache_header,
@@ -92,3 +96,19 @@ def test_parse_sacct_out():
     assert parse_sacct_out(sacct_out, 7) == "SHAKEN"
     assert parse_sacct_out(sacct_out, 999999) == "unlisted"
     assert parse_sacct_out("blibli", 123456) == "invalid"
+
+
+def test_regexes():
+    assert RE_SBATCH_STDOUT.search("#SBATCH --output=out.txt")
+    assert RE_SBATCH_STDOUT.search("# SBATCH --output out.txt")
+    assert RE_SBATCH_STDOUT.search(" #SBATCH -o out.txt")
+    assert RE_SBATCH_STDERR.search("#SBATCH --error=err.txt")
+    assert RE_SBATCH_STDERR.search("# SBATCH --error err.txt")
+    assert RE_SBATCH_STDERR.search(" #SBATCH -e err.txt")
+    assert RE_SBATCH_ARRAY.search("#SBATCH --array=1-10")
+    assert RE_SBATCH_ARRAY.search("# SBATCH --array 1-10")
+    assert RE_SBATCH_ARRAY.search(" #SBATCH -a 1-10")
+    assert RE_SBATCH.search("#   SBATCH --time=1:00:00")
+    assert RE_SBATCH.search("  # SBATCH --time=1:00:00")
+    assert not RE_SBATCH_STDERR.search("#SBATCHER --export=NONE")
+    assert not RE_SBATCH_STDERR.search("#SBATCHER --account=special")
