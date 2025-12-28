@@ -244,7 +244,7 @@ The time between two `sacct` calls (per cluster) can be controlled with the
 Increase this value if you want to reduce the burden on SLURM.
 
 The cached output of `sacct` is checked by the `sbatch` actions with a randomized polling interval.
-If any of these actions needs notices that the cached file is too old,
+If any of these actions notices that the cached file is too old,
 it will acquire a lock on the cache file and update it by calling `sacct`.
 The randomization guarantees that concurrent calls to `sacct` (for multiple clusters)
 will not all coincide.
