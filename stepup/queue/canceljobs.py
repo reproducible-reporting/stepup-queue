@@ -79,7 +79,7 @@ def read_jobid_cluster_status(path_log: str) -> tuple[int, str | None, str | Non
     words = lines[0].split()
     if len(words) != 3:
         raise ValueError(f"Could not read job ID from first status line: {lines[0]}")
-    _, status, job_id_cluster = lines[0].split()
+    _, status, job_id_cluster = words
     if status != "Submitted":
         raise ValueError(f"No 'Submitted' on first status line: {lines[0]}")
     job_id, cluster = parse_sbatch(job_id_cluster)
