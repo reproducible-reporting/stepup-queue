@@ -19,13 +19,15 @@
 # --
 """Utility functions for the StepUp queue module."""
 
+from itertools import chain
+
 from path import Path
 
 __all__ = ("search_jobs",)
 
 
-def search_jobs(paths: list[Path], verbose: bool = True) -> list[Path]:
-    """Iterate over all slurmjob.log files in the specified directories.
+def search_jobs(paths: list[Path], verbose: bool = False) -> list[Path]:
+    """Recursively search for slurmjob.log files in the specified directories.
 
     Parameters
     ----------
@@ -37,7 +39,7 @@ def search_jobs(paths: list[Path], verbose: bool = True) -> list[Path]:
     Returns
     -------
     paths_log
-        List of found slurmjob.log file paths.
+        Sorted list of found slurmjob.log file paths.
     """
     paths_log = set()
     for path in paths:
@@ -49,7 +51,7 @@ def search_jobs(paths: list[Path], verbose: bool = True) -> list[Path]:
             if verbose:
                 print(f"# WARNING: Path {path} is not a directory.")
             continue
-        for path_sub in path.walkdirs():
+        for path_sub in chain([path], path.walkdirs()):
             path_log = path_sub / "slurmjob.log"
             if path_log.is_file():
                 paths_log.add(path_log)

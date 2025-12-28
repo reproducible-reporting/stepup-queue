@@ -30,6 +30,7 @@ from stepup.queue.sbatch import (
     RE_SBATCH_ARRAY,
     RE_SBATCH_STDERR,
     RE_SBATCH_STDOUT,
+    UNSUPPORTED_DIRECTIVES,
     cached_run,
     make_cache_header,
     parse_cache_header,
@@ -99,16 +100,35 @@ def test_parse_sacct_out():
 
 
 def test_regexes():
-    assert RE_SBATCH_STDOUT.search("#SBATCH --output=out.txt")
-    assert RE_SBATCH_STDOUT.search("# SBATCH --output out.txt")
-    assert RE_SBATCH_STDOUT.search(" #SBATCH -o out.txt")
+    assert RE_SBATCH_STDOUT.match("#SBATCH --output=out.txt")
+    assert RE_SBATCH_STDOUT.match("# SBATCH --output out.txt")
+    assert RE_SBATCH_STDOUT.match(" #SBATCH -o out.txt")
     assert RE_SBATCH_STDERR.match("#SBATCH --error=err.txt")
     assert RE_SBATCH_STDERR.match("# SBATCH --error err.txt")
     assert RE_SBATCH_STDERR.match(" #SBATCH -e err.txt")
-    assert RE_SBATCH_ARRAY.search("#SBATCH --array=1-10")
-    assert RE_SBATCH_ARRAY.search("# SBATCH --array 1-10")
-    assert RE_SBATCH_ARRAY.search(" #SBATCH -a 1-10")
-    assert RE_SBATCH.search("#   SBATCH --time=1:00:00")
-    assert RE_SBATCH.search("  # SBATCH --time=1:00:00")
+    assert RE_SBATCH_ARRAY.match("#SBATCH --array=1-10")
+    assert RE_SBATCH_ARRAY.match("# SBATCH --array 1-10")
+    assert RE_SBATCH_ARRAY.match(" #SBATCH -a 1-10")
+    assert RE_SBATCH.match("#   SBATCH --time=1:00:00")
+    assert RE_SBATCH.match("  # SBATCH --time=1:00:00")
     assert not RE_SBATCH_STDERR.match("#SBATCHER --export=NONE")
     assert not RE_SBATCH_STDERR.match("#SBATCHER --account=special")
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "#PBS -l walltime=1:00:00",
+        " #PBS -l walltime=1:00:00",
+        "# PBS -l walltime=1:00:00",
+        "#BSUB -W 1:00",
+        "# BSUB -W 1:00",
+        " #BSUB -W 1:00",
+        "#$ -l h_rt=1:00:00",
+        "#COBALT -t 1:00:00",
+        " #COBALT -t 1:00:00",
+        "# COBALT -t 1:00:00",
+    ],
+)
+def test_regexes_unsupported(line):
+    assert any(re.match(line) for re in UNSUPPORTED_DIRECTIVES)
