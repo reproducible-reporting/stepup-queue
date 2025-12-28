@@ -99,20 +99,64 @@ def test_parse_sacct_out():
     assert parse_sacct_out("blibli", 123456) == "invalid"
 
 
-def test_regexes():
-    assert RE_SBATCH_STDOUT.match("#SBATCH --output=out.txt")
-    assert RE_SBATCH_STDOUT.match("# SBATCH --output out.txt")
-    assert RE_SBATCH_STDOUT.match(" #SBATCH -o out.txt")
-    assert RE_SBATCH_STDERR.match("#SBATCH --error=err.txt")
-    assert RE_SBATCH_STDERR.match("# SBATCH --error err.txt")
-    assert RE_SBATCH_STDERR.match(" #SBATCH -e err.txt")
-    assert RE_SBATCH_ARRAY.match("#SBATCH --array=1-10")
-    assert RE_SBATCH_ARRAY.match("# SBATCH --array 1-10")
-    assert RE_SBATCH_ARRAY.match(" #SBATCH -a 1-10")
-    assert RE_SBATCH.match("#   SBATCH --time=1:00:00")
-    assert RE_SBATCH.match("  # SBATCH --time=1:00:00")
-    assert not RE_SBATCH_STDERR.match("#SBATCHER --export=NONE")
-    assert not RE_SBATCH_STDERR.match("#SBATCHER --account=special")
+@pytest.mark.parametrize(
+    "line",
+    [
+        "#SBATCH --output=out.txt",
+        "# SBATCH --output out.txt",
+        " #SBATCH -o out.txt",
+    ],
+)
+def test_regexes_stdout(line):
+    assert RE_SBATCH_STDOUT.match(line)
+    assert not any(re.match(line) for re in UNSUPPORTED_DIRECTIVES)
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "#SBATCH --error=err.txt",
+        "# SBATCH --error err.txt",
+        " #SBATCH -e err.txt",
+    ],
+)
+def test_regexes_stderr(line):
+    assert RE_SBATCH_STDERR.match(line)
+    assert not any(re.match(line) for re in UNSUPPORTED_DIRECTIVES)
+
+
+def test_regexes_stderr_not():
+    assert not RE_SBATCH_STDERR.match("#SBATCH --export=NONE")
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "#SBATCH --array=1-10",
+        "# SBATCH --array 1-10",
+        " #SBATCH -a 1-10",
+    ],
+)
+def test_regexes_array(line):
+    assert RE_SBATCH_ARRAY.match(line)
+    assert not any(re.match(line) for re in UNSUPPORTED_DIRECTIVES)
+
+
+def test_regexes_array_not():
+    assert not RE_SBATCH_STDERR.match("#SBATCH --export=NONE")
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "#SBATCH --time=1:00:00",
+        "# SBATCH --time 1:00:00",
+        " #SBATCH -t 1:00:00",
+    ],
+)
+def test_regexes_sbatch(line):
+    assert RE_SBATCH.match(line)
+    assert not any(re.match(line) for re in UNSUPPORTED_DIRECTIVES)
 
 
 @pytest.mark.parametrize(
