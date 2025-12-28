@@ -30,7 +30,7 @@ from .utils import search_jobs
 
 
 def canceljobs_tool(args: argparse.Namespace):
-    """Iterate over all slurmjob.log files in the specified directories, and kill them."""
+    """Iterate over all slurmjob.log files, read the SLURM job IDs, and cancel them."""
     jobs = {}
     for path_log in search_jobs(args.paths, verbose=True):
         try:

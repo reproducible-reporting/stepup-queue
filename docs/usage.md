@@ -134,17 +134,19 @@ For example, the output may look like this:
 
 ```bash
 scancel 123456  # path/to/job1/slurmjob.log RUNNING
-scancel 123457  # path/to/job2/slurmjob.log PENDING
+scancel -M somecluster 123457  # path/to/job2/slurmjob.log PENDING
 ```
 
 By default, this command will not perform any destructive actions
 and will only print the `scancel` commands that would be executed.
 You can pass the `--commit` option to actually execute the `scancel` commands.
-Alternatively, you can select a subset of jobs to cancel with the `grep` and `xargs` commands, for example:
+Alternatively, you can select a subset of jobs to cancel with `grep`, for example:
 
 ```bash
-stepup canceljobs dir/to/running/jobs | grep "filename_pattern" | xargs sh -c
+stepup canceljobs dir/to/running/jobs | grep "filename_pattern"
 ```
+
+Make sure you always check the generated `scancel` commands before executing them.
 
 ## Removing Directories of Cancelled or Failed Jobs
 

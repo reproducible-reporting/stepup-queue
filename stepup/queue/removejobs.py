@@ -44,7 +44,7 @@ FAILED_STATES = {
 
 
 def removejobs_tool(args: argparse.Namespace):
-    """Iterate over all slurmjob.log files in the specified directories and remove their parent job directories."""
+    """Iterate over all slurmjob.log files and remove their parent job directories."""
     jobs = []
     for path_log in search_jobs(args.paths, verbose=True):
         try:
