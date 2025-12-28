@@ -50,7 +50,7 @@ def removejobs_tool(args: argparse.Namespace):
         try:
             status = read_last_status(path_log)
         except ValueError as e:
-            print(f"Warning: Could not read job ID from {path_log}: {e}")
+            print(f"Warning: Could not read job status from {path_log}: {e}")
             status = None
         if args.all or status in FAILED_STATES:
             jobs.append((path_log, status))
@@ -63,7 +63,7 @@ def removejobs_tool(args: argparse.Namespace):
 
 
 def read_last_status(path_log: str) -> str | None:
-    """Read the job last job status from the job log file."""
+    """Read the last job status from the job log file."""
     lines = read_log(path_log, False)
     return read_status(lines[-1:])[1]
 

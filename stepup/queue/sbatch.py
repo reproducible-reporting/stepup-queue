@@ -326,7 +326,7 @@ UNSUPPORTED_DIRECTIVES = [
     re.compile(r"\s*#\s*PBS\b"),
     re.compile(r"\s*#\s*BSUB\b"),
     re.compile(r"\s*#\s*COBALT\b"),
-    re.compile(r"\s*#$"),
+    re.compile(r"\s*#\$\b"),
 ]
 
 

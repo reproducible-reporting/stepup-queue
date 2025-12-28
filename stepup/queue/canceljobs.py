@@ -72,7 +72,7 @@ def canceljobs_tool(args: argparse.Namespace):
 
 
 def read_jobid_cluster_status(path_log: str) -> tuple[int, str | None, str | None]:
-    """Read the job ID and cluster from the job log file."""
+    """Read the job ID, cluster, and job status from the job log file."""
     lines = read_log(path_log, False)
     if len(lines) < 1:
         raise ValueError(f"Incomplete file: {path_log}.")
