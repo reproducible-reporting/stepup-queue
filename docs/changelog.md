@@ -12,6 +12,29 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
 
 (no changes yet)
 
+### Added
+
+- New `stepup removejobs` command to remove job directories,
+  by default only of failed jobs.
+  This command uses the same safeguards as `stepup clean`
+  in the upcoming StepUp Core 3.2 release, i.e.,
+  it only performs destructive actions when explicitly confirmed by the user
+  with the `--commit` flag.
+- Detect unsupported scheduler directives in job scripts
+  (e.g., PBS, LSF, Cobalt) and raise an error.
+
+### Changed
+
+- Refactored `stepup canceljobs` to use the same safeguards as `stepup clean`
+  in the upcoming StepUp Core 3.2 release.
+
+### Fixed
+
+- Corrected missing dependency and inconsistency with `.github/requirements-old.txt`.
+- Filter jobs by status in `stepup canceljobs`,
+  so it only cancels jobs that are not done, unless the `--all` flag is used.
+- Fixed mistake in regular expressions to detect forbidden `#SBATCH` options.
+
 ## [1.0.7][] - 2025-12-07 {: #v1.0.7 }
 
 Improved robustness for workflows with many concurrent jobs.

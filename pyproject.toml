@@ -28,7 +28,8 @@ classifiers = [
 ]
 dependencies = [
     # Ensure changes to these dependencies are reflected in .github/requirements-old.txt
-    "stepup>=3.1.4,<4.0.0",
+    "path>=16.14.0",
+    "stepup>=3.2.0,<4.0.0",
 ]
 dynamic = ["version"]
 
@@ -56,6 +57,7 @@ sbatch = "stepup.queue.actions:sbatch"
 
 [project.entry-points."stepup.tools"]
 canceljobs = "stepup.queue.canceljobs:canceljobs_subcommand"
+removejobs = "stepup.queue.removejobs:removejobs_subcommand"
 
 [tool.pytest.ini_options]
 addopts = "-n auto --dist worksteal -W error -W ignore::ResourceWarning"

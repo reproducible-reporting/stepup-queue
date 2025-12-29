@@ -26,6 +26,11 @@ from path import Path
 
 from stepup.core.worker import WorkThread
 from stepup.queue.sbatch import (
+    RE_SBATCH,
+    RE_SBATCH_ARRAY,
+    RE_SBATCH_STDERR,
+    RE_SBATCH_STDOUT,
+    UNSUPPORTED_DIRECTIVES,
     cached_run,
     make_cache_header,
     parse_cache_header,
@@ -92,3 +97,82 @@ def test_parse_sacct_out():
     assert parse_sacct_out(sacct_out, 7) == "SHAKEN"
     assert parse_sacct_out(sacct_out, 999999) == "unlisted"
     assert parse_sacct_out("blibli", 123456) == "invalid"
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "#SBATCH --output=out.txt",
+        "# SBATCH --output out.txt",
+        " #SBATCH -o out.txt",
+    ],
+)
+def test_regexes_stdout(line):
+    assert RE_SBATCH_STDOUT.match(line)
+    assert not any(re.match(line) for re in UNSUPPORTED_DIRECTIVES)
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "#SBATCH --error=err.txt",
+        "# SBATCH --error err.txt",
+        " #SBATCH -e err.txt",
+    ],
+)
+def test_regexes_stderr(line):
+    assert RE_SBATCH_STDERR.match(line)
+    assert not any(re.match(line) for re in UNSUPPORTED_DIRECTIVES)
+
+
+def test_regexes_stderr_not():
+    assert not RE_SBATCH_STDERR.match("#SBATCH --export=NONE")
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "#SBATCH --array=1-10",
+        "# SBATCH --array 1-10",
+        " #SBATCH -a 1-10",
+    ],
+)
+def test_regexes_array(line):
+    assert RE_SBATCH_ARRAY.match(line)
+    assert not any(re.match(line) for re in UNSUPPORTED_DIRECTIVES)
+
+
+def test_regexes_array_not():
+    assert not RE_SBATCH_ARRAY.match("#SBATCH --account=special")
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "#SBATCH --time=1:00:00",
+        "# SBATCH --time 1:00:00",
+        " #SBATCH -t 1:00:00",
+    ],
+)
+def test_regexes_sbatch(line):
+    assert RE_SBATCH.match(line)
+    assert not any(re.match(line) for re in UNSUPPORTED_DIRECTIVES)
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "#PBS -l walltime=1:00:00",
+        " #PBS -l walltime=1:00:00",
+        "# PBS -l walltime=1:00:00",
+        "#BSUB -W 1:00",
+        "# BSUB -W 1:00",
+        " #BSUB -W 1:00",
+        "#$ -l h_rt=1:00:00",
+        "#COBALT -t 1:00:00",
+        " #COBALT -t 1:00:00",
+        "# COBALT -t 1:00:00",
+    ],
+)
+def test_regexes_unsupported(line):
+    assert any(re.match(line) for re in UNSUPPORTED_DIRECTIVES)

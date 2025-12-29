@@ -28,7 +28,7 @@ from path import Path
 
 from stepup.core.worker import WorkThread
 
-from .canceljobs import read_jobid_cluster
+from .canceljobs import read_jobid_cluster_status
 from .sbatch import InpDigestError, submit_once_and_wait
 
 
@@ -48,7 +48,7 @@ def sbatch(argstr: str, work_thread: WorkThread) -> int:
             return submit_once_and_wait(work_thread, args.ext, args.rc)
         # Cancel running job (if any), clean log and resubmit
         path_log = Path("slurmjob.log")
-        job_id, cluster = read_jobid_cluster(path_log)
+        job_id, cluster, _ = read_jobid_cluster_status(path_log)
         if cluster is None:
             work_thread.runsh(f"scancel {job_id}")
         else:

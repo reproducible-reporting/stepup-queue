@@ -108,25 +108,66 @@ and runs `stepup shutdown` twice in that directory via `ssh`.
 The way the software environment is activated may differ from your setup.
 
 A less sophisticated approach is to simply cancel the StepUp job via `scancel <jobid>`.
-This will stop StepUp immediately but it may not have the chance to write its state to disk.
+This will stop StepUp immediately, but it may not have the chance to write its state to disk.
 Normally, this should be fine, as it uses SQLite, which is robust against crashes.
 
 ## Killing Running Jobs
 
-If you need to cancel all running SLURM jobs, typically after interrupting StepUp,
-you can run the following command from the top-level directory of the workflow:
-
-```bash
-stepup canceljobs
-```
-
-StepUp Queue will not automatically cancel jobs when the workflow is interrupted.
+StepUp Queue will not cancel any jobs when the workflow is interrupted.
 It is quite common for a workflow to be interrupted by accident or for technical reasons.
 In this case, it would be inefficient to also cancel running jobs, which may still be doing useful work.
-Instead, jobs continue to run and you can restart the StepUp workflow to pick up where it left off.
+Instead, jobs continue to run, and you can restart the StepUp workflow to pick up where it left off.
 
-After having cancelled jobs, it is still your responsibility to clean up files in the workflow.
-Removing them is not always desirable, so this is not done automatically.
+If you want to cancel running SLURM jobs, typically after interrupting StepUp,
+you can run the following command:
+
+```bash
+stepup canceljobs dir/to/running/jobs
+```
+
+This command will recursively look for all `slurmjob.log` files in the given paths
+(or the current directory if no paths are given),
+extract the corresponding job IDs of running jobs, and generate `scancel` commands to cancel them.
+After each `scancel` command, the path of the `slurmjob.log` file
+and the job status are added as a comment.
+For example, the output may look like this:
+
+```bash
+scancel 123456  # path/to/job1/slurmjob.log RUNNING
+scancel -M somecluster 123457  # path/to/job2/slurmjob.log PENDING
+```
+
+By default, this command will not perform any destructive actions
+and will only print the `scancel` commands that would be executed.
+You can pass the `--commit` option to actually execute the `scancel` commands.
+Alternatively, you can select a subset of jobs to cancel with `grep`, for example:
+
+```bash
+stepup canceljobs dir/to/running/jobs | grep "filename_pattern"
+```
+
+Make sure you always check the generated `scancel` commands before executing them.
+
+## Removing Directories of Cancelled or Failed Jobs
+
+After a job was cancelled or has failed,
+the corresponding files are not removed automatically.
+This is to allow for inspection of the job's output and error files for debugging purposes.
+You can remove the directories of cancelled or failed jobs
+by running the following command:
+
+```bash
+stepup removejobs dir/to/jobs
+```
+
+This command will recursively look for all `slurmjob.log` files in the given paths
+(or the current directory if no paths are given),
+check the status of the corresponding jobs,
+and remove the directories of jobs that have ended but were not successful.
+
+By default, this command will not perform any destructive actions
+and will only print the remove commands that would be executed.
+You can pass the `--commit` option to actually remove the directories.
 
 ## Useful Settings when Developing Workflows
 
@@ -158,7 +199,7 @@ wait_for_file() {
   # Waiting function to deal with file synchronization issues.
   local file="$1"
   local timeout="${2:-600}"   # timeout in seconds (default 10 min)
-  local interval="${5:-2}"    # poll interval in seconds (default 5 sec)
+  local interval="${3:-5}"    # poll interval in seconds (default 5 sec)
 
   local elapsed=0
 
@@ -194,7 +235,7 @@ its submission time, job ID, and previous states.
 
 The status of the jobs is inferred from `sacct -o 'jobidraw,state' -PXn`,
 if relevant with a `--cluster` argument.
-In addition a configurable `-S` argument is passed to `sacct`.
+In addition, a configurable `-S` argument is passed to `sacct`.
 Its output is cached in a subdirectory `.stepup/queue` of the workflow root.
 The cached result is reused by all `sbatch` actions,
 so the number of `sacct` calls is independent of the
@@ -205,8 +246,8 @@ The time between two `sacct` calls (per cluster) can be controlled with the
 Increase this value if you want to reduce the burden on SLURM.
 
 The cached output of `sacct` is checked by the `sbatch` actions with a randomized polling interval.
-If any of these actions needs notices that the cached file is too old,
-it will aquire a lock on the cache file and update it by calling `sacct`.
+If any of these actions notices that the cached file is too old,
+it will acquire a lock on the cache file and update it by calling `sacct`.
 The randomization guarantees that concurrent calls to `sacct` (for multiple clusters)
 will not all coincide.
 The polling time can be controlled with two additional environment variables:
