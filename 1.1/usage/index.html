@@ -1,0 +1,1096 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="StepUp Queue Documentation">
+      
+      
+        <meta name="author" content="Toon Verstraelen">
+      
+      
+      
+        <link rel="prev" href="../installation/">
+      
+      
+        <link rel="next" href="../examples/slurm-basic/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Usage - StepUp Queue</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:300,300i,400,400i,700,700i%7CSource+Code+Pro:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"IBM Plex Sans";--md-code-font:"Source Code Pro"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#usage" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+          <aside class="md-banner md-banner--warning">
+            <div class="md-banner__inner md-grid md-typeset">
+              
+  You're not viewing the documentation of the stable version.
+  <a href="../..">
+    <strong>Click here to go to stable.</strong>
+  </a>
+
+            </div>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL(".."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+          </aside>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="StepUp Queue" class="md-header__button md-logo" aria-label="StepUp Queue" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            StepUp Queue
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Usage
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1M8 13h8v-2H8zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4a5 5 0 0 0 5-5 5 5 0 0 0-5-5"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5M7 15a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/reproducible-reporting/stepup-queue" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="StepUp Queue" class="md-nav__button md-logo" aria-label="StepUp Queue" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    StepUp Queue
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/reproducible-reporting/stepup-queue" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-sbatch-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The sbatch() Function
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stopping-the-workflow-gracefully" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stopping the Workflow Gracefully
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#killing-running-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Killing Running Jobs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#removing-directories-of-cancelled-or-failed-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removing Directories of Cancelled or Failed Jobs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#useful-settings-when-developing-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Useful Settings when Developing Workflows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hints-for-writing-job-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hints for writing Job Scripts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technical-details-of-stepup-queues-interaction-with-slurm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technical Details of StepUp Queue&rsquo;s interaction with SLURM
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/slurm-basic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Basic SLURM example
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/slurm-perpetual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Perpetual SLURM Workflow Job
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stepup.queue.api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    stepup.queue.api
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    License
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-sbatch-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The sbatch() Function
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stopping-the-workflow-gracefully" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stopping the Workflow Gracefully
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#killing-running-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Killing Running Jobs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#removing-directories-of-cancelled-or-failed-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removing Directories of Cancelled or Failed Jobs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#useful-settings-when-developing-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Useful Settings when Developing Workflows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hints-for-writing-job-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hints for writing Job Scripts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technical-details-of-stepup-queues-interaction-with-slurm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technical Details of StepUp Queue&rsquo;s interaction with SLURM
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/reproducible-reporting/stepup-queue/edit/main/docs/usage.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h1>
+<h2 id="the-sbatch-function">The <code>sbatch()</code> Function<a class="headerlink" href="#the-sbatch-function" title="Permanent link">&para;</a></h2>
+<p>If you want to submit a job to the queue as part of a StepUp workflow,
+you must first prepare a directory with a job script called <code>slurmjob.sh</code>.
+This can be either a static file or the output of a previous step in the workflow.
+The function <a class="autorefs autorefs-internal" title="sbatch(workdir, *, ext='.sh', rc=None, inp=(), env=(), out=(), vol=(), onchange=None, optional=False, pool=None, block=False)" href="../stepup.queue.api/#stepup.queue.api.sbatch"><code>sbatch()</code></a> will then submit the job to the queue.
+For simplicity, the following example assumes that the job script is static:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">stepup.core.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">static</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">stepup.queue.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">sbatch</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">static</span><span class="p">(</span><span class="s2">&quot;compute/&quot;</span><span class="p">,</span> <span class="s2">&quot;compute/slurmjob.sh&quot;</span><span class="p">)</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">sbatch</span><span class="p">(</span><span class="s2">&quot;compute/&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<p>All arguments to the <code>sbatch</code> command of SLURM
+must be included in the <code>slurmjob.sh</code> script with <code>#SBATCH</code> directives.
+There are some constraints to keep in mind:</p>
+<ul>
+<li>You can only submit one job from a given directory.</li>
+<li>The job script must be called <code>slurmjob.sh</code>,
+  or may have a different extension if it is not a shell script.</li>
+<li>The job script must be executable and have a shebang line (e.g. <code>#!/usr/bin/env bash</code>).</li>
+<li>The job script cannot specify an output or error file.
+  These will be specified by the <code>sbatch()</code> function
+  as <code>slurmjob.out</code> and <code>slurmjob.err</code>, respectively.</li>
+<li>Array jobs are not supported.
+  Presence of the <code>--array</code> option in the <code>sbatch</code> command will raise an exception.</li>
+</ul>
+<p>When the workflow is executed, the <code>sbatch</code> step will submit the job to the queue.
+It will then wait for the job to complete, just like <code>sbatch --wait</code>.
+Unlike <code>sbatch --wait</code>, it can also wait for a previously submitted job to complete.
+This is useful when the workflow gets killed for some reason,
+e.g. due to a wall time limit.</p>
+<p>The current status of the job is stored in the <code>slurmjob.log</code> file,
+which StepUp Queue both reads and writes.
+When you restart StepUp and <code>slurmjob.log</code> exists for a given <code>sbatch()</code> step,
+the job is not resubmitted; instead, StepUp waits for the existing job to finish.
+To force a job to be resubmitted, you must delete <code>slurmjob.log</code>
+and manually cancel the corresponding running job, before restarting StepUp.
+Deleting <code>slurmjob.log</code> without cancelling the job
+will cause inconsistencies that StepUp cannot detect.</p>
+<p>If the job&rsquo;s inputs change and StepUp is restarted,
+you can control how this situation is handled using
+the <code>STEPUP_QUEUE_ONCHANGE</code> environment variable or the <code>onchange</code> argument of <code>sbatch()</code>:</p>
+<ol>
+<li><code>onchange="raise"</code> (default):
+    Raises an exception and aborts the workflow.
+    This is the safest option, ensuring the workflow does not continue with inconsistent data.</li>
+<li><code>onchange="resubmit"</code>:
+    Cancels any running job and removes it from the queue,
+    then resubmits the job with the new inputs.
+    Old outputs are not deleted before resubmission;
+    it is assumed that your job script will handle any necessary cleanup.</li>
+<li><code>onchange="ignore"</code>:
+    Does not resubmit the job; the workflow continues using any existing outputs.
+    This is useful if input changes do not affect outputs,
+    e.g., updating the job script to request more resources.
+    If outputs are missing but <code>slurmjob.log</code> exists, the step will fail.
+    If you manually remove <code>slurmjob.log</code> and cancel the running job,
+    the job will be resubmitted with the new inputs.
+    Use this option with caution, as it can lead to inconsistent workflow data.</li>
+</ol>
+<h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>A simple example with static and dynamically generated job scripts
+  can be found in the <a href="../examples/slurm-basic/"><code>examples/slurm-basic/</code></a>.</p>
+</li>
+<li>
+<p>The example <a href="../examples/slurm-perpetual/"><code>examples/slurm-perpetual/</code></a>
+  shows how to run StepUp itself as a job in the queue,
+  which cancels and submits itself again when nearing the wall time limit,
+  if the workflow has not yet completed.</p>
+</li>
+</ul>
+<h2 id="stopping-the-workflow-gracefully">Stopping the Workflow Gracefully<a class="headerlink" href="#stopping-the-workflow-gracefully" title="Permanent link">&para;</a></h2>
+<p>When running StepUp interactively, and the workflow is just waiting for jobs to complete,
+you can stop it gracefully by pressing <code>q</code> twice.
+This will interrupt the worker processes that are waiting for SLURM jobs to be completed.
+The actual SLURM jobs will continue to run.
+You can later restart StepUp to continue waiting for the jobs to complete.</p>
+<p>If you are running StepUp itself also as a SLURM job, you have no keyboard interaction to stop it.
+In this case, you can achieve the same effect by logging into the node where StepUp is running,
+and running the <code>stepup shutdown</code> command twice in the directory where StepUp is running.
+If this is needed often, e.g. when debugging, you can automate this with a script.
+The following is a simple example, which you may need to adapt for your setup:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="ch">#!/usr/bin/bash</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>-z<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$1</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Usage: </span><span class="nv">$0</span><span class="s2"> &lt;jobid&gt;&quot;</span><span class="p">;</span><span class="w"> </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="k">fi</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nv">JOBID</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>-dc<span class="w"> </span><span class="s1">&#39;0-9&#39;</span><span class="k">)</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nv">NODE</span><span class="o">=</span><span class="k">$(</span>squeue<span class="w"> </span>-j<span class="w"> </span><span class="si">${</span><span class="nv">JOBID</span><span class="si">}</span><span class="w"> </span>-h<span class="w"> </span>-o<span class="w"> </span>%N<span class="k">)</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="nv">WORKDIR</span><span class="o">=</span><span class="k">$(</span>squeue<span class="w"> </span>-j<span class="w"> </span><span class="si">${</span><span class="nv">JOBID</span><span class="si">}</span><span class="w"> </span>-h<span class="w"> </span>-o<span class="w"> </span>%Z<span class="k">)</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="nv">SCRIPT</span><span class="o">=</span><span class="s2">&quot;cd </span><span class="si">${</span><span class="nv">WORKDIR</span><span class="si">}</span><span class="s2">/.. &amp;&amp; source activate &amp;&amp; cd </span><span class="si">${</span><span class="nv">WORKDIR</span><span class="si">}</span><span class="s2"> &amp;&amp; stepup shutdown &amp;&amp; stepup shutdown&quot;</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nv">COMMAND</span><span class="o">=</span><span class="s2">&quot;bash -l -c &#39;</span><span class="si">${</span><span class="nv">SCRIPT</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Executing on node </span><span class="si">${</span><span class="nv">NODE</span><span class="si">}</span><span class="s2">: </span><span class="si">${</span><span class="nv">COMMAND</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>ssh<span class="w"> </span><span class="si">${</span><span class="nv">NODE</span><span class="si">}</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">COMMAND</span><span class="si">}</span><span class="s2">&quot;</span>
+</span></code></pre></div>
+<p>The script takes a SLURM job ID (or the out file, like <code>slurm-&lt;jobid&gt;.out</code>) as an argument,
+determines the node and working directory of the job,
+and runs <code>stepup shutdown</code> twice in that directory via <code>ssh</code>.
+The way the software environment is activated may differ from your setup.</p>
+<p>A less sophisticated approach is to simply cancel the StepUp job via <code>scancel &lt;jobid&gt;</code>.
+This will stop StepUp immediately, but it may not have the chance to write its state to disk.
+Normally, this should be fine, as it uses SQLite, which is robust against crashes.</p>
+<h2 id="killing-running-jobs">Killing Running Jobs<a class="headerlink" href="#killing-running-jobs" title="Permanent link">&para;</a></h2>
+<p>StepUp Queue will not cancel any jobs when the workflow is interrupted.
+It is quite common for a workflow to be interrupted by accident or for technical reasons.
+In this case, it would be inefficient to also cancel running jobs, which may still be doing useful work.
+Instead, jobs continue to run, and you can restart the StepUp workflow to pick up where it left off.</p>
+<p>If you want to cancel running SLURM jobs, typically after interrupting StepUp,
+you can run the following command:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>stepup<span class="w"> </span>canceljobs<span class="w"> </span>dir/to/running/jobs
+</span></code></pre></div>
+<p>This command will recursively look for all <code>slurmjob.log</code> files in the given paths
+(or the current directory if no paths are given),
+extract the corresponding job IDs of running jobs, and generate <code>scancel</code> commands to cancel them.
+After each <code>scancel</code> command, the path of the <code>slurmjob.log</code> file
+and the job status are added as a comment.
+For example, the output may look like this:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>scancel<span class="w"> </span><span class="m">123456</span><span class="w">  </span><span class="c1"># path/to/job1/slurmjob.log RUNNING</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>scancel<span class="w"> </span>-M<span class="w"> </span>somecluster<span class="w"> </span><span class="m">123457</span><span class="w">  </span><span class="c1"># path/to/job2/slurmjob.log PENDING</span>
+</span></code></pre></div>
+<p>By default, this command will not perform any destructive actions
+and will only print the <code>scancel</code> commands that would be executed.
+You can pass the <code>--commit</code> option to actually execute the <code>scancel</code> commands.
+Alternatively, you can select a subset of jobs to cancel with <code>grep</code>, for example:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>stepup<span class="w"> </span>canceljobs<span class="w"> </span>dir/to/running/jobs<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s2">&quot;filename_pattern&quot;</span>
+</span></code></pre></div>
+<p>Make sure you always check the generated <code>scancel</code> commands before executing them.</p>
+<h2 id="removing-directories-of-cancelled-or-failed-jobs">Removing Directories of Cancelled or Failed Jobs<a class="headerlink" href="#removing-directories-of-cancelled-or-failed-jobs" title="Permanent link">&para;</a></h2>
+<p>After a job was cancelled or has failed,
+the corresponding files are not removed automatically.
+This is to allow for inspection of the job&rsquo;s output and error files for debugging purposes.
+You can remove the directories of cancelled or failed jobs
+by running the following command:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>stepup<span class="w"> </span>removejobs<span class="w"> </span>dir/to/jobs
+</span></code></pre></div>
+<p>This command will recursively look for all <code>slurmjob.log</code> files in the given paths
+(or the current directory if no paths are given),
+check the status of the corresponding jobs,
+and remove the directories of jobs that have ended but were not successful.</p>
+<p>By default, this command will not perform any destructive actions
+and will only print the remove commands that would be executed.
+You can pass the <code>--commit</code> option to actually remove the directories.</p>
+<h2 id="useful-settings-when-developing-workflows">Useful Settings when Developing Workflows<a class="headerlink" href="#useful-settings-when-developing-workflows" title="Permanent link">&para;</a></h2>
+<p>When developing and testing workflows that use <code>sbatch()</code>,
+it can be useful to configure StepUp to be less rigorous about reproducibility and file cleaning.
+The following environment variables can help with this:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Do not remove outdated output files after a successful completion of the workflow.</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">STEPUP_CLEAN</span><span class="o">=</span><span class="m">0</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="c1"># Ignore changes in inputs to sbatch() steps and do not resubmit jobs.</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># Just assume that existing outputs are still valid, despite changed inputs.</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">STEPUP_QUEUE_ONCHANGE</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span>
+</span></code></pre></div>
+<p>These settings are not recommended for production workflows.</p>
+<h2 id="hints-for-writing-job-scripts">Hints for writing Job Scripts<a class="headerlink" href="#hints-for-writing-job-scripts" title="Permanent link">&para;</a></h2>
+<p>When writing job scripts for any type of workflow (not only StepUp),
+and the cluster is using a distributed file system (like IBM Spectrum Scale or Lustre),
+you should not assume that files created by one job are immediately visible to subsequent jobs.
+When the cluster load is high, there can be significant delays
+in the file metadata synchronization, sometimes several minutes.
+To mitigate this issue, you can add a waiting function to your job scripts, like this:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>wait_for_file<span class="o">()</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="c1"># Waiting function to deal with file synchronization issues.</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">file</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$1</span><span class="s2">&quot;</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">timeout</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">2</span><span class="k">:-</span><span class="nv">600</span><span class="si">}</span><span class="s2">&quot;</span><span class="w">   </span><span class="c1"># timeout in seconds (default 10 min)</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">interval</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">3</span><span class="k">:-</span><span class="nv">5</span><span class="si">}</span><span class="s2">&quot;</span><span class="w">    </span><span class="c1"># poll interval in seconds (default 5 sec)</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">  </span><span class="nb">local</span><span class="w"> </span><span class="nv">elapsed</span><span class="o">=</span><span class="m">0</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span>!<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$file</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="o">((</span><span class="w"> </span>elapsed<span class="w"> </span>&gt;<span class="o">=</span><span class="w"> </span>timeout<span class="w"> </span><span class="o">))</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">      </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;ERROR: Timeout waiting for file: </span><span class="nv">$file</span><span class="s2">&quot;</span><span class="w"> </span>&gt;<span class="p">&amp;</span><span class="m">2</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="m">1</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">    </span><span class="k">fi</span>
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">    </span>sleep<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$interval</span><span class="s2">&quot;</span>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">    </span><span class="o">((</span><span class="w"> </span><span class="nv">elapsed</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span>interval<span class="w"> </span><span class="o">))</span>
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">  </span><span class="k">done</span>
+</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>
+</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="m">0</span>
+</span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="o">}</span>
+</span></code></pre></div>
+<p>Further down in the job script, this function can be used as follows:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Wait for input.dat to appear or exit with error after timeout.</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>wait_for_file<span class="w"> </span><span class="s2">&quot;input.dat&quot;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
+</span></code></pre></div>
+<h2 id="technical-details-of-stepup-queues-interaction-with-slurm">Technical Details of StepUp Queue&rsquo;s interaction with SLURM<a class="headerlink" href="#technical-details-of-stepup-queues-interaction-with-slurm" title="Permanent link">&para;</a></h2>
+<p>The timestamps in the <code>slurmjob.log</code> are inherently inaccurate (order one minute)
+due to the caching mechanism of SLURM.
+Checking more job states frequently with <code>sacct</code> (SLURM accounting tool)
+would also put too much load on SLURM, which is not desirable.
+StepUp Queue will therefore run <code>sacct</code> only occasionally and cache its output on disk.
+Furthermore, a <code>slurmjob.log</code> file is written for each job to keep track of
+its submission time, job ID, and previous states.</p>
+<p>The status of the jobs is inferred from <code>sacct -o 'jobidraw,state' -PXn</code>,
+if relevant with a <code>--cluster</code> argument.
+In addition, a configurable <code>-S</code> argument is passed to <code>sacct</code>.
+Its output is cached in a subdirectory <code>.stepup/queue</code> of the workflow root.
+The cached result is reused by all <code>sbatch</code> actions,
+so the number of <code>sacct</code> calls is independent of the
+number of jobs running in parallel.</p>
+<p>The time between two <code>sacct</code> calls (per cluster) can be controlled with the
+<code>STEPUP_SBATCH_CACHE_TIMEOUT</code> environment variable, which is <code>"30"</code> (seconds) by default.
+Increase this value if you want to reduce the burden on SLURM.</p>
+<p>The cached output of <code>sacct</code> is checked by the <code>sbatch</code> actions with a randomized polling interval.
+If any of these actions notices that the cached file is too old,
+it will acquire a lock on the cache file and update it by calling <code>sacct</code>.
+The randomization guarantees that concurrent calls to <code>sacct</code> (for multiple clusters)
+will not all coincide.
+The polling time can be controlled with two additional environment variables:</p>
+<ul>
+<li><code>STEPUP_SBATCH_POLLING_MIN</code> = the minimal polling interval in seconds, default is <code>10</code>.</li>
+<li><code>STEPUP_SBATCH_POLLING_MAX</code> = the maximal polling interval in seconds, default is <code>20</code>.</li>
+</ul>
+<p>By default, <code>sacct</code> queries job information of the last 7 days.
+You can change this by setting the <code>STEPUP_SACCT_START_TIME</code> environment variable
+to a different value understood by <code>sacct -S</code>, e.g., <code>now-4days</code> or <code>2025-01-01T00:00:00</code>.</p>
+<p>To avoid an infinite loop for jobs that are unlisted for too long,
+a job is considered to be failed if it is not listed for more than
+<code>STEPUP_SBATCH_UNLISTED_TIMEOUT</code> seconds, which is <code>600</code> (10 minutes) by default.</p>
+<p>Sometimes, job submission with <code>sbatch</code> can fail due to transient issues,
+such as temporary communication problems with the SLURM controller.
+To improve robustness, StepUp Queue will retry the <code>sbatch</code> command
+a number of times before giving up.
+You can control the retry behavior with the following environment variables:</p>
+<ul>
+<li><code>STEPUP_SBATCH_RETRY_NUM</code>: Number of retry attempts (default is <code>5</code>).</li>
+<li><code>STEPUP_SBATCH_RETRY_DELAY_MIN</code>: Minimum delay between retries in seconds (default is <code>60</code>).</li>
+<li><code>STEPUP_SBATCH_RETRY_DELAY_MAX</code>: Maximum delay between retries in seconds (default is <code>120</code>).</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      2024-2025, Toon Verstraelen
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["search.highlight", "search.suggest", "search.share", "navigation.instant", "navigation.instant.prefetch", "content.code.copy", "content.action.edit"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "default": "stable", "provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
