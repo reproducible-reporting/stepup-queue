@@ -12,6 +12,10 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
 
 (no changes yet)
 
+### Changed
+
+- Make sbatch action fail early if input digest is missing.
+
 ## [1.1.0][] - 2025-12-29 {: #v1.1.0 }
 
 Refactored tools to manage SLURM jobs.

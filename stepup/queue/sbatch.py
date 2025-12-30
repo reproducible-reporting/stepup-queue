@@ -68,9 +68,17 @@ def submit_once_and_wait(
         The return code of the job.
         0 if successful, 1 if the job failed.
     """
+    inp_digest = os.getenv("STEPUP_STEP_INP_DIGEST")
+    if inp_digest is None:
+        raise ValueError("The environment variable STEPUP_STEP_INP_DIGEST is not set.")
+
     # Read previously logged job states
     path_log = Path("slurmjob.log")
-    previous_lines = read_log(path_log, validate_inp_digest) if path_log.is_file() else []
+    previous_lines = (
+        read_log(path_log, inp_digest if validate_inp_digest else None)
+        if path_log.is_file()
+        else []
+    )
 
     # Go through or skip states.
     submit_time, status = read_status(previous_lines)
@@ -79,7 +87,7 @@ def submit_once_and_wait(
         submit_time = time.time()
         sbatch_stdout = submit_job(work_thread, job_ext, sbatch_rc)
         # Create a new log file after submitting the job.
-        _init_log(path_log)
+        _init_log(path_log, inp_digest)
         log_status(path_log, f"Submitted {sbatch_stdout}")
         rndsleep()
     else:
@@ -117,7 +125,7 @@ def submit_once_and_wait(
     raise RuntimeError(f"Job ended with status '{status}'.")
 
 
-def read_log(path_log: str, do_inp_digest: bool = True) -> list[str]:
+def read_log(path_log: str, expected_inp_digest: str | None = None) -> list[str]:
     """Read lines from a previously created log file."""
     lines = []
     with open(path_log) as f:
@@ -126,11 +134,11 @@ def read_log(path_log: str, do_inp_digest: bool = True) -> list[str]:
         except StopIteration as exc:
             raise ValueError("Existing log file is empty.") from exc
         try:
-            inp_digest = next(f).strip()
+            actual_inp_digest = next(f).strip()
         except StopIteration as exc:
             raise ValueError("Existing log file has no input digest.") from exc
-        if do_inp_digest:
-            check_log_inp_digest(inp_digest)
+        if expected_inp_digest is not None:
+            check_log_inp_digest(actual_inp_digest, expected_inp_digest)
         for line in f:
             line = line.strip()
             lines.append(line)
@@ -145,11 +153,8 @@ def check_log_version(line: str):
         )
 
 
-def _init_log(path_log: str):
+def _init_log(path_log: str, inp_digest: str):
     """Initialize a new log file."""
-    inp_digest = os.getenv("STEPUP_STEP_INP_DIGEST")
-    if inp_digest is None:
-        raise ValueError("The environment variable STEPUP_STEP_INP_DIGEST is not set.")
     with open(path_log, "w") as fh:
         print(FIRST_LINE, file=fh)
         print(inp_digest, file=fh)
@@ -279,15 +284,12 @@ class InpDigestError(ValueError):
     """The input digest in the log file does not match the one in the environment."""
 
 
-def check_log_inp_digest(line: str):
+def check_log_inp_digest(actual: str, expected: str):
     """Validate the log input digest, abort if there is a mismatch."""
-    inp_digest = os.getenv("STEPUP_STEP_INP_DIGEST")
-    if inp_digest is None:
-        raise ValueError("The environment variable STEPUP_STEP_INP_DIGEST is not set.")
-    if line != inp_digest:
+    if actual != expected:
         raise InpDigestError(
             "The second line of the log contains the wrong input digest.\n"
-            f"Expected: {inp_digest}\nFound:    {line}"
+            f"Actual:   {actual}\nExpected: {expected}\n"
         )
 
 

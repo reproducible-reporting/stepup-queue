@@ -64,7 +64,7 @@ def removejobs_tool(args: argparse.Namespace):
 
 def read_last_status(path_log: str) -> str | None:
     """Read the last job status from the job log file."""
-    lines = read_log(path_log, False)
+    lines = read_log(path_log, None)
     return read_status(lines[-1:])[1]
 
 
