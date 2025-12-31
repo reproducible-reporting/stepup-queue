@@ -24,6 +24,7 @@ import subprocess
 import sys
 
 from path import Path
+from rich.console import Console
 
 from .sbatch import DONE_STATES, parse_sbatch, read_log, read_status
 from .utils import search_jobs
@@ -31,12 +32,17 @@ from .utils import search_jobs
 
 def canceljobs_tool(args: argparse.Namespace):
     """Iterate over all slurmjob.log files, read the SLURM job IDs, and cancel them."""
+    console = Console(highlight=False)
+    if not args.commit:
+        console.print("[yellow]# Note: No jobs are actually cancelled.[/]")
+        console.print("[yellow]# Use the --commit option to execute the cancellations.[/]")
+
     jobs = {}
-    for path_log in search_jobs(args.paths, verbose=True):
+    for path_log in search_jobs(args.paths, console):
         try:
             job_id, cluster, status = read_jobid_cluster_status(path_log)
         except ValueError as e:
-            print(f"# WARNING: Could not read job ID from {path_log}: {e}")
+            console.print(f"[red]# WARNING: Could not read job ID from {path_log}: {e}[/]")
             continue
         if args.all or status not in DONE_STATES:
             jobs.setdefault(cluster, []).append((job_id, path_log, status))
@@ -56,18 +62,14 @@ def canceljobs_tool(args: argparse.Namespace):
                 command_args.extend(str(job_id) for job_id, _, _ in cancel_jobs)
 
                 # Using subprocess.run for better control and error handling
-                print(" ".join(command_args))
+                print_cancel_command(console, [job_id for job_id, _, _ in cancel_jobs], cluster, None)
                 result = subprocess.run(command_args, check=False)
                 all_good &= result.returncode == 0
         else:
             for job_id, path_log, status in cluster_jobs:
-                command = "scancel"
-                if cluster is not None:
-                    command += f" -M {cluster}"
-                command += f" {job_id}  # {path_log} {status}"
-                print(command)
+                print_cancel_command(console, [job_id], cluster, f"{path_log} {status}")
     if not all_good:
-        print("Some jobs could not be cancelled. See messages above.")
+        console.print("[red]Some jobs could not be cancelled. See messages above.[/]")
         sys.exit(1)
 
 
@@ -115,3 +117,14 @@ def canceljobs_subcommand(subparser: argparse.ArgumentParser) -> callable:
         help="Select all jobs, including the ones that seem to be done already.",
     )
     return canceljobs_tool
+
+
+def print_cancel_command(console: Console, job_ids: list[int], cluster: str | None, comment: str | None) -> str:
+    """Print the job cancellation command."""
+    parts = ["[green]scancel[/]"]
+    if cluster is not None:
+        parts.append(f"[cyan]-M {cluster}[/]")
+    parts.extend(str(job_id) for job_id in job_ids)
+    if comment is not None:
+        parts.append(f" [bright_black]# {comment}[/]")
+    console.print(" ".join(parts))

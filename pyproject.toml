@@ -29,6 +29,7 @@ classifiers = [
 dependencies = [
     # Ensure changes to these dependencies are reflected in .github/requirements-old.txt
     "path>=16.14.0",
+    "rich>=13.0.0",
     "stepup>=3.2.0,<4.0.0",
 ]
 dynamic = ["version"]

@@ -23,6 +23,7 @@ import argparse
 import shutil
 
 from path import Path
+from rich.console import Console
 
 from .sbatch import read_log, read_status
 from .utils import search_jobs
@@ -45,19 +46,24 @@ FAILED_STATES = {
 
 def removejobs_tool(args: argparse.Namespace):
     """Iterate over all slurmjob.log files and remove their parent job directories."""
+    console = Console(highlight=False)
+    if not args.commit:
+        console.print("[yellow]# Note: No job directories are actually removed.[/]")
+        console.print("[yellow]# Use the --commit option to execute the removals.[/]")
+
     jobs = []
-    for path_log in search_jobs(args.paths, verbose=True):
+    for path_log in search_jobs(args.paths, console):
         try:
             status = read_last_status(path_log)
         except ValueError as e:
-            print(f"Warning: Could not read job status from {path_log}: {e}")
+            console.print(f"[red]# WARNING: Could not read job status from {path_log}: {e}[/]")
             status = None
         if args.all or status in FAILED_STATES:
             jobs.append((path_log, status))
 
     for path_log, status in jobs:
-        command = f"rm -rf {path_log.parent}  # state={status}"
-        print(command)
+        command = f"[cyan]rm -rf[/] {path_log.parent}  [bright_black]# state={status}[/]"
+        console.print(command)
         if args.commit:
             shutil.rmtree(path_log.parent)
 

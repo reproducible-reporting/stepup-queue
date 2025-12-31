@@ -22,19 +22,20 @@
 from itertools import chain
 
 from path import Path
+from rich.console import Console
 
 __all__ = ("search_jobs",)
 
 
-def search_jobs(paths: list[Path], verbose: bool = False) -> list[Path]:
+def search_jobs(paths: list[Path], console: Console | None = None) -> list[Path]:
     """Recursively search for slurmjob.log files in the specified directories.
 
     Parameters
     ----------
     paths
         List of directories to search in.
-    verbose
-        Whether to print warnings when paths do not exist or are not directories.
+    console
+        Rich console for printing warnings. If None, no warnings are printed.
 
     Returns
     -------
@@ -44,12 +45,12 @@ def search_jobs(paths: list[Path], verbose: bool = False) -> list[Path]:
     paths_log = set()
     for path in paths:
         if not path.exists():
-            if verbose:
-                print(f"# WARNING: Path {path} does not exist.")
+            if console is not None:
+                console.print(f"[red]# WARNING: Path {path} does not exist.[/]")
             continue
         if not path.is_dir():
-            if verbose:
-                print(f"# WARNING: Path {path} is not a directory.")
+            if console is not None:
+                console.print(f"[red]# WARNING: Path {path} is not a directory.[/]")
             continue
         for path_sub in chain([path], path.walkdirs()):
             path_log = path_sub / "slurmjob.log"
