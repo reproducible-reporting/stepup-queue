@@ -62,7 +62,9 @@ def canceljobs_tool(args: argparse.Namespace):
                 command_args.extend(str(job_id) for job_id, _, _ in cancel_jobs)
 
                 # Using subprocess.run for better control and error handling
-                print_cancel_command(console, [job_id for job_id, _, _ in cancel_jobs], cluster, None)
+                print_cancel_command(
+                    console, [job_id for job_id, _, _ in cancel_jobs], cluster, None
+                )
                 result = subprocess.run(command_args, check=False)
                 all_good &= result.returncode == 0
         else:
@@ -119,7 +121,9 @@ def canceljobs_subcommand(subparser: argparse.ArgumentParser) -> callable:
     return canceljobs_tool
 
 
-def print_cancel_command(console: Console, job_ids: list[int], cluster: str | None, comment: str | None) -> str:
+def print_cancel_command(
+    console: Console, job_ids: list[int], cluster: str | None, comment: str | None
+) -> str:
     """Print the job cancellation command."""
     parts = ["[green]scancel[/]"]
     if cluster is not None:
