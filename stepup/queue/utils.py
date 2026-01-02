@@ -1,5 +1,5 @@
 # StepUp Queue integrates queued jobs into a StepUp workflow.
-# © 2025 Toon Verstraelen
+# Copyright 2025-2026 Toon Verstraelen
 #
 # This file is part of StepUp Queue.
 #

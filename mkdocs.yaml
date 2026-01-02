@@ -3,7 +3,7 @@ repo_url: https://github.com/reproducible-reporting/stepup-queue
 edit_uri: edit/main/docs/
 site_description: StepUp Queue Documentation
 site_author: Toon Verstraelen
-copyright: 2024-2025, Toon Verstraelen
+copyright: 2025-2026, Toon Verstraelen
 
 watch:
   - stepup
@@ -29,6 +29,8 @@ extra:
   field: "{{ field }}"
 
 theme:
+  logo: logo.svg
+  favicon: logo.svg
   name: material
   custom_dir: overrides
   font:
