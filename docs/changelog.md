@@ -12,9 +12,14 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
 
 (no changes yet)
 
+## [1.1.1][] - 2026-01-02 {: #v1.1.1 }
+
+Minor improvement and bug fix.
+
 ### Changed
 
 - Make sbatch action fail early if input digest is missing.
+- Colored screen output for `stepup canceljobs` and `stepup removejobs`.
 
 ## [1.1.0][] - 2025-12-29 {: #v1.1.0 }
 
@@ -137,6 +142,7 @@ It was adapted to integrate well with StepUp Core 3.
 This release also features the `stepup canceljobs` tool, which was not present in Parman.
 
 [Unreleased]: https://github.com/reproducible-reporting/stepup-queue
+[1.1.1]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.1.1
 [1.1.0]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.1.0
 [1.0.7]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.7
 [1.0.6]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.6
