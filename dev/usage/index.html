@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../logo.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -808,7 +808,7 @@
 <p>If you want to submit a job to the queue as part of a StepUp workflow,
 you must first prepare a directory with a job script called <code>slurmjob.sh</code>.
 This can be either a static file or the output of a previous step in the workflow.
-The function <a class="autorefs autorefs-internal" title="sbatch(workdir, *, ext='.sh', rc=None, inp=(), env=(), out=(), vol=(), onchange=None, optional=False, pool=None, block=False)" href="../stepup.queue.api/#stepup.queue.api.sbatch"><code>sbatch()</code></a> will then submit the job to the queue.
+The function <a class="autorefs autorefs-internal" title="sbatch(workdir, *, ext='.sh', rc=None, inp=(), env=(), out=(), vol=(), onchange=None, optional=False, resources=None)" href="../stepup.queue.api/#stepup.queue.api.sbatch"><code>sbatch()</code></a> will then submit the job to the queue.
 For simplicity, the following example assumes that the job script is static:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">stepup.core.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">static</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">stepup.queue.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">sbatch</span>
@@ -999,14 +999,15 @@ its submission time, job ID, and previous states.</p>
 if relevant with a <code>--cluster</code> argument.
 In addition, a configurable <code>-S</code> argument is passed to <code>sacct</code>.
 Its output is cached in a subdirectory <code>.stepup/queue</code> of the workflow root.
-The cached result is reused by all <code>sbatch</code> actions,
+The cached result is reused by all <code>sq-sbatch-and-wait</code> commands,
 so the number of <code>sacct</code> calls is independent of the
 number of jobs running in parallel.</p>
 <p>The time between two <code>sacct</code> calls (per cluster) can be controlled with the
 <code>STEPUP_SBATCH_CACHE_TIMEOUT</code> environment variable, which is <code>"30"</code> (seconds) by default.
 Increase this value if you want to reduce the burden on SLURM.</p>
-<p>The cached output of <code>sacct</code> is checked by the <code>sbatch</code> actions with a randomized polling interval.
-If any of these actions notices that the cached file is too old,
+<p>The cached output of <code>sacct</code> is checked by the <code>sq-sbatch-and-wait</code> commands
+with a randomized polling interval.
+If any of these commands notices that the cached file is too old,
 it will acquire a lock on the cache file and update it by calling <code>sacct</code>.
 The randomization guarantees that concurrent calls to <code>sacct</code> (for multiple clusters)
 will not all coincide.
@@ -1021,7 +1022,7 @@ to a different value understood by <code>sacct -S</code>, e.g., <code>now-4days<
 <p>To avoid an infinite loop for jobs that are unlisted for too long,
 a job is considered to be failed if it is not listed for more than
 <code>STEPUP_SBATCH_UNLISTED_TIMEOUT</code> seconds, which is <code>600</code> (10 minutes) by default.</p>
-<p>Sometimes, job submission with <code>sbatch</code> can fail due to transient issues,
+<p>Sometimes, job submission with <code>sq-sbatch-and-wait</code> can fail due to transient issues,
 such as temporary communication problems with the SLURM controller.
 To improve robustness, StepUp Queue will retry the <code>sbatch</code> command
 a number of times before giving up.
