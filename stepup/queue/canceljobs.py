@@ -22,12 +22,15 @@
 import argparse
 import subprocess
 import sys
+from collections.abc import Callable
 
 from path import Path
 from rich.console import Console
 
-from .sbatch import DONE_STATES, parse_sbatch, read_log, read_status
-from .utils import search_jobs
+from stepup.core.config import ConfigLoader
+
+from .log import read_jobid_cluster_status
+from .utils import DONE_STATES, search_jobs
 
 
 def canceljobs_tool(args: argparse.Namespace):
@@ -75,24 +78,8 @@ def canceljobs_tool(args: argparse.Namespace):
         sys.exit(1)
 
 
-def read_jobid_cluster_status(path_log: str) -> tuple[int, str | None, str | None]:
-    """Read the job ID, cluster, and job status from the job log file."""
-    lines = read_log(path_log, None)
-    if len(lines) < 1:
-        raise ValueError(f"Incomplete file: {path_log}.")
-    words = lines[0].split()
-    if len(words) != 3:
-        raise ValueError(f"Could not read job ID from first status line: {lines[0]}")
-    _, status, job_id_cluster = words
-    if status != "Submitted":
-        raise ValueError(f"No 'Submitted' on first status line: {lines[0]}")
-    job_id, cluster = parse_sbatch(job_id_cluster)
-    status = read_status(lines[-1:])[1]
-    return job_id, cluster, status
-
-
-def canceljobs_subcommand(subparser: argparse.ArgumentParser) -> callable:
-    parser = subparser.add_parser(
+def canceljobs_subcommand(subparsers, loader: ConfigLoader) -> Callable:
+    parser = subparsers.add_parser(
         "canceljobs",
         help="Cancel running jobs in the current StepUp workflow.",
     )
@@ -118,6 +105,7 @@ def canceljobs_subcommand(subparser: argparse.ArgumentParser) -> callable:
         default=False,
         help="Select all jobs, including the ones that seem to be done already.",
     )
+    loader.patch_parser(parser)
     return canceljobs_tool
 
 

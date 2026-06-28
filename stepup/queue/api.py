@@ -22,25 +22,24 @@
 import shlex
 from collections.abc import Collection
 
-from stepup.core.api import step
-from stepup.core.utils import string_to_list
+from stepup.core.api import run
+from stepup.core.path import StrPath, coerce_paths
 
 __all__ = ("sbatch",)
 
 
 def sbatch(
-    workdir: str,
+    workdir: StrPath,
     *,
     ext: str = ".sh",
     rc: str | None = None,
-    inp: Collection[str] | str = (),
+    inp: Collection[StrPath] | StrPath = (),
     env: Collection[str] | str = (),
-    out: Collection[str] | str = (),
-    vol: Collection[str] | str = (),
+    out: Collection[StrPath] | StrPath = (),
+    vol: Collection[StrPath] | StrPath = (),
     onchange: str | None = None,
     optional: bool = False,
-    pool: str | None = None,
-    block: bool = False,
+    resources: dict[str, int] | str | None = None,
 ):
     """Submit a SLURM job script.
 
@@ -60,8 +59,7 @@ def sbatch(
     If submitted, the step will wait until the job is finished.
     If already finished, the step will essentially be a no-op.
 
-    See `step()` documentation in StepUp Core for all optional arguments.
-    and the return value.
+    See `run()` documentation in StepUp Core for all optional arguments and return value.
     Note that the `inp`, `out` and `vol` arguments are extended
     with the files mentioned above and that any additional files you specify
     are interpreted relative to the working directory.
@@ -90,23 +88,22 @@ def sbatch(
         ext = f".{ext}"
     if ext in [".log", ".out", ".err", ".ret"]:
         raise ValueError(f"Invalid extension {ext}. The extension must not be .log, .out or .err.")
-    action = "sbatch"
+    cmd = "sq-sbatch-and-wait"
     if ext != ".sh":
-        action += f" {ext}"
+        cmd += f" {ext}"
     if rc is not None:
-        action += f" --rc={shlex.quote(rc)}"
+        cmd += f" --rc={shlex.quote(rc)}"
     if onchange is not None:
         if onchange not in ["raise", "resubmit", "ignore"]:
             raise ValueError(f"Invalid onchange policy {onchange}.")
-        action += f" --onchange={onchange}"
-    return step(
-        action,
-        inp=[f"slurmjob{ext}", *string_to_list(inp)],
+        cmd += f" --onchange={onchange}"
+    return run(
+        cmd,
+        inp=[f"slurmjob{ext}", *coerce_paths(inp)],
         env=env,
-        out=["slurmjob.out", "slurmjob.err", "slurmjob.ret", *string_to_list(out)],
-        vol=["slurmjob.log", *string_to_list(vol)],
+        out=["slurmjob.out", "slurmjob.err", "slurmjob.ret", *coerce_paths(out)],
+        vol=["slurmjob.log", *coerce_paths(vol)],
         workdir=workdir,
         optional=optional,
-        pool=pool,
-        block=block,
+        resources=resources,
     )

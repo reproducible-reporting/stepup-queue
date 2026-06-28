@@ -5,24 +5,28 @@ If you would like to contribute, please read [CONTRIBUTING.md](https://github.co
 ## Development environment
 
 If you break your development environment, you can discard it
-by running `git clean -dfX` and repeating the instructions below.
+by running `git clean -dfX` in the project root and repeating the instructions below.
 
-A local installation for testing and development can be installed
+We use [uv](https://docs.astral.sh/uv/) to manage the development environment.
+Install it by following the [uv installation instructions](https://docs.astral.sh/uv/getting-started/installation/).
+
+A local installation for testing and development can be set up
 using the following commands:
 
 ```bash
 git clone git@github.com:reproducible-reporting/stepup-queue.git
 cd stepup-queue
+uv sync --extra dev
 pre-commit install
-python -m venv venv
 ```
 
 Put the following lines in `.envrc`:
 
 ```bash
-source venv/bin/activate
+source .venv/bin/activate
 export XDG_CACHE_HOME="${VIRTUAL_ENV}/cache"
 export STEPUP_DEBUG="1"
+export STEPUP_BUILD_DURATION="0"
 export STEPUP_SYNC_RPC_TIMEOUT="30"
 ```
 
@@ -30,10 +34,13 @@ Finally, run the following commands:
 
 ```bash
 direnv allow
-pip install -U pip
-pip install -e .[dev]
-pip install -e ../stepup-core --config-settings editable_mode=strict  # optional
 ```
+
+Alternatively, you can prefix commands with `uv run` (e.g. `uv run pytest`)
+instead of activating the virtual environment.
+
+Note that `uv.lock` is not committed to the repo.
+For development and CI, the latest versions of dependencies are used instead of some locked versions.
 
 ## Tests
 
@@ -60,22 +67,6 @@ and edit Markdown files in your IDE.
 
 Please, use [Semantic Line Breaks](https://sembr.org/)
 because it facilitates reviewing documentation changes.
-
-## Tutorial Example Outputs
-
-If you wish to regenerate the output of the examples, run `stepup` in the `docs` directory:
-
-```bash
-cd docs
-stepup
-```
-
-(Keep this running.)
-Then open the live preview in your browser: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
-and edit Markdown files in your IDE.
-
-Please, use [Semantic Line Breaks](https://sembr.org/)
-because it results in cleaner file diffs when editing documentation.
 
 ## How to Make a Release
 

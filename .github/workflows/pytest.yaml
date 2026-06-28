@@ -26,26 +26,42 @@ on:
 
 jobs:
   tests:
+    permissions:
+      contents: read
+    env:
+      # Enforce strict checks instead of trying to repair fixable issues.
+      STEPUP_DEBUG: 1
+      # Duration measurements are disabled to make tests deterministic.
+      STEPUP_BUILD_DURATION: 0
+      # RPC timeout is set shorter to speed up tests in case of failures.
+      STEPUP_SYNC_RPC_TIMEOUT: 10
     strategy:
       matrix:
         include:
           - python-version: '3.11'
-            ubuntu-version: '22.04'
-          - python-version: '3.14'
             ubuntu-version: '24.04'
+            dependency-path: .github/requirements-old.txt
+          - python-version: '3.14'
+            ubuntu-version: '26.04'
+            dependency-path: pyproject.toml
     runs-on: ubuntu-${{ matrix.ubuntu-version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: ${{ matrix.dependency-path }}
       - name: Install oldest versions of supported dependencies
         if: ${{ matrix.python-version == '3.11'}}
-        run: pip install -r .github/requirements-old.txt
+        run: uv pip install --system -r .github/requirements-old.txt
       - name: Install development version
-        run: pip install -e .[dev]
+        run: uv pip install --system -e .[dev]
       - name: Run pytest
         # Enfore strict checks instead of trying to repair fixable issues.
         # RPC timeout is set shorter to speed up tests in case of failures.
-        run: STEPUP_DEBUG=1 STEPUP_SYNC_RPC_TIMEOUT=10 pytest -vv
+        run: pytest -vv

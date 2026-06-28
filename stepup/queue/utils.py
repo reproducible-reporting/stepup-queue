@@ -24,7 +24,72 @@ from itertools import chain
 from path import Path
 from rich.console import Console
 
-__all__ = ("search_jobs",)
+__all__ = (
+    "DONE_STATES",
+    "KNOWN_JOB_STATES",
+    "parse_sbatch",
+    "search_jobs",
+)
+
+
+# From: https://slurm.schedmd.com/job_state_codes.html
+KNOWN_JOB_STATES = {
+    # -- Job states
+    # done
+    "BOOT_FAIL",
+    "CANCELLED",
+    "COMPLETED",
+    "DEADLINE",
+    "FAILED",
+    "NODE_FAIL",
+    "OUT_OF_MEMORY",
+    "PREEMPTED",
+    "TIMEOUT",
+    # waiting or running
+    "PENDING",
+    "RUNNING",
+    "SUSPENDED",
+    # -- Job flags
+    # done
+    "LAUNCH_FAILED",
+    "RECONFIG_FAIL",
+    "REVOKED",
+    "STOPPED",
+    # waiting or running
+    "COMPLETING",
+    "CONFIGURING",
+    "EXPEDITING",
+    "POWER_UP_NODE",
+    "REQUEUED",
+    "REQUEUE_FED",
+    "REQUEUE_HOLD",
+    "RESIZING",
+    "RESV_DEL_HOLD",
+    "SIGNALING",
+    "SPECIAL_EXIT",
+    "STAGE_OUT",
+    "UPDATE_DB",
+    # -- Specific to this script
+    # to be ignored (same as waiting or running), must not be logged
+    "invalid",
+    "unlisted",
+}
+
+DONE_STATES = {
+    "BOOT_FAIL",
+    "CANCELLED",
+    "COMPLETED",
+    "DEADLINE",
+    "FAILED",
+    "NODE_FAIL",
+    "OUT_OF_MEMORY",
+    "PREEMPTED",
+    "TIMEOUT",
+    "LAUNCH_FAILED",
+    "RECONFIG_FAIL",
+    "REVOKED",
+    "STOPPED",
+}
 
 
 def search_jobs(paths: list[Path], console: Console | None = None) -> list[Path]:
@@ -57,3 +122,13 @@ def search_jobs(paths: list[Path], console: Console | None = None) -> list[Path]
             if path_log.is_file():
                 paths_log.add(path_log)
     return sorted(paths_log)
+
+
+def parse_sbatch(stdout: str) -> tuple[int, str | None]:
+    """Parse the 'parsable' output of sbatch."""
+    words = stdout.split(";")
+    if len(words) == 1:
+        return int(words[0]), None
+    if len(words) == 2:
+        return int(words[0]), words[1]
+    raise ValueError(f"Cannot parse sbatch output: {stdout}")

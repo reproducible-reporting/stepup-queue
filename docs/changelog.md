@@ -10,7 +10,10 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
 
 ## [Unreleased][]
 
-(no changes yet)
+### Changed
+
+- Compatibility with StepUp Core 4.0.
+- Fix mistake with `trap` command in `docs/examples/slurm-perpetual/workflow.sh`.
 
 ## [1.1.1][] - 2026-01-02 {: #v1.1.1 }
 

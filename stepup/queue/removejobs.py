@@ -21,11 +21,14 @@
 
 import argparse
 import shutil
+from collections.abc import Callable
 
 from path import Path
 from rich.console import Console
 
-from .sbatch import read_log, read_status
+from stepup.core.config import ConfigLoader
+
+from .log import read_log, read_status
 from .utils import search_jobs
 
 FAILED_STATES = {
@@ -74,8 +77,8 @@ def read_last_status(path_log: str) -> str | None:
     return read_status(lines[-1:])[1]
 
 
-def removejobs_subcommand(subparser: argparse.ArgumentParser) -> callable:
-    parser = subparser.add_parser(
+def removejobs_subcommand(subparsers, loader: ConfigLoader) -> Callable:
+    parser = subparsers.add_parser(
         "removejobs",
         help="Remove directories of failed (and optionally all completed) jobs "
         "in the current StepUp workflow.",
@@ -102,4 +105,5 @@ def removejobs_subcommand(subparser: argparse.ArgumentParser) -> callable:
         default=False,
         help="Remove all jobs, not only failed jobs.",
     )
+    loader.patch_parser(parser)
     return removejobs_tool

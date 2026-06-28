@@ -237,7 +237,7 @@ The status of the jobs is inferred from `sacct -o 'jobidraw,state' -PXn`,
 if relevant with a `--cluster` argument.
 In addition, a configurable `-S` argument is passed to `sacct`.
 Its output is cached in a subdirectory `.stepup/queue` of the workflow root.
-The cached result is reused by all `sbatch` actions,
+The cached result is reused by all `sq-sbatch-and-wait` commands,
 so the number of `sacct` calls is independent of the
 number of jobs running in parallel.
 
@@ -245,8 +245,9 @@ The time between two `sacct` calls (per cluster) can be controlled with the
 `STEPUP_SBATCH_CACHE_TIMEOUT` environment variable, which is `"30"` (seconds) by default.
 Increase this value if you want to reduce the burden on SLURM.
 
-The cached output of `sacct` is checked by the `sbatch` actions with a randomized polling interval.
-If any of these actions notices that the cached file is too old,
+The cached output of `sacct` is checked by the `sq-sbatch-and-wait` commands
+with a randomized polling interval.
+If any of these commands notices that the cached file is too old,
 it will acquire a lock on the cache file and update it by calling `sacct`.
 The randomization guarantees that concurrent calls to `sacct` (for multiple clusters)
 will not all coincide.
@@ -263,7 +264,7 @@ To avoid an infinite loop for jobs that are unlisted for too long,
 a job is considered to be failed if it is not listed for more than
 `STEPUP_SBATCH_UNLISTED_TIMEOUT` seconds, which is `600` (10 minutes) by default.
 
-Sometimes, job submission with `sbatch` can fail due to transient issues,
+Sometimes, job submission with `sq-sbatch-and-wait` can fail due to transient issues,
 such as temporary communication problems with the SLURM controller.
 To improve robustness, StepUp Queue will retry the `sbatch` command
 a number of times before giving up.

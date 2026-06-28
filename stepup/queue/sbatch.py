@@ -19,18 +19,31 @@
 # --
 """An sbatch wrapper to submit only on the first call, and to wait until a job has finished."""
 
+import argparse
 import fcntl
 import os
 import random
 import re
+import shlex
+import subprocess
+import sys
 import time
 from datetime import datetime
 
 from path import Path
 
-from stepup.core.worker import WorkThread
+from stepup.core.extapi import record_subprocess, run_subprocess
 
-FIRST_LINE = "StepUp Queue sbatch wait log format version 2"
+from .log import (
+    InpDigestError,
+    init_log,
+    log_status,
+    read_jobid_cluster_status,
+    read_log,
+    read_status,
+)
+from .utils import DONE_STATES, KNOWN_JOB_STATES, parse_sbatch
+
 SBATCH_RETRY_NUM = int(os.getenv("STEPUP_SBATCH_RETRY_NUM", "5"))
 SBATCH_RETRY_DELAY_MIN = int(os.getenv("STEPUP_SBATCH_RETRY_DELAY_MIN", "60"))
 SBATCH_RETRY_DELAY_MAX = int(os.getenv("STEPUP_SBATCH_RETRY_DELAY_MAX", "120"))
@@ -42,17 +55,14 @@ UNLISTED_TIMEOUT = int(os.getenv("STEPUP_SBATCH_UNLISTED_TIMEOUT", "600"))
 
 
 def submit_once_and_wait(
-    work_thread: WorkThread,
     job_ext: str,
     sbatch_rc: str | None = None,
     validate_inp_digest: bool = True,
-) -> int:
+):
     """Submit a job and wait for it to complete. When called a second time, just wait.
 
     Parameters
     ----------
-    work_thread
-        The work thread to use for launching the subprocesses.
     job_ext
         The file extension of the job script to be submitted.
     sbatch_rc
@@ -61,12 +71,6 @@ def submit_once_and_wait(
     validate_inp_digest
         If False, the input digest is not checked.
         This is useful when the job script is modified but the changes are harmless.
-
-    Returns
-    -------
-    returncode
-        The return code of the job.
-        0 if successful, 1 if the job failed.
     """
     inp_digest = os.getenv("STEPUP_STEP_INP_DIGEST")
     if inp_digest is None:
@@ -85,9 +89,9 @@ def submit_once_and_wait(
     if status is None:
         # A new job must be submitted.
         submit_time = time.time()
-        sbatch_stdout = submit_job(work_thread, job_ext, sbatch_rc)
+        sbatch_stdout = submit_job(job_ext, sbatch_rc)
         # Create a new log file after submitting the job.
-        _init_log(path_log, inp_digest)
+        init_log(path_log, inp_digest)
         log_status(path_log, f"Submitted {sbatch_stdout}")
         rndsleep()
     else:
@@ -107,134 +111,43 @@ def submit_once_and_wait(
     # Here, we take a random sleep time, by default between 30 and 60 seconds to play nice.
     status = "UNDEFINED"
     done = False
+    first = True
     while not done:
-        status, done = _read_or_poll_status(
-            work_thread, submit_time, jobid, cluster, previous_lines, path_log, status
+        status, done, called = _read_or_poll_status(
+            submit_time, jobid, cluster, previous_lines, path_log, status, first
         )
+        if called:
+            first = False
 
     if status == "COMPLETED":
         # Get the return code from the job
         with open("slurmjob.ret") as fh:
             returncode = fh.read().strip()
         try:
-            return int(returncode)
+            returncode = int(returncode)
         except ValueError as exc:
             raise ValueError(
                 f"Could not parse return code from slurmjob.ret. Got '{returncode}'"
             ) from exc
-    raise RuntimeError(f"Job ended with status '{status}'.")
-
-
-def read_log(path_log: str, expected_inp_digest: str | None = None) -> list[str]:
-    """Read lines from a previously created log file."""
-    lines = []
-    with open(path_log) as f:
-        try:
-            check_log_version(next(f).strip())
-        except StopIteration as exc:
-            raise ValueError("Existing log file is empty.") from exc
-        try:
-            actual_inp_digest = next(f).strip()
-        except StopIteration as exc:
-            raise ValueError("Existing log file has no input digest.") from exc
-        if expected_inp_digest is not None:
-            check_log_inp_digest(actual_inp_digest, expected_inp_digest)
-        for line in f:
-            line = line.strip()
-            lines.append(line)
-    return lines
-
-
-def check_log_version(line: str):
-    """Validate the log version, abort if there is a mismatch."""
-    if line != FIRST_LINE:
-        raise ValueError(
-            f"The first line of the log is wrong. Expected: '{FIRST_LINE}' Found: '{line}'"
-        )
-
-
-def _init_log(path_log: str, inp_digest: str):
-    """Initialize a new log file."""
-    with open(path_log, "w") as fh:
-        print(FIRST_LINE, file=fh)
-        print(inp_digest, file=fh)
-
-
-# From: https://slurm.schedmd.com/job_state_codes.html
-KNOWN_JOB_STATES = {
-    # -- Job states
-    # done
-    "BOOT_FAIL",
-    "CANCELLED",
-    "COMPLETED",
-    "DEADLINE",
-    "FAILED",
-    "NODE_FAIL",
-    "OUT_OF_MEMORY",
-    "PREEMPTED",
-    "TIMEOUT",
-    # waiting or running
-    "PENDING",
-    "RUNNING",
-    "SUSPENDED",
-    # -- Job flags
-    # done
-    "LAUNCH_FAILED",
-    "RECONFIG_FAIL",
-    "REVOKED",
-    "STOPPED",
-    # waiting or running
-    "COMPLETING",
-    "CONFIGURING",
-    "EXPEDITING",
-    "POWER_UP_NODE",
-    "REQUEUED",
-    "REQUEUE_FED",
-    "REQUEUE_HOLD",
-    "RESIZING",
-    "RESV_DEL_HOLD",
-    "SIGNALING",
-    "SPECIAL_EXIT",
-    "STAGE_OUT",
-    "UPDATE_DB",
-    # -- Specific to this script
-    # to be ignored (same as waiting or running), must not be logged
-    "invalid",
-    "unlisted",
-}
-
-DONE_STATES = {
-    "BOOT_FAIL",
-    "CANCELLED",
-    "COMPLETED",
-    "DEADLINE",
-    "FAILED",
-    "NODE_FAIL",
-    "OUT_OF_MEMORY",
-    "PREEMPTED",
-    "TIMEOUT",
-    "LAUNCH_FAILED",
-    "RECONFIG_FAIL",
-    "REVOKED",
-    "STOPPED",
-}
+        if returncode != 0:
+            raise RuntimeError(f"Job ended with return code {returncode}.")
+    else:
+        raise RuntimeError(f"Job ended with status '{status}'.")
 
 
 def _read_or_poll_status(
-    work_thread: WorkThread,
     submit_time: float,
     jobid: int,
     cluster: str,
     previous_lines: list[str],
     path_log: str,
     last_status: str,
-) -> tuple[str, bool]:
+    first: bool,
+) -> tuple[str, bool, bool]:
     """One polling iteration. Before polling, previous lines from the log are parsed.
 
     Parameters
     ----------
-    work_thread
-        The work thread to use for launching the sacct command.
     submit_time
         The timestamp when the job was submitted.
     jobid
@@ -248,6 +161,8 @@ def _read_or_poll_status(
     last_status
         The status from the previous iteration.
         If the status does not change, nothing is added to the log file.
+    first
+        True if this is the first call to _read_or_poll_status in this process.
 
     Returns
     -------
@@ -255,14 +170,17 @@ def _read_or_poll_status(
         The status result obtained by polling the scheduler.
     done
         True when the waiting is over.
+    called
+        True if the scheduler was polled, False if the status was obtained from the log.
     """
     # First try to replay previously logged states
+    called = False
     _, status = read_status(previous_lines)
     if status is None:
         # All previously logged states are processed.
         # Call sacct and parse its response.
         rndsleep()
-        _, status = get_status(work_thread, jobid, cluster)
+        _, status, called = get_status(jobid, cluster, first)
         # Log only if the status changed, and is not invalid or unlisted.
         # These two statuses are (potentially) transient and should not be logged.
         if status != last_status and status not in ["invalid", "unlisted"]:
@@ -277,31 +195,7 @@ def _read_or_poll_status(
         # This prevents an infinite loop if the job ID was wrong or purged.
         done = True
 
-    return status, done
-
-
-class InpDigestError(ValueError):
-    """The input digest in the log file does not match the one in the environment."""
-
-
-def check_log_inp_digest(actual: str, expected: str):
-    """Validate the log input digest, abort if there is a mismatch."""
-    if actual != expected:
-        raise InpDigestError(
-            "The second line of the log contains the wrong input digest.\n"
-            f"Actual:   {actual}\nExpected: {expected}\n"
-        )
-
-
-def read_status(lines: list[str]) -> tuple[float | None, str | None]:
-    """Read a status from the log file."""
-    if len(lines) == 0:
-        return None, None
-    line = lines.pop(0)
-    words = line.split(maxsplit=1)
-    if len(words) != 2:
-        raise ValueError(f"Expected a status in log but found line '{line}'.")
-    return datetime.fromisoformat(words[0]).timestamp(), words[1].strip()
+    return status, done, called
 
 
 def rndsleep():
@@ -333,7 +227,7 @@ UNSUPPORTED_DIRECTIVES = [
 ]
 
 
-def submit_job(work_thread: WorkThread, job_ext: str, sbatch_rc: str | None = None) -> str:
+def submit_job(job_ext: str, sbatch_rc: str | None = None) -> str:
     """Submit a job with sbatch."""
     # Verify that the job script is executable.
     path_job = f"slurmjob{job_ext}"
@@ -364,50 +258,37 @@ def submit_job(work_thread: WorkThread, job_ext: str, sbatch_rc: str | None = No
         sbatch_header = "\n".join(sbatch_header)
 
     command = "sbatch --parsable -o slurmjob.out -e slurmjob.err"
+    shell = False
     if sbatch_rc is not None:
         command = f"{sbatch_rc} < /dev/null && {command}"
+        shell = True
     stdin = JOB_SCRIPT_WRAPPER.format(sbatch_header=sbatch_header, job_script=path_job)
     for _ in range(SBATCH_RETRY_NUM):
-        returncode, stdout, stderr = work_thread.runsh(command, stdin=stdin)
-        if returncode == 0:
-            return stdout.strip()
-        if not (stderr is None or stderr == ""):
-            print(stderr)
+        cp = run_subprocess(command, stdin=stdin, check=False, shell=shell)
+        if cp.returncode == 0:
+            return cp.stdout.strip()
+        if not (cp.stderr is None or cp.stderr == ""):
+            sys.stderr.write(cp.stderr)
         delay = random.randint(SBATCH_RETRY_DELAY_MIN, SBATCH_RETRY_DELAY_MAX)
-        print(f"sbatch failed with return code {returncode}. Retrying in {delay} seconds.")
+        print(
+            f"sbatch failed with return code {cp.returncode}. Retrying in {delay} seconds.",
+            file=sys.stderr,
+        )
         time.sleep(delay)
     raise RuntimeError(f"sbatch failed {SBATCH_RETRY_NUM} times. Giving up.")
 
 
-def log_status(path_log: Path, status: str):
-    """Write a status to the log."""
-    dt = datetime.now().isoformat()
-    with open(path_log, "a") as f:
-        line = f"{dt} {status}"
-        f.write(f"{line}\n")
-
-
-def parse_sbatch(stdout: str) -> tuple[int, str | None]:
-    """Parse the 'parsable' output of sbatch."""
-    words = stdout.split(";")
-    if len(words) == 1:
-        return int(words[0]), None
-    if len(words) == 2:
-        return int(words[0]), words[1]
-    raise ValueError(f"Cannot parse sbatch output: {stdout}")
-
-
-def get_status(work_thread: WorkThread, jobid: int, cluster: str | None) -> tuple[float, str]:
+def get_status(jobid: int, cluster: str | None, first: bool) -> tuple[float, str, bool]:
     """Load cached sacct output or run sacct if outdated.
 
     Parameters
     ----------
-    work_thread
-        The work thread to use for launching the sacct command.
     jobid
         The job to wait for.
     cluster
         The cluster to which the job was submitted.
+    first
+        True if this is the first call to get_status in this process.
 
     Returns
     -------
@@ -417,6 +298,8 @@ def get_status(work_thread: WorkThread, jobid: int, cluster: str | None) -> tupl
         A status reported by sacct,
         or `invalid` if sacct failed (retry sacct later),
         or `unlisted` if the job is not found (probably ended long ago).
+    called
+        True if sacct was called, False if the status was obtained from the cache.
     """
     # Load cached output or run again
     command = f"sacct -o 'jobid,state' -PXn -S {SACCT_START}"
@@ -426,27 +309,27 @@ def get_status(work_thread: WorkThread, jobid: int, cluster: str | None) -> tupl
     else:
         command += f" --cluster={cluster}"
         path_out /= f"sbatch_wait_sacct.{cluster}.out"
-    status_time, sacct_out, returncode = cached_run(work_thread, command, path_out, CACHE_TIMEOUT)
+    status_time, sacct_out, returncode, called = cached_run(command, path_out, CACHE_TIMEOUT, first)
     if returncode != 0:
-        return status_time, "invalid"
-    return status_time, parse_sacct_out(sacct_out, jobid)
+        return status_time, "invalid", called
+    return status_time, parse_sacct_out(sacct_out, jobid), called
 
 
 def cached_run(
-    work_thread: WorkThread, command: str, path_out: Path, cache_timeout
-) -> tuple[float, str, int]:
+    command: str, path_out: Path, cache_timeout: float, first: bool
+) -> tuple[float, str, int, bool]:
     """Execute a command if its previous output is outdated.
 
     Parameters
     ----------
-    work_thread
-        The work thread to use for launching the command.
     command
         Command to run if the cached output is outdated.
     path_out
         The path where the output is cached.
     cache_timeout
         The waiting time between two actual calls.
+    first
+        True if this is the first call to cached_run in this process.
 
     Returns
     -------
@@ -456,6 +339,8 @@ def cached_run(
         The output of the file, either new or cached.
     returncode
         The return code of the (cached) command.
+    called
+        True if the command was executed, False if the output was read from the cache.
 
     Notes
     -----
@@ -472,19 +357,26 @@ def cached_run(
         header = fh.read(CACHE_HEADER_LENGTH)
         cache_time, returncode = parse_cache_header(header)
         if cache_time is None or time.time() > cache_time + cache_timeout:
-            returncode, stdout, _ = work_thread.runsh(command)
+            cp = subprocess.run(shlex.split(command), capture_output=True, text=True, check=False)
+            if first:
+                # Only the first call is recorded to avoid duplicate entries in StepUp's metadata.
+                # Note that the recording of subprocesses is intended to be informative,
+                # not authoritative.
+                record_subprocess(
+                    f"{command}  # first call only", cp.returncode, workdir=os.getcwd()
+                )
             # Go the the beginning of the file before truncating.
             # (Possibly related to issue with zero bytes at start of file.)
             fh.seek(0)
             fh.truncate(0)
             cache_time = time.time()
-            header = make_cache_header(cache_time, returncode)
+            header = make_cache_header(cache_time, cp.returncode)
             fh.write(header)
-            fh.write(stdout)
+            fh.write(cp.stdout)
             fh.flush()
             os.fsync(fh.fileno())
-            return cache_time, stdout, returncode
-        return cache_time, fh.read(), returncode
+            return cache_time, cp.stdout, cp.returncode, True
+        return cache_time, fh.read(), returncode, False
 
 
 def make_cache_header(cache_time: float, returncode: int):
@@ -542,3 +434,35 @@ def parse_sacct_out(sacct_out: str, jobid: int) -> str:
     except (ValueError, IndexError):
         return "invalid"
     return "unlisted"
+
+
+def sbatch():
+    """Submit a job and wait for it to complete. When called a second time, just wait."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument("ext", nargs="?", default=".sh")
+    parser.add_argument("--rc", default=None)
+    default_onchange = os.getenv("STEPUP_QUEUE_ONCHANGE", "raise")
+    parser.add_argument(
+        "--onchange", default=default_onchange, choices=["raise", "resubmit", "ignore"]
+    )
+    args = parser.parse_args()
+
+    if args.onchange == "resubmit":
+        try:
+            submit_once_and_wait(args.ext, args.rc)
+            return
+        except InpDigestError:
+            pass
+        # Cancel running job (if any), clean log and resubmit
+        path_log = Path("slurmjob.log")
+        job_id, cluster, _ = read_jobid_cluster_status(path_log)
+        if cluster is None:
+            run_subprocess(f"scancel {job_id}")
+        else:
+            run_subprocess(f"scancel -M {cluster} {job_id}")
+        path_log.remove_p()
+    submit_once_and_wait(args.ext, args.rc, args.onchange != "ignore")
+
+
+if __name__ == "__main__":
+    sbatch()

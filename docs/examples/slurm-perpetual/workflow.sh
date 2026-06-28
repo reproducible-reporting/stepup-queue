@@ -34,7 +34,6 @@ echo "StepUp workflow job starts:" $(date)
 # to indicate that resubmission is needed.
 STEPUP_QUEUE_FLAG_DIR=$(mktemp -d)
 echo "Created temporary directory: $STEPUP_QUEUE_FLAG_DIR"
-trap 'rm -rv "$STEPUP_QUEUE_FLAG_DIR"' EXIT
 
 # Start a background process that will end stepup near the wall time limit.
 # The first shutdown will wait for running steps to completed.
@@ -48,10 +47,15 @@ echo "Starting background process to monitor wall time."
     stepup shutdown
 ) &
 BGPID=$!
-trap "kill $BGPID" EXIT
+
+cleanup() {
+    rm -rv "$STEPUP_QUEUE_FLAG_DIR"
+    kill $BGPID 2>/dev/null
+}
+trap cleanup EXIT
 
 echo "Starting stepup with a maximum of ${NWORKER} concurrent jobs."
-stepup boot -n ${NWORKER}
+sb -j ${NWORKER}
 # This means that at most ${NWORKER} jobs will be submitted concurrently.
 # You can adjust the number of workers based on your needs.
 # In fact, because this example is simple, a single worker would be sufficient.

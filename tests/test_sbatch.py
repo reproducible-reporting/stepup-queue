@@ -24,7 +24,6 @@ import time
 import pytest
 from path import Path
 
-from stepup.core.worker import WorkThread
 from stepup.queue.sbatch import (
     RE_SBATCH,
     RE_SBATCH_ARRAY,
@@ -35,7 +34,6 @@ from stepup.queue.sbatch import (
     make_cache_header,
     parse_cache_header,
     parse_sacct_out,
-    parse_sbatch,
 )
 
 
@@ -53,25 +51,22 @@ def test_cache_header():
         parse_cache_header("foobar")
 
 
-def test_parse_sbatch():
-    assert parse_sbatch("123") == (123, None)
-    assert parse_sbatch("123;clu") == (123, "clu")
-
-
 def test_cached_run(path_tmp: Path):
     path_out = path_tmp / "date.txt"
-    work_thread = WorkThread("<test>")
-    cache_time1, out1, ret1 = cached_run(work_thread, "date", path_out, 1)
-    cache_time2, out2, ret2 = cached_run(work_thread, "date", path_out, 10)
+    cache_time1, out1, ret1, called1 = cached_run("date", path_out, 1, False)
+    cache_time2, out2, ret2, called2 = cached_run("date", path_out, 10, False)
     assert cache_time1 == pytest.approx(cache_time2, 1e-4)
     assert out1 != ""
     assert out1 == out2
     assert ret1 == ret2
+    assert called1 is True
+    assert called2 is False
     time.sleep(2)
-    cache_time3, out3, ret3 = cached_run(work_thread, "date", path_out, 1)
+    cache_time3, out3, ret3, called3 = cached_run("date", path_out, 1, False)
     assert abs(cache_time1 - cache_time3) > 0.5
     assert out1 != out3
     assert ret1 == ret3
+    assert called3 is True
 
 
 sacct_out = """\
