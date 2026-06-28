@@ -10,6 +10,12 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
 
 ## [Unreleased][]
 
+(no changes yet)
+
+## [2.0.0rc1][] - 2026-04-28 {: #v2.0.0rc1 }
+
+This is release candidate 1 for the upcoming StepUp Queue 2.0 release.
+
 ### Changed
 
 - Compatibility with StepUp Core 4.0.
@@ -145,6 +151,7 @@ It was adapted to integrate well with StepUp Core 3.
 This release also features the `stepup canceljobs` tool, which was not present in Parman.
 
 [Unreleased]: https://github.com/reproducible-reporting/stepup-queue
+[2.0.0rc1]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v2.0.0rc1
 [1.1.1]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.1.1
 [1.1.0]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.1.0
 [1.0.7]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.7
