@@ -1,3 +1,7 @@
+<!--
+SPDX-FileCopyrightText: 2025 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+SPDX-License-Identifier: LGPL-3.0-or-later
+-->
 <!-- markdownlint-disable line-length -->
 
 # StepUp Queue
@@ -7,7 +11,7 @@
 [![mkdocs](https://github.com/reproducible-reporting/stepup-queue/actions/workflows/mkdocs.yaml/badge.svg)](https://github.com/reproducible-reporting/stepup-queue/actions/workflows/mkdocs.yaml)
 [![PyPI Version](https://img.shields.io/pypi/v/stepup-queue)](https://pypi.org/project/stepup-queue/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/stepup-queue)
-![GPL-3 License](https://img.shields.io/github/license/reproducible-reporting/stepup-queue)
+![LGPL-3 License](https://img.shields.io/github/license/reproducible-reporting/stepup-queue)
 
 StepUp Queue is an experimental [StepUp](https://reproducible-reporting.github.io/stepup-core)
 extension to integrate queued jobs into a workflow.

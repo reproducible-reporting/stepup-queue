@@ -1,3 +1,7 @@
+<!--
+SPDX-FileCopyrightText: 2025 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+SPDX-License-Identifier: CC-BY-SA-4.0
+-->
 <!-- markdownlint-disable no-duplicate-heading -->
 
 # Changelog
@@ -12,14 +16,18 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
 
 (no changes yet)
 
-## [2.0.0rc1][] - 2026-04-28 {: #v2.0.0rc1 }
+## [2.0.0rc2][] - 2026-07-04 {: #v2.0.0rc2 }
 
-This is release candidate 1 for the upcoming StepUp Queue 2.0 release.
+This is release candidate 2 of the upcoming StepUp Queue 2.0 release.
 
 ### Changed
 
+- Relicense the StepUp Queue source code under `LGPL-3.0-or-later`.
+  This clarifies that users of StepUp can assign any license of their choice
+  to the workflows they create with StepUp (e.g., `plan.py` and related files).
+  This has always been the intention, but with this change, it becomes legally explicit.
 - Compatibility with StepUp Core 4.0.
-- Fix mistake with `trap` command in `docs/examples/slurm-perpetual/workflow.sh`.
+- Fix mistake in `trap` command in `docs/examples/slurm-perpetual/workflow.sh`.
 
 ## [1.1.1][] - 2026-01-02 {: #v1.1.1 }
 
@@ -151,7 +159,7 @@ It was adapted to integrate well with StepUp Core 3.
 This release also features the `stepup canceljobs` tool, which was not present in Parman.
 
 [Unreleased]: https://github.com/reproducible-reporting/stepup-queue
-[2.0.0rc1]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v2.0.0rc1
+[2.0.0rc2]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v2.0.0rc2
 [1.1.1]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.1.1
 [1.1.0]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.1.0
 [1.0.7]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.7

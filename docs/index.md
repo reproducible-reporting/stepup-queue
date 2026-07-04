@@ -1,3 +1,7 @@
+<!--
+SPDX-FileCopyrightText: 2025 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+SPDX-License-Identifier: CC-BY-SA-4.0
+-->
 # Welcome to StepUp Queue
 
 StepUp Queue is an experimental extension of
