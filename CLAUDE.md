@@ -4,127 +4,156 @@ SPDX-License-Identifier: LGPL-3.0-or-later
 -->
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code)
+when working with code in this repository.
+
+Guidance that applies to only part of the repo lives next to the code it governs:
+
+- `stepup/queue/CLAUDE.md`: job file conventions, the submit-and-wait contract, sacct caching.
+- `tests/CLAUDE.md`: test layout and conventions.
 
 ## Project Overview
 
-StepUp Queue is a StepUp Core extension that integrates SLURM job scheduler workflows. It allows
-StepUp workflows to submit SLURM jobs, wait for them, and resume from existing jobs after restarts
-— making long-running HPC workflows resumable across interrupted sessions.
+StepUp Queue is a [StepUp Core](https://github.com/reproducible-reporting/stepup-core)
+extension that integrates the SLURM job scheduler into a StepUp workflow.
+It lets workflows submit SLURM jobs, wait for them,
+and resume from existing jobs after a restart,
+which makes long-running HPC workflows resumable across interrupted sessions.
 
 The related `stepup-core` repo is at `../stepup-core` and on GitHub.
 
-## Development Environment
-
-Uses [uv](https://docs.astral.sh/uv/) for environment management:
-
-```bash
-uv sync --extra dev
-pre-commit install
-direnv allow   # activates .venv and sets env vars from .envrc
-```
-
-The `.envrc` sets `STEPUP_DEBUG=1`, `STEPUP_BUILD_DURATION=0`, and `STEPUP_SYNC_RPC_TIMEOUT=30`.
-Without `direnv`, prefix commands with `uv run`.
-
-## Common Commands
-
-```bash
-# Run all tests (parallel by default via pytest-xdist, quite fast)
-pytest -vv
-
-# Run all linters
-pre-commit run --all
-
-# Docs live preview
-mkdocs serve
-```
-
 ## Architecture
 
-### Package layout
+The package is organized around two layers:
 
-```text
-stepup/queue/
-  api.py         — Public Python API: sbatch() for use in plan.py files
-  sbatch.py      — sq-sbatch-and-wait CLI: submits, waits, polls, caches sacct output
-  log.py         — slurmjob.log format (version 2): read/write/validate
-  utils.py       — SLURM state sets, parse_sbatch(), search_jobs()
-  canceljobs.py  — stepup canceljobs subcommand
-  removejobs.py  — stepup removejobs subcommand
-```
+- **`stepup/queue/api.py`** is the Python API that users call in their `plan.py` build scripts.
+  Its `sbatch()` function calls `stepup.core.api.run()`
+  to register a `sq-sbatch-and-wait` step with StepUp Core.
 
-### How it fits into StepUp
+- **Individual command modules** each implement a `main()` function that serves as a CLI tool.
+  These are registered via `[project.scripts]` and the `stepup.tools` entry points
+  in `pyproject.toml`, and are invoked by StepUp steps as external commands.
+  When StepUp executes such a step, the command runs in the working directory of the job.
 
-`stepup.queue.api.sbatch()` is called from a user's `plan.py`. It calls
-`stepup.core.api.run()` to register the `sq-sbatch-and-wait` step with StepUp Core.
-When StepUp executes that step, `sq-sbatch-and-wait` (entry point for `stepup/queue/sbatch.py`)
-runs in the working directory of the job.
+## Coding Conventions
 
-### Job lifecycle and files
+- **En and em dashes** never appear in prose (comments, docstrings, Markdown),
+  in neither glyph (–, —) nor ASCII (--) form.
+  Use "which"/"because"/"that", or split the sentence.
+- **Do not add `# noqa`**
+  unless the violation is a genuine false positive that cannot be resolved by restructuring.
 
-Every SLURM job lives in its own working directory. The conventions are:
+### Docstrings
 
-- `slurmjob{ext}` — the user-written job script (must be executable, must have shebang)
-- `slurmjob.log` — StepUp Queue's log (volatile; tracks submission + SLURM state history)
-- `slurmjob.out` / `slurmjob.err` — SLURM stdout/stderr (declared as `out`)
-- `slurmjob.ret` — exit code written by wrapper script (declared as `out`)
+Use **NumPy-style** sections (`Parameters`, `Returns`, `Raises`, ...)
+Some conventions specific to this codebase:
 
-`slurmjob.log` is declared as a `vol` (volatile) file in StepUp, not `out`, so it is not
-treated as reproducible output. It contains: a version header, an input digest (SHA-256 of
-all step inputs), and timestamped status lines (`Submitted <jobid>[;cluster]`, then SLURM states).
+- Docstrings are written in Markdown, not reStructuredText! Some important gotcha's:
+    - Do not use italics for parameter names, return values, or exception names.
+      Use single backticks instead.
+    - Use single backticks for all inline code, not double backticks.
+    - Use triple backticks for code blocks,
+      and specify the language for syntax highlighting (e.g., ```python).
+- Lines are wrapped using semantic breaks, per [Semantic Line Breaks](#semantic-line-breaks) below.
+- Use the imperative mood for function descriptions
+  (e.g., "Compute the hash of a file."),
+  except for `@property` getters where the description should be a noun phrase
+  (e.g., "The parent directory path.").
+- Do not repeat type annotations in the docstring, they are already in the function signature.
+- In `Parameters` sections, use the **parameter name** as the heading for each parameter.
+  Grouping closely related parameters under a combined heading
+  (e.g., `stdout, stderr`) is allowed when parameters are better described together.
 
-### Idempotent submit-and-wait
+- In `Returns` sections, use a **semantic name** for the return value, not the type,
+  as these are already in the function signature.
 
-`submit_once_and_wait()` in `sbatch.py` is the core function:
+    ```python
+    # correct
+    Returns
+    -------
+    parent
+        The parent directory path.
 
-1. Reads `slurmjob.log` and checks the stored input digest against `STEPUP_STEP_INP_DIGEST`.
-2. If no log exists → submits a new job via `sbatch --parsable`.
-3. If log exists with a matching digest → resumes waiting for the existing job.
-4. If digest mismatch → behaviour depends on `onchange` policy (`raise`/`resubmit`/`ignore`).
-5. Polls status via `sacct`, using a **shared on-disk cache** at
-   `.stepup/queue/sbatch_wait_sacct[.cluster].out` with `fcntl.LOCK_EX` to avoid
-   hammering SLURM when many jobs run in parallel.
+    # wrong, the type is already in the signature
+    Returns
+    -------
+    Path
+        The parent directory path.
+    ```
 
-### sacct caching
+### Markdown
 
-`cached_run()` in `sbatch.py` manages the shared `sacct` cache. All concurrent `sq-sbatch-and-wait`
-processes share a single cached file per cluster; only one process calls `sacct` at a time (via
-`fcntl` lock). The cache file has a fixed-length header (`v1 datetime=... returncode=...`).
+Section headings (`##`, `###`, ...) use **Title Case**
+(capitalize nouns, verbs, adjectives, and adverbs; lowercase articles,
+coordinating conjunctions, and prepositions regardless of length, e.g. "from", "with").
+Inline code spans (e.g. `` `sbatch()` ``) keep their own casing and are never title-cased.
 
-### Entry points
+### Semantic Line Breaks
 
-- `sq-sbatch-and-wait` — CLI that wraps `sbatch()` → `submit_once_and_wait()`
-- `stepup canceljobs` — registered as `stepup.tools` entry point; cancels running SLURM jobs
-  by reading `slurmjob.log` files recursively
-- `stepup removejobs` — registered as `stepup.tools` entry point; removes directories of failed jobs
+All English prose in this repo (comments, docstrings, Markdown documentation, commit messages, ...)
+uses **semantic line breaks**.
+See <https://sembr.org/>.
+Prose diffs then stay small, because editing one sentence never reflows its neighbours.
 
-### Key environment variables
+- **Every sentence starts on a new line.**
+- **Break inside a sentence only where a break is needed, and then at a clause boundary.**
+  A sentence that fits within the 100-character line length stays on a single line.
+  A longer one is broken before a conjunction or a relative pronoun
+  ("and", "but", "because", "which", "if", ...),
+  or after a leading subordinate clause.
+- **Not every comma is a break.**
+  Enumerated items, appositions and short parentheticals stay on the line they started on.
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `STEPUP_SBATCH_CACHE_TIMEOUT` | 30 | Seconds between sacct calls |
-| `STEPUP_SBATCH_POLLING_MIN/MAX` | 10/20 | Random polling interval (seconds) |
-| `STEPUP_SBATCH_RETRY_NUM` | 5 | sbatch retry attempts on transient failure |
-| `STEPUP_SBATCH_RETRY_DELAY_MIN/MAX` | 60/120 | Retry delay range (seconds) |
-| `STEPUP_SACCT_START_TIME` | now-7days | `-S` argument passed to sacct |
-| `STEPUP_SBATCH_UNLISTED_TIMEOUT` | 600 | Seconds before unlisted job is declared failed |
-| `STEPUP_QUEUE_ONCHANGE` | raise | Default `onchange` policy |
+The 100-character line length is a hard cap, not a target to fill.
+An extra break inside a long sentence is fine when it clarifies the structure,
+but a sentence that already fits on one line is left alone.
 
-### Linting
+### Prose That Ages Well
 
-Ruff with `line-length = 100`, targeting Python 3.11+. The `ruff.lint` section in
-`pyproject.toml` selects many rule sets; several `PLR` (complexity) rules are deliberately
-disabled. Imports are sorted with `stepup` as a known-first-party package.
+Stale prose is worse than no prose.
+When writing comments, docstrings, or other prose, avoid:
 
-### Testing
+- **Describing callers.** Don't note how other code uses a function or class.
+  That's the caller's concern, and the remark silently rots when the caller changes.
+- **Describing history.** Don't explain what the code used to do or how it changed.
+  The current code should speak for itself; history belongs in commit messages.
+- **Implementation details in docstrings.** Document the contract (how to use something),
+  not how it works internally.
+- **Line-number references.** They break as soon as the file changes.
+  Point to a function, class, or file name instead.
+- **Restating the code.** A comment should say something the code doesn't already say
+  (the reason, the invariant, the non-obvious constraint) not paraphrase the next line.
+  A purely redundant comment isn't wrong, so nothing forces it to be updated,
+  and it drifts out of sync silently.
+- **Repetitive and duplicate comments.**
+  If a remark is repeated in multiple places, it will rot in one place when updated in another.
+  Factor out the common remark into a single function or class docstring,
+  or a Markdown file in `docs/`.
+- **Timeless phrasing for point-in-time claims.**
+  An empirical observation about an external tool or environment
+  (e.g. "sacct always reports a terminal state") can stop being true after a version upgrade,
+  with nothing to flag the comment as outdated.
+  Say what was observed and, when it matters, on what
+  (e.g. "as of SLURM 23.11, observed on a single-cluster setup").
 
-`pytest` is configured with `-n auto --dist worksteal -W error` — all warnings are errors,
-tests run in parallel. The `conftest.py` provides only a `path_tmp` fixture wrapping `tmpdir`.
-Tests are pure unit tests; no SLURM cluster is required.
+### `__all__`
 
-## Release Process
+Wildcard imports are banned (ruff `F403`), so `__all__` does not describe a star-import
+surface here. It is the module's **import contract**: the names that code outside the module
+is meant to import.
 
-1. Update `docs/changelog.md` with the new version.
-2. Commit and tag: `git tag vX.Y.Z`.
-3. Push with tags: `git push origin main --tags` (triggers PyPI GitHub Action).
+- Every module in `stepup/queue/` declares `__all__`, placed directly after the imports
+  and before any module-level constant.
+  It is a tuple of string literals, sorted (enforced by ruff `RUF022`),
+  and it is declared exactly once per module.
+- List a name when it is imported by another `stepup` module, a downstream extension package,
+  a user's `plan.py`, or a `pyproject.toml` entry point (e.g. `build_subcommand`).
+- Do not list module-internal names, even when they lack a leading underscore:
+  `logger`, helpers used only within the module.
+  A public-looking name is not a claim that the name is exported.
+- Tests may import names that are not in `__all__`; white-box testing does not make a name
+  part of the contract.
+- Do not re-export: a name in `__all__` must be defined in that same module.
+  Import a name from the module that defines it, not from a module that happens to import it.
+- `__all__ = ()` is a real claim, nothing outside the module may import from it,
+  and is correct only for leaf modules.

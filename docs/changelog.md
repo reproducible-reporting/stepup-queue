@@ -18,7 +18,12 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
 
 ## [2.0.0rc2][] - 2026-07-04 {: #v2.0.0rc2 }
 
-This is release candidate 2 of the upcoming StepUp Queue 2.0 release.
+Compatibility with StepUp Core 4 and a few minor improvements.
+
+(This is release candidate 2 of the upcoming StepUp Queue 2.0 release.
+Note that all changes of the release candidates are combined below.
+This section is treated as a draft of the changelog for the final 4.0.0 release,
+and will be updated with any further changes before the final release.)
 
 ### Changed
 
