@@ -15,6 +15,8 @@ from stepup.core.config import ConfigLoader
 from .log import read_jobid_cluster_status
 from .utils import DONE_STATES, search_jobs
 
+__all__ = ()
+
 
 def canceljobs_tool(args: argparse.Namespace):
     """Iterate over all slurmjob.log files, read the SLURM job IDs, and cancel them."""

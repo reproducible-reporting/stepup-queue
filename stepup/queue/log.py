@@ -20,6 +20,8 @@ __all__ = (
 
 FIRST_LINE = "StepUp Queue sbatch wait log format version 2"
 
+__all__ = ()
+
 
 class InpDigestError(ValueError):
     """The input digest in the log file does not match the one in the environment."""

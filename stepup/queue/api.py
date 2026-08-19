@@ -23,6 +23,7 @@ def sbatch(
     onchange: str | None = None,
     optional: bool = False,
     resources: dict[str, int] | str | None = None,
+    duration: float | None = None,
 ):
     """Submit a SLURM job script.
 
@@ -89,4 +90,5 @@ def sbatch(
         workdir=workdir,
         optional=optional,
         resources=resources,
+        duration=duration,
     )

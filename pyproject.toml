@@ -38,6 +38,7 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 dev = [
+    "cffconvert",
     "mike",
     "mkdocs",
     "mkdocstrings[python]",

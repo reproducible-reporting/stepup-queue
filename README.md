@@ -11,7 +11,7 @@ SPDX-License-Identifier: LGPL-3.0-or-later
 [![mkdocs](https://github.com/reproducible-reporting/stepup-queue/actions/workflows/mkdocs.yaml/badge.svg)](https://github.com/reproducible-reporting/stepup-queue/actions/workflows/mkdocs.yaml)
 [![PyPI Version](https://img.shields.io/pypi/v/stepup-queue)](https://pypi.org/project/stepup-queue/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/stepup-queue)
-![LGPL-3 License](https://img.shields.io/github/license/reproducible-reporting/stepup-queue)
+![LGPL-3 License](https://img.shields.io/badge/License-LGPL_v3-blue.svg)
 
 StepUp Queue is an experimental [StepUp](https://reproducible-reporting.github.io/stepup-core)
 extension to integrate queued jobs into a workflow.
