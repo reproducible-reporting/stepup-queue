@@ -16,7 +16,7 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
 
 (no changes yet)
 
-## [2.0.0rc3][] - 2026-07-04 {: #v2.0.0rc3 }
+## [2.0.0rc3][] - 2026-08-20 {: #v2.0.0rc3 }
 
 Compatibility with StepUp Core 4 and a few minor improvements.
 
