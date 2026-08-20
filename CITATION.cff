@@ -18,6 +18,22 @@ authors:
     country: BE
 license: LGPL-3.0-or-later
 repository-code: https://github.com/reproducible-reporting/stepup-queue
+keywords:
+  - SLURM
+  - job scheduler
+  - job submission
+  - batch computing
+  - high-performance computing
+  - supercomputer
+  - workflow automation
+  - workflow management
+  - build tool
+  - build automation
+  - reproducibility
+  - reproducible research
+  - research software
+  - POSIX
+  - Python
 identifiers:
   - type: doi
     value: 10.5281/zenodo.22024209
@@ -33,4 +49,8 @@ references:
     url: https://reproducible-reporting.github.io/stepup-core
     repository-code: https://github.com/reproducible-reporting/stepup-core
     license: LGPL-3.0-or-later
-    notes: StepUp RepRep is an extension of StepUp Core and requires it at runtime.
+    identifiers:
+      - type: doi
+        value: 10.5281/zenodo.22018869
+        description: Concept DOI, which always resolves to the latest archived version.
+    notes: StepUp Queue is an extension of StepUp Core and requires it at runtime.
