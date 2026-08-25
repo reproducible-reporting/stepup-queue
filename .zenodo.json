@@ -1,0 +1,52 @@
+{
+  "upload_type": "software",
+  "title": "StepUp Queue",
+  "description": "StepUp Queue is an experimental StepUp extension to integrate queued jobs into a workflow. It currently supports integration with SLURM and is designed to be extensible to other job schedulers.",
+  "creators": [
+    {
+      "name": "Verstraelen, Toon",
+      "orcid": "0000-0001-9288-5608",
+      "affiliation": "Center for Molecular Modeling (CMM), Ghent University"
+    }
+  ],
+  "license": "lgpl-3.0-or-later",
+  "access_right": "open",
+  "communities": [
+    {
+      "identifier": "ugent"
+    }
+  ],
+  "language": "eng",
+  "keywords": [
+    "SLURM",
+    "job scheduler",
+    "job submission",
+    "queued jobs",
+    "batch computing",
+    "high-performance computing",
+    "supercomputer",
+    "workflow automation",
+    "workflow management",
+    "build tool",
+    "build automation",
+    "reproducibility",
+    "reproducible research",
+    "research software",
+    "extension",
+    "StepUp Core",
+    "POSIX",
+    "Python"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://reproducible-reporting.github.io/stepup-queue",
+      "relation": "isDocumentedBy",
+      "resource_type": "publication-softwaredocumentation"
+    },
+    {
+      "identifier": "10.5281/zenodo.22018869",
+      "relation": "requires",
+      "resource_type": "software"
+    }
+  ]
+}
