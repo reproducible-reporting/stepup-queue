@@ -2,6 +2,7 @@
 SPDX-FileCopyrightText: 2025 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 SPDX-License-Identifier: CC-BY-SA-4.0
 -->
+
 # License
 
 ## Source code license

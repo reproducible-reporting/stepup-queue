@@ -105,3 +105,18 @@ packages = ["stepup.queue"]
 [tool.setuptools_scm]
 version_scheme = "post-release"
 local_scheme = "no-local-version"
+
+[tool.pymarkdown]
+# Report unknown or mistyped settings instead of silently ignoring them.
+mode.strict-config = true
+# The documentation indents nested lists by four spaces, matching Python-Markdown and MkDocs.
+plugins.md007.indent = 4
+plugins.md013.line_length = 100
+plugins.md013.heading_line_length = 100
+plugins.md013.code_block_line_length = 100
+# The changelog repeats headings such as "Fixed" under every release,
+# which is fine as long as they do not repeat under the same release.
+plugins.md024.siblings_only = true
+# Rule md041 (first-line-heading) counts the SPDX header in an HTML comment
+# as content preceding the first heading.
+plugins.md041.enabled = false

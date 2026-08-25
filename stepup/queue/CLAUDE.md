@@ -2,6 +2,7 @@
 SPDX-FileCopyrightText: 2025 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 SPDX-License-Identifier: LGPL-3.0-or-later
 -->
+
 # Job Files and the Submit-and-Wait Contract
 
 ## Job Lifecycle and Files
