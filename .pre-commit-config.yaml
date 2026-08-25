@@ -30,6 +30,7 @@ repos:
   rev: v0.16.4
   hooks:
     - id: ruff-format
+      types_or: [python, pyi, jupyter, markdown]
       exclude: "^docs/examples/slurm-basic/pass/slurmjob.py$"
     - id: ruff-check
       args: ["--fix", "--show-fixes"]
