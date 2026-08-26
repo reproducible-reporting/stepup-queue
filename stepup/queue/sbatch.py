@@ -11,6 +11,7 @@ import shlex
 import subprocess
 import sys
 import time
+from collections.abc import Sequence
 from datetime import datetime
 
 from path import Path
@@ -422,7 +423,7 @@ def parse_sacct_out(sacct_out: str, jobid: int) -> str:
     return "unlisted"
 
 
-def sbatch():
+def sbatch(argv: Sequence[str] | None = None):
     """Submit a job and wait for it to complete. When called a second time, just wait."""
     parser = argparse.ArgumentParser()
     parser.add_argument("ext", nargs="?", default=".sh")
@@ -431,7 +432,7 @@ def sbatch():
     parser.add_argument(
         "--onchange", default=default_onchange, choices=["raise", "resubmit", "ignore"]
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     if args.onchange == "resubmit":
         try:

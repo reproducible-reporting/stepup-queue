@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2025 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 # SPDX-License-Identifier: LGPL-3.0-or-later
 [build-system]
-requires = ["setuptools>=65.0", "setuptools_scm>=8.1"]
+requires = ["setuptools>=77.0", "setuptools_scm>=8.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -32,13 +32,12 @@ dependencies = [
     # Ensure changes to these dependencies are reflected in .github/requirements-old.txt
     "path>=16.14.0",
     "rich>=13.0.0",
-    "stepup>=4.0.0rc12,<5.0.0a1",
+    "stepup>=4.0.0rc14,<5.0.0a1",
 ]
 dynamic = ["version"]
 
 [project.optional-dependencies]
 dev = [
-    "cffconvert",
     "mike",
     "mkdocs",
     "mkdocstrings[python]",
