@@ -3,7 +3,7 @@
 site_name: StepUp Queue
 repo_url: https://github.com/reproducible-reporting/stepup-queue
 edit_uri: edit/main/docs/
-site_description: StepUp Queue Documentation
+site_description: StepUp Queue integrates queued jobs into a StepUp workflow.
 site_author: Toon Verstraelen
 copyright: 2025-2026, Toon Verstraelen
 

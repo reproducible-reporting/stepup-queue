@@ -26,6 +26,11 @@ repos:
   rev: v1.5.6
   hooks:
     - id: remove-crlf
+- repo: https://github.com/reproducible-reporting/snipwise
+  rev: v1.0.0
+  hooks:
+  - id: snipwise
+    args: [fix]
 - repo: https://github.com/astral-sh/ruff-pre-commit
   rev: v0.16.4
   hooks:

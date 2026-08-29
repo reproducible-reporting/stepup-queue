@@ -13,9 +13,11 @@ SPDX-License-Identifier: LGPL-3.0-or-later
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/stepup-queue)
 ![LGPL-3 License](https://img.shields.io/badge/License-LGPL_v3-blue.svg)
 
+<!-- snipwise.md BEGIN abstract -->
 StepUp Queue is an experimental [StepUp](https://reproducible-reporting.github.io/stepup-core)
 extension to integrate queued jobs into a workflow.
-Currently, it only supports integration with [SLURM](https://slurm.schedmd.com/),
-but it is designed to be extensible to other job schedulers.
+It currently supports integration with [SLURM](https://slurm.schedmd.com/)
+and is designed to be extensible to other job schedulers.
+<!-- snipwise.md END abstract -->
 
 For more information, consult the [documentation](https://reproducible-reporting.github.io/stepup-queue).

@@ -13,6 +13,32 @@ description = "StepUp Queue integrates queued jobs into a StepUp workflow."
 readme = "README.md"
 license = "LGPL-3.0-or-later"
 requires-python = ">=3.11"
+keywords = [
+    # snipwise.md BEGIN keywords
+    "asyncio",
+    "batch computing",
+    "build automation",
+    "build tool",
+    "extension",
+    "high-performance computing",
+    "HPC",
+    "job scheduler",
+    "job submission",
+    "parallel",
+    "POSIX",
+    "Python",
+    "queued jobs",
+    "reproducibility",
+    "reproducible research",
+    "research software",
+    "SLURM",
+    "StepUp",
+    "StepUp Core",
+    "supercomputer",
+    "workflow automation",
+    "workflow management",
+    # snipwise.md END keywords
+]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",
@@ -53,6 +79,7 @@ dev = [
     "mkdocs-macros-plugin",
     "mkdocs-material",
     "reuse",
+    "snipwise<2.0a0",
 ]
 
 [project.urls]
