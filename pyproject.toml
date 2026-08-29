@@ -69,7 +69,8 @@ dynamic = ["version"]
 tests = [
     "pytest>=8.2.0",
     "pytest-asyncio>=0.24",
-    "pytest-xdist>=3.5.0",
+    "pytest-timeout>=2.3.1",
+    "pytest-xdist>=3.6.1",
 ]
 dev = [
     "stepup-queue[tests]",
@@ -98,6 +99,7 @@ removejobs = "stepup.queue.removejobs:removejobs_subcommand"
 [tool.pytest.ini_options]
 addopts = "-n auto --dist worksteal -W error -W ignore::ResourceWarning"
 asyncio_default_fixture_loop_scope = "function"
+timeout = 15
 
 [tool.ruff]
 line-length = 100
