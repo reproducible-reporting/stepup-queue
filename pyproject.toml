@@ -29,7 +29,6 @@ classifiers = [
     "Topic :: Software Development :: Build Tools",
 ]
 dependencies = [
-    # Ensure changes to these dependencies are reflected in .github/requirements-old.txt
     "path>=16.14.0",
     "rich>=13.0.0",
     "stepup>=4.0.0rc14,<5.0.0a1",
@@ -37,16 +36,22 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
+# What the test suite needs, and nothing more.
+# The pytest workflow installs this extra rather than `dev`,
+# because it resolves the oldest supported versions of the direct dependencies,
+# which is only meaningful for packages that the tests actually exercise.
+tests = [
+    "pytest>=8.2.0",
+    "pytest-asyncio>=0.24",
+    "pytest-xdist>=3.5.0",
+]
 dev = [
+    "stepup-queue[tests]",
     "mike",
     "mkdocs",
     "mkdocstrings[python]",
     "mkdocs-macros-plugin",
     "mkdocs-material",
-    "psutil",
-    "pytest",
-    "pytest-asyncio>=0.24",
-    "pytest-xdist",
     "reuse",
 ]
 
