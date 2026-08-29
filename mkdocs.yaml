@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 site_name: StepUp Queue
 repo_url: https://github.com/reproducible-reporting/stepup-queue
+site_url: https://reproducible-reporting.github.io/stepup-queue/
 edit_uri: edit/main/docs/
 site_description: StepUp Queue integrates queued jobs into a StepUp workflow.
 site_author: Toon Verstraelen
@@ -23,10 +24,6 @@ validation:
     unrecognized_links: warn
 
 extra:
-  version:
-    provider: mike
-    alias: true
-    default: stable
   # Workaround for showing an example with a Jinja2 placeholder
   field: "{{ field }}"
 
@@ -78,7 +75,6 @@ nav:
   - license.md
 
 plugins:
-- mike
 - search:
     lang:
       - en

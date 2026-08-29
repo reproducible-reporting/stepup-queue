@@ -74,7 +74,6 @@ tests = [
 ]
 dev = [
     "stepup-queue[tests]",
-    "mike",
     "mkdocs",
     "mkdocstrings[python]",
     "mkdocs-macros-plugin",
