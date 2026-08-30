@@ -452,4 +452,4 @@ def sbatch(argv: Sequence[str] | None = None):
 
 
 if __name__ == "__main__":
-    sbatch()
+    sys.exit(sbatch())
