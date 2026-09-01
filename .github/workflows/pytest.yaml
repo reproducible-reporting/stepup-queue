@@ -45,6 +45,9 @@ jobs:
           - runner: ubuntu-26.04
             python-version: '3.14'
             resolution: highest
+          - runner: ubuntu-26.04
+            python-version: '3.15-dev'
+            resolution: highest
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v6
@@ -67,4 +70,5 @@ jobs:
         run: uv pip install --system --resolution ${{ matrix.resolution }} -e .[tests]
       - name: Run pytest
         timeout-minutes: 2
+        continue-on-error: ${{ matrix.python-version == '3.15-dev' }}
         run: pytest -vv
