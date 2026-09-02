@@ -1,9 +1,19 @@
+---
+title: Submit SLURM jobs from a StepUp workflow
+description: >-
+  StepUp Queue submits SLURM jobs as steps of a StepUp workflow,
+  waits for them to finish and resumes from queued jobs after a restart.
+---
+
 <!--
 SPDX-FileCopyrightText: 2025 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 SPDX-License-Identifier: CC-BY-SA-4.0
 -->
 
-# Welcome to StepUp Queue
+<!-- The front matter sets the HTML title of the page, not a second heading. -->
+<!-- pyml disable-num-lines 3 single-title -->
+
+# StepUp Queue: Submit SLURM jobs from a StepUp workflow
 
 <!-- snipwise.md BEGIN abstract -->
 StepUp Queue is an experimental [StepUp](https://reproducible-reporting.github.io/stepup-core)

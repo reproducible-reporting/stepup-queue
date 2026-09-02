@@ -9,7 +9,7 @@ name = "stepup-queue"
 authors = [
   { name="Toon Verstraelen", email="toon.verstraelen@ugent.be" },
 ]
-description = "StepUp Queue integrates queued jobs into a StepUp workflow."
+description = "Integrate SLURM jobs into a StepUp workflow"
 readme = "README.md"
 license = "LGPL-3.0-or-later"
 requires-python = ">=3.11"
@@ -57,7 +57,7 @@ classifiers = [
 dependencies = [
     "path>=16.14.0",
     "rich>=13.0.0",
-    "stepup>=4.0.0rc14,<5.0.0a1",
+    "stepup>=4.0.0,<5.0.0a1",
 ]
 dynamic = ["version"]
 
@@ -139,6 +139,9 @@ local_scheme = "no-local-version"
 [tool.pymarkdown]
 # Report unknown or mistyped settings instead of silently ignoring them.
 mode.strict-config = true
+# The documentation pages carry YAML front matter,
+# which pymarkdown parses as a setext heading unless this extension is on.
+extensions.front-matter.enabled = true
 # The documentation indents nested lists by four spaces, matching Python-Markdown and MkDocs.
 plugins.md007.indent = 4
 plugins.md013.line_length = 100

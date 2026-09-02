@@ -1,3 +1,9 @@
+---
+description: >-
+  How to submit a SLURM job with sbatch() in a StepUp workflow, what slurmjob.log records,
+  and which environment variables control polling, resubmission and cancellation.
+---
+
 <!--
 SPDX-FileCopyrightText: 2025 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 SPDX-License-Identifier: CC-BY-SA-4.0
@@ -17,8 +23,8 @@ For simplicity, the following example assumes that the job script is static:
 from stepup.core.api import static
 from stepup.queue.api import sbatch
 
-static("compute/", "compute/slurmjob.sh")
-sbatch("compute/")
+static("compute/slurmjob.sh")
+sbatch("compute")
 ```
 
 All arguments to the `sbatch` command of SLURM

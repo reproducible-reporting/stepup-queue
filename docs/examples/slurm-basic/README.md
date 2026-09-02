@@ -1,3 +1,9 @@
+---
+description: >-
+  A small StepUp Queue workflow that submits static and generated SLURM job scripts,
+  with all files of the example and the plan.py that ties them together.
+---
+
 # Basic SLURM example
 
 The latest version of this example can be found at:

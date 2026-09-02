@@ -1,3 +1,9 @@
+---
+description: >-
+  Set up a StepUp Queue development environment with uv, direnv and pre-commit,
+  and find out how to run the tests, build the documentation and make a release.
+---
+
 <!--
 SPDX-FileCopyrightText: 2025 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 SPDX-License-Identifier: CC-BY-SA-4.0

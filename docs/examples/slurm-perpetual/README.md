@@ -1,3 +1,9 @@
+---
+description: >-
+  A StepUp workflow that runs as a SLURM job and resubmits itself
+  before the wall time limit, so that long workflows survive that limit.
+---
+
 # Perpetual SLURM Workflow Job
 
 The latest version of this example can be found at:

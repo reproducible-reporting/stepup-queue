@@ -12,6 +12,7 @@ Guidance that applies to only part of the repo lives next to the code it governs
 
 - `stepup/queue/CLAUDE.md`: job file conventions, the submit-and-wait contract, sacct caching.
 - `tests/CLAUDE.md`: test layout and conventions.
+- `docs/CLAUDE.md`: regenerating the social card.
 
 ## Project Overview
 

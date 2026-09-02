@@ -1,3 +1,9 @@
+---
+description: >-
+  Release notes for every version of StepUp Queue,
+  following Keep a Changelog and effort-based versioning.
+---
+
 <!--
 SPDX-FileCopyrightText: 2025 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 SPDX-License-Identifier: CC-BY-SA-4.0
@@ -15,14 +21,11 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
 
 (no changes yet)
 
-## [2.0.0rc4][] - 2026-08-25 {: #v2.0.0rc4 }
+## [2.0.0][] - 2026-09-02 {: #v2.0.0 }
 
-Compatibility with StepUp Core 4 and a few minor improvements.
+Compatibility with StepUp Core 4, improved robustness and helper scripts.
 
-(This is release candidate 4 of the upcoming StepUp Queue 2.0 release.
-Note that all changes of the release candidates are combined below.
-This section is treated as a draft of the changelog for the final 4.0.0 release,
-and will be updated with any further changes before the final release.)
+Note that all changes of the `2.0.0rc*` release candidates are combined below.
 
 ### Added
 
@@ -36,18 +39,28 @@ and will be updated with any further changes before the final release.)
 
 ### Changed
 
-- Relicense the StepUp Queue source code under `LGPL-3.0-or-later`.
+- The StepUp Queue source code has been relicensed under `LGPL-3.0-or-later`.
   This clarifies that users of StepUp can assign any license of their choice
   to the workflows they create with StepUp (e.g., `plan.py` and related files).
   This has always been the intention, but with this change, it becomes legally explicit.
 - Compatibility with StepUp Core 4.0.
-- Replace the `stepup canceljobs` and `stepup removejobs` tools
+  StepUp Queue 2.0 does not work with StepUp Core 3.
+- The `sbatch()` function is built on `run()` instead of `step()`,
+  so its `pool` and `block` arguments are replaced by `resources` and `duration`.
+- The `sbatch` action is replaced by the `sq-sbatch-and-wait` command,
+  because StepUp Core 4 no longer supports action plugins.
+- The `stepup canceljobs` and `stepup removejobs` tools are replaced
   by the regular commands `sq-cancel-jobs` and `sq-remove-jobs`.
   These commands do not interact with the internals of StepUp,
   so there is no reason to implement them as StepUp tools.
-- Fix mistake in `trap` command in `docs/examples/slurm-perpetual/workflow.sh`.
+- The perpetual workflow example resubmits itself
+  based on the `DRAINED` bit in StepUp's exit code,
+  instead of a flag file created by a background process.
+  It also refuses to start when the shutdown margins do not fit in the wall time limit,
+  which used to make the workflow resubmit itself in a tight loop.
 - With `onchange="resubmit"`, `sq-sbatch-and-wait` waits for the cancelled job to stop
   before submitting its replacement, instead of submitting immediately after `scancel`.
+  A job that already reached a terminal state is not cancelled at all.
   A failing `scancel` is no longer an error, because the job may already be gone.
 - `STEPUP_SBATCH_RETRY_DELAY_MAX` is raised to `STEPUP_SBATCH_RETRY_DELAY_MIN`
   when it would otherwise be lower, as was already the case for the polling interval.
@@ -56,9 +69,14 @@ and will be updated with any further changes before the final release.)
   is counted from the moment `sq-sbatch-and-wait` starts waiting,
   not from the submission of the job.
   A job resumed from an older log used to fail on its first poll.
+- The metadata that StepUp keeps for a step records the `sacct` command,
+  once per `sq-sbatch-and-wait` process.
 
 ### Fixed
 
+- With `onchange="resubmit"`, a `slurmjob.log` that records no submission
+  no longer aborts the step.
+  The job is submitted instead.
 - `sq-remove-jobs` refuses to remove the current directory or any of its parents,
   also when the `--commit` option is given.
 - A line in the `sacct` output that is not a plain job record
@@ -133,9 +151,9 @@ Improved robustness for workflows with many concurrent jobs.
 - Improved robustness for workflow with many concurrent jobs, by using `sacct`
   instead of `scontrol` to query job states.
   This avoids the ambiguity that an unlisted job may either be pending or already finished long ago.
-  With `sact`, unlisted jobs are always (aboute to become) pending.
+  With `sacct`, unlisted jobs are always (about to become) pending.
 - Improved parsing of `#SBATCH` lines in job scripts.
-  To avoid confusion `#STBATCH -o/--output` and `#SBATCH -e/--error` will raise an error.
+  To avoid confusion `#SBATCH -o/--output` and `#SBATCH -e/--error` will raise an error.
   (StepUp Queue overrides these options internally to capture job output and error logs.)
 - Fix parsing bug in `canceljobs` tool.
 - Prevent infinite loop for jobs that are unlisted for too long.
@@ -207,7 +225,7 @@ It was adapted to integrate well with StepUp Core 3.
 This release also features the `stepup canceljobs` tool, which was not present in Parman.
 
 [Unreleased]: https://github.com/reproducible-reporting/stepup-queue
-[2.0.0rc4]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v2.0.0rc4
+[2.0.0]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v2.0.0
 [1.1.1]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.1.1
 [1.1.0]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.1.0
 [1.0.7]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.0.7
