@@ -11,6 +11,8 @@ from .utils import parse_sbatch
 __all__ = (
     "FIRST_LINE",
     "InpDigestError",
+    "InterruptedSubmissionError",
+    "NoSubmissionError",
     "init_log",
     "log_status",
     "read_jobid_cluster_status",
@@ -23,6 +25,19 @@ FIRST_LINE = "StepUp Queue sbatch wait log format version 2"
 
 class InpDigestError(ValueError):
     """The input digest in the log file does not match the one in the environment."""
+
+
+class NoSubmissionError(ValueError):
+    """The log file holds no status lines, so no job was submitted yet."""
+
+
+class InterruptedSubmissionError(ValueError):
+    """A submission was interrupted before the job ID could be written to the log.
+
+    The scheduler may or may not have accepted the job,
+    so a job may be running that StepUp Queue cannot identify.
+    Check the queue (e.g. with squeue) and remove the log file to submit again.
+    """
 
 
 def init_log(path_log: str, inp_digest: str):
@@ -41,17 +56,34 @@ def log_status(path_log: Path, status: str):
 
 
 def read_jobid_cluster_status(path_log: str) -> tuple[int, str | None, str | None]:
-    """Read the job ID, cluster, and job status from the job log file."""
+    """Read the job ID, cluster, and job status from the job log file.
+
+    Raises
+    ------
+    NoSubmissionError
+        When the log holds no status lines at all.
+    InterruptedSubmissionError
+        When the log stops at the `Submitting` marker.
+    ValueError
+        When the submission cannot be parsed.
+    """
     lines = read_log(path_log, None)
-    if len(lines) < 1:
-        raise ValueError(f"Incomplete file: {path_log}.")
+    if len(lines) == 0:
+        raise NoSubmissionError(f"No job was submitted according to {path_log}.")
+    # The submission is logged on the first status line,
+    # or on the second one when the first is the `Submitting` marker.
+    i_submitted = 0
     words = lines[0].split()
+    if len(words) == 2 and words[1] == "Submitting":
+        if len(lines) == 1:
+            raise InterruptedSubmissionError(f"No job ID was recorded in {path_log}.")
+        i_submitted = 1
+    words = lines[i_submitted].split()
     if len(words) != 3:
-        raise ValueError(f"Could not read job ID from first status line: {lines[0]}")
-    _, status, job_id_cluster = words
-    if status != "Submitted":
-        raise ValueError(f"No 'Submitted' on first status line: {lines[0]}")
-    job_id, cluster = parse_sbatch(job_id_cluster)
+        raise ValueError(f"Could not read job ID from status line: {lines[i_submitted]}")
+    if words[1] != "Submitted":
+        raise ValueError(f"No 'Submitted' on status line: {lines[i_submitted]}")
+    job_id, cluster = parse_sbatch(words[2])
     status = read_status(lines[-1:])[1]
     return job_id, cluster, status
 

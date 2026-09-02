@@ -35,6 +35,17 @@ attaches to the job it already submitted, instead of submitting a second one:
 This is why the digest is written into the log rather than derived at read time:
 the log has to be interpretable by a process that never saw the original submission.
 
+The invariant behind the contract is that at most one job runs per job directory,
+because every job in it writes to the same `slurmjob.out`, `slurmjob.err` and `slurmjob.ret`.
+Two places protect it:
+
+- The `Submitting` marker is logged before `sbatch` runs and replaced by `Submitted <jobid>`
+  once the job ID is known.
+  A log that stops at the marker means the job ID may have been lost,
+  so the next run refuses to submit rather than risk a second job next to an untracked one.
+- `onchange="resubmit"` waits for the cancelled job to leave the queue before resubmitting,
+  because `scancel` returns as soon as the request is accepted.
+
 ## sacct Caching
 
 All concurrent `sq-sbatch-and-wait` processes share one cached `sacct` result per cluster,

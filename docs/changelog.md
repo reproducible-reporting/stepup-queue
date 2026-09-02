@@ -24,6 +24,16 @@ Note that all changes of the release candidates are combined below.
 This section is treated as a draft of the changelog for the final 4.0.0 release,
 and will be updated with any further changes before the final release.)
 
+### Added
+
+- A `Submitting` line is written to `slurmjob.log` right before `sbatch` is called,
+  so that a submission interrupted before the job ID was recorded can be detected.
+  `sq-sbatch-and-wait` refuses to submit a second job in such a directory,
+  because SLURM may still hold the job of the interrupted submission.
+- The `STEPUP_SBATCH_CANCEL_TIMEOUT` environment variable defines the maximum time to wait
+  for a job to be cancelled after `scancel` is called.
+  The default is 10 minutes, which is usually enough for SLURM to cancel a job.
+
 ### Changed
 
 - Relicense the StepUp Queue source code under `LGPL-3.0-or-later`.
@@ -36,11 +46,36 @@ and will be updated with any further changes before the final release.)
   These commands do not interact with the internals of StepUp,
   so there is no reason to implement them as StepUp tools.
 - Fix mistake in `trap` command in `docs/examples/slurm-perpetual/workflow.sh`.
+- With `onchange="resubmit"`, `sq-sbatch-and-wait` waits for the cancelled job to stop
+  before submitting its replacement, instead of submitting immediately after `scancel`.
+  A failing `scancel` is no longer an error, because the job may already be gone.
+- `STEPUP_SBATCH_RETRY_DELAY_MAX` is raised to `STEPUP_SBATCH_RETRY_DELAY_MIN`
+  when it would otherwise be lower, as was already the case for the polling interval.
+- The delay between two `sbatch` attempts is no longer applied after the last one.
+- The period after which an unlisted job is declared failed
+  is counted from the moment `sq-sbatch-and-wait` starts waiting,
+  not from the submission of the job.
+  A job resumed from an older log used to fail on its first poll.
 
 ### Fixed
 
 - `sq-remove-jobs` refuses to remove the current directory or any of its parents,
   also when the `--commit` option is given.
+- A line in the `sacct` output that is not a plain job record
+  (an array task, a component of a heterogeneous job, or a blank line)
+  no longer hides the jobs listed after it.
+  Such a line used to make every job below it appear as `invalid`,
+  a state that the polling loop retries indefinitely.
+- An array task in the `sacct` output is no longer read as a different job.
+  `int("123_4")` returns `1234`, because Python accepts the underscore as a digit separator,
+  so an array task could report its state for an unrelated job.
+- The header of the `sacct` cache is written with a fixed-width timestamp.
+  A timestamp that happened to fall on a whole second made `sq-sbatch-and-wait` crash.
+- A failing `sacct` call no longer replaces the cached output of the last successful call.
+- An empty job script now reports that a shebang line is missing
+  instead of raising `StopIteration`.
+- The `#SBATCH` checks no longer reject a directive
+  whose value ends in something that looks like a short option, such as `--exclude=node-a`.
 
 ## [1.1.1][] - 2026-01-02 {: #v1.1.1 }
 

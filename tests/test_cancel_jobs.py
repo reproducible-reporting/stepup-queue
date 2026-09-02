@@ -225,6 +225,22 @@ def test_unreadable_log(path_tmp: Path, monkeypatch, capsys, scancel_calls: list
     assert scancel_calls == [["scancel", "1"]]
 
 
+def test_interrupted_submission(
+    path_tmp: Path, monkeypatch, capsys, scancel_calls: list[list[str]]
+):
+    # A log that stops at the `Submitting` marker has no job ID to cancel.
+    setup_job(path_tmp / "job1", 1)
+    setup_job(path_tmp / "job2", 2)
+    with open(path_tmp / "job2" / "slurmjob.log", "w") as fh:
+        print(FIRST_LINE, file=fh)
+        print(INP_DIGEST, file=fh)
+        print("2026-01-01T00:15:07.451402 Submitting", file=fh)
+    monkeypatch.chdir(path_tmp)
+    cancel_jobs(["--commit"])
+    assert "# WARNING: Could not read job ID from job2/slurmjob.log:" in capsys.readouterr().out
+    assert scancel_calls == [["scancel", "1"]]
+
+
 def test_scancel_failure(path_tmp: Path, monkeypatch, capsys):
     def fake_run(command_args, **kwargs):
         return subprocess.CompletedProcess(command_args, 1)

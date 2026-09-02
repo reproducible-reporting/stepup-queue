@@ -241,7 +241,7 @@ StepUp Queue will therefore run `sacct` only occasionally and cache its output o
 Furthermore, a `slurmjob.log` file is written for each job to keep track of
 its submission time, job ID, and previous states.
 
-The status of the jobs is inferred from `sacct -o 'jobidraw,state' -PXn`,
+The status of the jobs is inferred from `sacct -o 'jobid,state' -PXn`,
 if relevant with a `--cluster` argument.
 In addition, a configurable `-S` argument is passed to `sacct`.
 Its output is cached in a subdirectory `.stepup/queue` of the workflow root.
@@ -271,6 +271,12 @@ to a different value understood by `sacct -S`, e.g., `now-4days` or `2025-01-01T
 To avoid an infinite loop for jobs that are unlisted for too long,
 a job is considered to be failed if it is not listed for more than
 `STEPUP_SBATCH_UNLISTED_TIMEOUT` seconds, which is `600` (10 minutes) by default.
+This period is counted from the moment `sq-sbatch-and-wait` starts waiting,
+not from the submission of the job,
+so a job resumed from an older log also gets the full period.
+Note that a job which stays queued for longer than `STEPUP_SACCT_START_TIME`
+falls outside the window that `sacct` reports on and is therefore unlisted.
+Increase `STEPUP_SACCT_START_TIME` if your jobs can wait in the queue for more than seven days.
 
 Sometimes, job submission with `sq-sbatch-and-wait` can fail due to transient issues,
 such as temporary communication problems with the SLURM controller.
@@ -281,3 +287,21 @@ You can control the retry behavior with the following environment variables:
 - `STEPUP_SBATCH_RETRY_NUM`: Number of retry attempts (default is `5`).
 - `STEPUP_SBATCH_RETRY_DELAY_MIN`: Minimum delay between retries in seconds (default is `60`).
 - `STEPUP_SBATCH_RETRY_DELAY_MAX`: Maximum delay between retries in seconds (default is `120`).
+  This is raised to `STEPUP_SBATCH_RETRY_DELAY_MIN` when it would otherwise be lower.
+
+When `onchange="resubmit"` replaces a job whose inputs have changed,
+`sq-sbatch-and-wait` waits for the cancelled job to disappear from the queue
+before it submits the replacement,
+because both jobs would otherwise write to the same files in the job directory.
+The step fails if the old job is still active after
+`STEPUP_SBATCH_CANCEL_TIMEOUT` seconds, which is `600` (10 minutes) by default.
+
+Right before calling `sbatch`, a `Submitting` line is written to `slurmjob.log`.
+It is replaced by a `Submitted` line with the job ID as soon as `sbatch` returns.
+A log that stops at the `Submitting` line means that
+the submitting process did not survive the `sbatch` call,
+so SLURM may hold a job whose ID was never recorded.
+StepUp Queue refuses to submit a second job in that directory,
+because both jobs would write to the same files.
+Check the queue (e.g. with `squeue`), cancel the job if it exists,
+and remove `slurmjob.log` to submit again.
