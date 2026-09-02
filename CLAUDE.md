@@ -31,10 +31,11 @@ The package is organized around two layers:
   Its `sbatch()` function calls `stepup.core.api.run()`
   to register a `sq-sbatch-and-wait` step with StepUp Core.
 
-- **Individual command modules** each implement a `main()` function that serves as a CLI tool.
-  These are registered via `[project.scripts]` and the `stepup.tools` entry points
-  in `pyproject.toml`, and are invoked by StepUp steps as external commands.
-  When StepUp executes such a step, the command runs in the working directory of the job.
+- **Individual command modules** each implement a function that serves as a CLI entry point.
+  These are registered via `[project.scripts]` in `pyproject.toml`.
+  `sq-sbatch-and-wait` is invoked by StepUp steps as an external command,
+  and runs in the working directory of the job.
+  `sq-cancel-jobs` and `sq-remove-jobs` are run by the user from the shell.
 
 ## Coding Conventions
 

@@ -89,11 +89,9 @@ Source = "https://github.com/reproducible-reporting/stepup-queue/"
 Changelog = "https://reproducible-reporting.github.io/stepup-queue/changelog/"
 
 [project.scripts]
+sq-cancel-jobs = "stepup.queue.cancel_jobs:cancel_jobs"
+sq-remove-jobs = "stepup.queue.remove_jobs:remove_jobs"
 sq-sbatch-and-wait = "stepup.queue.sbatch:sbatch"
-
-[project.entry-points."stepup.tools"]
-canceljobs = "stepup.queue.canceljobs:canceljobs_subcommand"
-removejobs = "stepup.queue.removejobs:removejobs_subcommand"
 
 [tool.pytest.ini_options]
 addopts = "-n auto --dist worksteal -W error -W ignore::ResourceWarning"

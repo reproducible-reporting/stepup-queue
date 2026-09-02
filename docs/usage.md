@@ -127,7 +127,7 @@ If you want to cancel running SLURM jobs, typically after interrupting StepUp,
 you can run the following command:
 
 ```bash
-stepup canceljobs dir/to/running/jobs
+sq-cancel-jobs dir/to/running/jobs
 ```
 
 This command will recursively look for all `slurmjob.log` files in the given paths
@@ -148,7 +148,7 @@ You can pass the `--commit` option to actually execute the `scancel` commands.
 Alternatively, you can select a subset of jobs to cancel with `grep`, for example:
 
 ```bash
-stepup canceljobs dir/to/running/jobs | grep "filename_pattern"
+sq-cancel-jobs dir/to/running/jobs | grep "filename_pattern"
 ```
 
 Make sure you always check the generated `scancel` commands before executing them.
@@ -162,7 +162,7 @@ You can remove the directories of cancelled or failed jobs
 by running the following command:
 
 ```bash
-stepup removejobs dir/to/jobs
+sq-remove-jobs dir/to/jobs
 ```
 
 This command will recursively look for all `slurmjob.log` files in the given paths

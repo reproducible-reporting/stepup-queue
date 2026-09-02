@@ -28,7 +28,7 @@ from .log import (
 )
 from .utils import DONE_STATES, KNOWN_JOB_STATES, parse_sbatch
 
-__all__ = ()
+__all__ = ("sbatch",)
 
 
 SBATCH_RETRY_NUM = int(os.getenv("STEPUP_SBATCH_RETRY_NUM", "5"))

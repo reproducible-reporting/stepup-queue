@@ -31,6 +31,10 @@ and will be updated with any further changes before the final release.)
   to the workflows they create with StepUp (e.g., `plan.py` and related files).
   This has always been the intention, but with this change, it becomes legally explicit.
 - Compatibility with StepUp Core 4.0.
+- Replace the `stepup canceljobs` and `stepup removejobs` tools
+  by the regular commands `sq-cancel-jobs` and `sq-remove-jobs`.
+  These commands do not interact with the internals of StepUp,
+  so there is no reason to implement them as StepUp tools.
 - Fix mistake in `trap` command in `docs/examples/slurm-perpetual/workflow.sh`.
 
 ## [1.1.1][] - 2026-01-02 {: #v1.1.1 }

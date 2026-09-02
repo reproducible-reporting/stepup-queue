@@ -1,20 +1,19 @@
 # SPDX-FileCopyrightText: 2025 Toon Verstraelen <Toon.Verstraelen@UGent.be>
 # SPDX-License-Identifier: LGPL-3.0-or-later
-"""Tool to remove failed jobs."""
+"""Remove the directories of failed jobs."""
 
 import argparse
 import shutil
-from collections.abc import Callable
+import sys
+from collections.abc import Sequence
 
 from path import Path
 from rich.console import Console
 
-from stepup.core.config import ConfigLoader
-
 from .log import read_log, read_status
 from .utils import search_jobs
 
-__all__ = ()
+__all__ = ("remove_jobs",)
 
 
 FAILED_STATES = {
@@ -33,8 +32,9 @@ FAILED_STATES = {
 }
 
 
-def removejobs_tool(args: argparse.Namespace):
+def remove_jobs(argv: Sequence[str] | None = None):
     """Iterate over all slurmjob.log files and remove their parent job directories."""
+    args = parse_args(argv)
     console = Console(highlight=False)
     if not args.commit:
         console.print("[yellow]# Note: No job directories are actually removed.[/]")
@@ -63,10 +63,11 @@ def read_last_status(path_log: str) -> str | None:
     return read_status(lines[-1:])[1]
 
 
-def removejobs_subcommand(subparsers, loader: ConfigLoader) -> Callable:
-    parser = subparsers.add_parser(
-        "removejobs",
-        help="Remove directories of failed (and optionally all completed) jobs "
+def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(
+        prog="sq-remove-jobs",
+        description="Remove directories of failed (and optionally all completed) jobs "
         "in the current StepUp workflow.",
     )
     parser.add_argument(
@@ -91,5 +92,8 @@ def removejobs_subcommand(subparsers, loader: ConfigLoader) -> Callable:
         default=False,
         help="Remove all jobs, not only failed jobs.",
     )
-    loader.patch_parser(parser)
-    return removejobs_tool
+    return parser.parse_args(argv)
+
+
+if __name__ == "__main__":
+    sys.exit(remove_jobs())
