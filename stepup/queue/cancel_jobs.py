@@ -93,7 +93,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 def print_cancel_command(
     console: Console, job_ids: list[int], cluster: str | None, comment: str | None
-) -> str:
+):
     """Print the job cancellation command."""
     parts = ["[green]scancel[/]"]
     if cluster is not None:

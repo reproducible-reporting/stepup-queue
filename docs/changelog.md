@@ -37,6 +37,11 @@ and will be updated with any further changes before the final release.)
   so there is no reason to implement them as StepUp tools.
 - Fix mistake in `trap` command in `docs/examples/slurm-perpetual/workflow.sh`.
 
+### Fixed
+
+- `sq-remove-jobs` refuses to remove the current directory or any of its parents,
+  also when the `--commit` option is given.
+
 ## [1.1.1][] - 2026-01-02 {: #v1.1.1 }
 
 Minor improvement and bug fix.

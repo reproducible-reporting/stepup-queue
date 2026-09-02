@@ -88,7 +88,8 @@ def search_jobs(paths: list[Path], console: Console | None = None) -> list[Path]
     Returns
     -------
     paths_log
-        Sorted list of found slurmjob.log file paths.
+        Sorted list of found slurmjob.log file paths, normalized.
+        A log file found in a search path itself has no directory part.
     """
     paths_log = set()
     for path in paths:
@@ -103,7 +104,7 @@ def search_jobs(paths: list[Path], console: Console | None = None) -> list[Path]
         for path_sub in chain([path], path.walkdirs()):
             path_log = path_sub / "slurmjob.log"
             if path_log.is_file():
-                paths_log.add(path_log)
+                paths_log.add(path_log.normpath())
     return sorted(paths_log)
 
 

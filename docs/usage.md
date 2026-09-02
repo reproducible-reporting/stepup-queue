@@ -174,6 +174,9 @@ By default, this command will not perform any destructive actions
 and will only print the remove commands that would be executed.
 You can pass the `--commit` option to actually remove the directories.
 
+The current directory and its parents are never removed,
+not even with the `--commit` option.
+
 ## Useful Settings when Developing Workflows
 
 When developing and testing workflows that use `sbatch()`,

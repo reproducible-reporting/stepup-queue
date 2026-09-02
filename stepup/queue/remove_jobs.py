@@ -3,6 +3,7 @@
 """Remove the directories of failed jobs."""
 
 import argparse
+import os
 import shutil
 import sys
 from collections.abc import Sequence
@@ -50,11 +51,25 @@ def remove_jobs(argv: Sequence[str] | None = None):
         if args.all or status in FAILED_STATES:
             jobs.append((path_log, status))
 
+    path_cwd = Path.cwd().realpath()
     for path_log, status in jobs:
-        command = f"[cyan]rm -rf[/] {path_log.parent}  [bright_black]# state={status}[/]"
+        # `search_jobs` normalizes the paths it returns,
+        # so a log file in a search path itself has an empty parent.
+        path_job = path_log.parent or Path(".")
+        path_full = path_job.absolute().realpath()
+        if path_full == path_cwd:
+            console.print("[red]# WARNING: Refusing to remove the current directory.[/]")
+            continue
+        if path_cwd.startswith(os.path.join(path_full, "")):
+            console.print(
+                f"[red]# WARNING: Refusing to remove {path_job}, "
+                "a parent of the current directory.[/]"
+            )
+            continue
+        command = f"[cyan]rm -rf[/] {path_job}  [bright_black]# state={status}[/]"
         console.print(command)
         if args.commit:
-            shutil.rmtree(path_log.parent)
+            shutil.rmtree(path_job)
 
 
 def read_last_status(path_log: str) -> str | None:
