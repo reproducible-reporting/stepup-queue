@@ -3,71 +3,87 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --output=stepup-%j.out
-
-# The SBATCH parameters in this example are kept minimal for demonstration purposes.
-# In production, they need to be scaled up appropriately.
-# For example, for NWORKER=100, reasonable settings would be:
-# --cpus-per-task=8 --time=12:00:00 --mem=16G
-
 #SBATCH --cpus-per-task=1
 #SBATCH --time=00:01:00
 #SBATCH --mem=4G
 
-# Number of concurrent StepUp workers, which corresponds to the number of
-# concurrently submitted jobs in the Slurm queue:
-NWORKER=5
+# The SBATCH parameters above are kept minimal for demonstration purposes.
+# In production, they need to be scaled up appropriately.
+# For example, for NUM_JOBS=100, reasonable settings would be:
+# --cpus-per-task=8 --time=12:00:00 --mem=16G
 
-# Time-out settings
-# SOFT: In production, 1800 seconds (before the wall limit) is reasonable.
-export STEPUP_SHUTDOWN_TIMEOUT_SOFT=30
-# HARD: In production, 600 seconds (before the wall limit) is reasonable.
-export STEPUP_SHUTDOWN_TIMEOUT_HARD=10
+# Abort on an undefined variable,
+# which catches a missing SLURM_JOB_END_TIME below.
+# Do not add `set -e`: `sb` reports failed steps through its return code,
+# which is inspected at the end of this script.
+set -u
 
-echo "StepUp workflow job starts:" $(date)
+# Number of concurrent StepUp jobs,
+# which corresponds to the number of concurrently running jobs in the SLURM queue.
+# This is unrelated to the single core used by this workflow script itself.
+# This example is simple enough for lower values to be sufficient.
+NUM_JOBS=5
+
+# How long before the wall time limit StepUp is told to stop.
+# - SOFT: the first shutdown, for which 1800 seconds is reasonable in production.
+SOFT_MARGIN=30
+# - HARD: the second shutdown, for which 600 seconds is reasonable in production.
+HARD_MARGIN=10
+
+echo "StepUp workflow job starts: $(date)"
 
 # If needed, load required modules and activate a relevant virtual environment.
 # For example:
 # module load Python/3.12.3
 # activate venv/bin/activate
 
-# Create a temporary directory to store a file that will be used as a flag
-# to indicate that resubmission is needed.
-STEPUP_QUEUE_FLAG_DIR=$(mktemp -d)
-echo "Created temporary directory: $STEPUP_QUEUE_FLAG_DIR"
-
-# Start a background process that will end stepup near the wall time limit.
-# The first shutdown will wait for running steps to completed.
-# The second will forcefully terminate remaining running steps.
+# Start a background process that ends StepUp before the wall time limit.
+# The first shutdown waits for running steps to complete.
+# The second one interrupts the steps that are still waiting.
+# The SLURM jobs that these steps were waiting for stay in the queue
+# and are picked up again by the resubmitted workflow.
+# The delay is computed here rather than inside the background process,
+# so that a missing SLURM_JOB_END_TIME stops this script
+# instead of silently leaving it without a wall time monitor.
 echo "Starting background process to monitor wall time."
+SOFT_DELAY=$((SLURM_JOB_END_TIME - SOFT_MARGIN - $(date +%s)))
+# Refuse margins that do not fit in the remaining wall time.
+# A negative sleep would make the monitor shut down StepUp right away,
+# and this script would then resubmit itself in a tight loop.
+if ((SOFT_DELAY <= 0 || HARD_MARGIN > SOFT_MARGIN)); then
+    echo "The shutdown margins do not fit in the wall time limit."
+    echo "Raise the SBATCH time limit or lower SOFT_MARGIN and HARD_MARGIN."
+    exit 1
+fi
 (
-    sleep $((${SLURM_JOB_END_TIME} - ${SLURM_JOB_START_TIME} - ${STEPUP_SHUTDOWN_TIMEOUT_SOFT}))
-    touch ${STEPUP_QUEUE_FLAG_DIR}/resubmit
+    sleep "${SOFT_DELAY}"
     stepup shutdown
-    sleep ${STEPUP_SHUTDOWN_TIMEOUT_HARD}
+    sleep $((SOFT_MARGIN - HARD_MARGIN))
     stepup shutdown
 ) &
-BGPID=$!
+WATCHDOG_PID=$!
 
-cleanup() {
-    rm -rv "$STEPUP_QUEUE_FLAG_DIR"
-    kill $BGPID 2>/dev/null
-}
-trap cleanup EXIT
+echo "Starting stepup with a maximum of ${NUM_JOBS} concurrent jobs."
+sb -j "${NUM_JOBS}"
+RETURNCODE=$?
 
-echo "Starting stepup with a maximum of ${NWORKER} concurrent jobs."
-sb -j ${NWORKER}
-# This means that at most ${NWORKER} jobs will be submitted concurrently.
-# You can adjust the number of workers based on your needs.
-# In fact, because this example is simple, a single worker would be sufficient.
-# Note that the number of workers is unrelated to the single core used by this workflow script.
+# Stop the wall time monitor,
+# so that it cannot shut down an unrelated StepUp run later on.
+kill "${WATCHDOG_PID}" 2>/dev/null
 
-# Use the temporary file to determine if the workflow script must be resubmitted.
-echo "Checking if stepup was forcibly stopped."
-if [ -f ${STEPUP_QUEUE_FLAG_DIR}/resubmit ]; then
+# StepUp sets the DRAINED bit when its scheduler was still draining,
+# meaning it was stopped before it ran out of work.
+# That is precisely when the workflow job has to be resubmitted.
+DRAINED=$(python3 -c 'from stepup.core.enums import ReturnCode; print(ReturnCode.DRAINED.value)')
+if ((RETURNCODE & DRAINED)); then
     echo "Resubmitting job script to let StepUp finalize the workflow."
     sbatch workflow.sh
+    # The workflow is unfinished,
+    # but this job did its part and hands over to the next one.
+    RETURNCODE=0
 else
     echo "Stepup stopped by itself."
 fi
 
-echo "StepUp workflow job ends:" $(date)
+echo "StepUp workflow job ends: $(date)"
+exit "${RETURNCODE}"

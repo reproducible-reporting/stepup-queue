@@ -12,9 +12,13 @@ This example shows how to work around this limitation by using a perpetual self-
 
 At the start of the job, a background process is launched that will end StepUp
 before the wall time limit is reached if StepUp has not ended on its own.
-When StepUp is interrupted, a temporary file is created.
-This file is later used as a signal that the workflow job needs to be resubmitted.
-This technique can be used with any type of job and is not specific to StepUp.
+When StepUp is stopped this way, it still has work left to do,
+which it reports by setting the `DRAINED` bit in its exit code.
+That bit is the signal that the workflow job needs to be resubmitted.
+The SLURM jobs that StepUp was waiting for are not cancelled:
+they stay in the queue,
+and the resubmitted workflow job picks them up again instead of submitting them a second time.
+The wall time monitor itself can be used with any type of job and is not specific to StepUp.
 
 Here, we use a very short runtime to quickly demonstrate StepUp Queue's features.
 In practice, you can let the StepUp job run for several hours or even days at a time,
