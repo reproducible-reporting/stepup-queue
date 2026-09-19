@@ -191,11 +191,13 @@ def test_get_status_without_cluster(path_tmp: Path, monkeypatch):
         return 100.0, "40754228|COMPLETED\n", 0, True
 
     monkeypatch.setattr(sbatch_mod, "cached_run", fake_cached_run)
-    monkeypatch.setenv("ROOT", path_tmp)
+    monkeypatch.setenv("STEPUP_ROOT", path_tmp)
+    (path_tmp / "job").mkdir()
+    monkeypatch.chdir(path_tmp / "job")
     assert get_status(40754228, None, True) == (100.0, "COMPLETED", True)
     command, path_out, cache_timeout, first = calls[0]
     assert command == f"sacct -o 'jobid,state' -PXn -S {sbatch_mod.SACCT_START}"
-    assert path_out == path_tmp / ".stepup/queue/sbatch_wait_sacct.out"
+    assert path_out == "../.stepup/queue/sbatch_wait_sacct.out"
     assert cache_timeout == sbatch_mod.CACHE_TIMEOUT
     assert first is True
 
@@ -208,18 +210,22 @@ def test_get_status_with_cluster(path_tmp: Path, monkeypatch):
         return 100.0, "40754228|RUNNING\n", 0, False
 
     monkeypatch.setattr(sbatch_mod, "cached_run", fake_cached_run)
-    monkeypatch.setenv("ROOT", path_tmp)
+    monkeypatch.setenv("STEPUP_ROOT", path_tmp)
+    (path_tmp / "job").mkdir()
+    monkeypatch.chdir(path_tmp / "job")
     assert get_status(40754228, "joltik", False) == (100.0, "RUNNING", False)
     command, path_out = calls[0]
     assert command.endswith(" --cluster=joltik")
-    assert path_out == path_tmp / ".stepup/queue/sbatch_wait_sacct.joltik.out"
+    assert path_out == "../.stepup/queue/sbatch_wait_sacct.joltik.out"
 
 
 def test_get_status_command_failed(path_tmp: Path, monkeypatch):
     monkeypatch.setattr(
         sbatch_mod, "cached_run", lambda *args: (100.0, "40754228|COMPLETED\n", 1, True)
     )
-    monkeypatch.setenv("ROOT", path_tmp)
+    monkeypatch.setenv("STEPUP_ROOT", path_tmp)
+    (path_tmp / "job").mkdir()
+    monkeypatch.chdir(path_tmp / "job")
     # A failing sacct is transient: the job status is unknown, not lost.
     assert get_status(40754228, None, True) == (100.0, "invalid", True)
 

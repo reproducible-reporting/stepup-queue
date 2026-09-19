@@ -17,6 +17,7 @@ from datetime import datetime
 from path import Path
 
 from stepup.core.extapi import record_subprocess, run_subprocess
+from stepup.core.path import get_root
 
 from .log import (
     InpDigestError,
@@ -321,7 +322,7 @@ def get_status(jobid: int, cluster: str | None, first: bool) -> tuple[float, str
     """
     # Load cached output or run again
     command = f"sacct -o 'jobid,state' -PXn -S {SACCT_START}"
-    path_out = Path(os.getenv("ROOT", ".")) / ".stepup/queue"
+    path_out = get_root() / ".stepup/queue"
     if cluster is None:
         path_out /= "sbatch_wait_sacct.out"
     else:

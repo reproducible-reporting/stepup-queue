@@ -57,7 +57,7 @@ classifiers = [
 dependencies = [
     "path>=16.14.0",
     "rich>=13.0.0",
-    "stepup>=4.0.0,<5.0.0a1",
+    "stepup>=4.0.3,<5.0.0a1",
 ]
 dynamic = ["version"]
 

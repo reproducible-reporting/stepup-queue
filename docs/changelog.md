@@ -19,7 +19,17 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
 
 ## [Unreleased][]
 
-(no changes yet)
+### Changed
+
+- StepUp Core 4.0.3 or newer is required.
+
+### Fixed
+
+- `sq-sbatch-and-wait` locates the StepUp root with `get_root()` from StepUp Core,
+  instead of the `ROOT` environment variable.
+  When run manually in a job directory with only `STEPUP_ROOT` set,
+  it now shares the cached `sacct` output in `.stepup/queue/` of the project,
+  instead of creating a separate cache in the job directory.
 
 ## [2.0.0][] - 2026-09-02 {: #v2.0.0 }
 
