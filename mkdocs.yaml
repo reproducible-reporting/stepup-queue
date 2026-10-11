@@ -26,6 +26,8 @@ validation:
 extra:
   # Workaround for showing an example with a Jinja2 placeholder
   field: "{{ field }}"
+  minutes: "{{ minutes }}"
+  num_parts: "{{ num_parts }}"
 
 theme:
   logo: logo.svg

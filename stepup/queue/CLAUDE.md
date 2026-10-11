@@ -31,6 +31,9 @@ attaches to the job it already submitted, instead of submitting a second one:
 3. With a log whose digest matches, it resumes waiting for the existing job.
 4. With a digest mismatch, the `onchange` policy decides
    between `raise`, `resubmit` and `ignore`.
+   With `raise` or `resubmit`, an optional `complete` command is consulted first.
+   When it succeeds, the new digest is written into the log and the existing job is kept,
+   which brings the step back to case 3.
 
 This is why the digest is written into the log rather than derived at read time:
 the log has to be interpretable by a process that never saw the original submission.

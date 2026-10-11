@@ -77,6 +77,50 @@ the `STEPUP_QUEUE_ONCHANGE` environment variable or the `onchange` argument of `
     the job will be resubmitted with the new inputs.
     Use this option with caution, as it can lead to inconsistent workflow data.
 
+## Resubmitting Only When Outputs Are Missing
+
+A job script may itself skip work whose outputs already exist,
+e.g. a job that runs a series of simulations and only starts the ones that have no results yet.
+Such a job can be extended by changing its job script, e.g. to add more simulations,
+which calls for `onchange="resubmit"`.
+However, this policy also resubmits the job after a change that does not require any new work,
+such as a comment in the job script or a reformatted template.
+The new job then waits in the queue, only to find that there is nothing left to do.
+
+To avoid this, you can pass a shell command with the `complete` argument of `sbatch()`,
+which tells whether the outputs of the job are complete:
+
+```python
+sbatch(
+    "compute",
+    out=["result1.txt", "result2.txt"],
+    onchange="resubmit",
+    complete="test -f result1.txt && test -f result2.txt",
+)
+```
+
+The command is executed in the job directory,
+only when `slurmjob.log` records a submitted job whose inputs have changed:
+
+- When the command exits with a zero exit code, the existing job is kept.
+  Its log is updated with the new input digest, so it is not checked again in later runs.
+  If the job is still pending or running, StepUp Queue waits for it to finish.
+- When the command fails, the `onchange` policy is applied
+  (`raise` or `resubmit`).
+- With `onchange="ignore"`, the command is never executed,
+  because the existing job is kept anyway.
+
+Note that the `complete` command is part of the step,
+so changing the command is also a change of the step's inputs.
+The command should be cheap, because it runs on the machine where StepUp runs,
+and it should only succeed when the outputs are truly complete.
+For example, a job script can write each output to a temporary file and rename it at the end,
+so that the presence of an output file implies that it was completely written.
+A kept job that has failed still makes the step fail,
+just like a job whose inputs did not change.
+
+See the [`examples/slurm-basic/`](examples/slurm-basic/README.md) for a complete example.
+
 ## Examples
 
 - A simple example with static and dynamically generated job scripts
@@ -196,6 +240,8 @@ export STEPUP_CLEAN=0
 # Just assume that existing outputs are still valid, despite changed inputs.
 export STEPUP_QUEUE_ONCHANGE="ignore"
 ```
+
+Note that `STEPUP_QUEUE_ONCHANGE` is only used by `sbatch()` steps without an `onchange` argument.
 
 These settings are not recommended for production workflows.
 

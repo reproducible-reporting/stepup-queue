@@ -28,6 +28,7 @@ from .log import (
     read_jobid_cluster_status,
     read_log,
     read_status,
+    update_log_inp_digest,
 )
 from .utils import DONE_STATES, KNOWN_JOB_STATES, parse_sbatch
 
@@ -45,6 +46,59 @@ POLLING_MAX = max(int(os.getenv("STEPUP_SBATCH_POLLING_MAX", "20")), POLLING_MIN
 SACCT_START = os.getenv("STEPUP_SACCT_START_TIME", "now-7days")
 UNLISTED_TIMEOUT = int(os.getenv("STEPUP_SBATCH_UNLISTED_TIMEOUT", "600"))
 CANCEL_TIMEOUT = int(os.getenv("STEPUP_SBATCH_CANCEL_TIMEOUT", "600"))
+
+
+def get_inp_digest() -> str:
+    """Return the input digest of the step, which StepUp passes through the environment."""
+    inp_digest = os.getenv("STEPUP_STEP_INP_DIGEST")
+    if inp_digest is None:
+        raise ValueError("The environment variable STEPUP_STEP_INP_DIGEST is not set.")
+    return inp_digest
+
+
+def keep_complete_job(complete: str) -> bool:
+    """Keep a previously submitted job despite changed inputs, if its outputs are complete.
+
+    Parameters
+    ----------
+    complete
+        A shell command that is executed in the job directory.
+        A zero exit code means that the outputs of the step are complete.
+        It is only executed when the log records a submitted job
+        whose input digest differs from the current one.
+
+    Returns
+    -------
+    kept
+        True if the input digest in the log was replaced by the current one,
+        so that the existing job is treated as if it had been submitted with the current inputs.
+        False if the inputs did not change, if no job was submitted,
+        or if the command reports incomplete outputs.
+    """
+    inp_digest = get_inp_digest()
+    path_log = Path("slurmjob.log")
+    if not path_log.is_file():
+        return False
+    try:
+        read_log(path_log, inp_digest)
+    except InpDigestError:
+        pass
+    else:
+        return False
+    try:
+        jobid, _, _ = read_jobid_cluster_status(path_log)
+    except (NoSubmissionError, InterruptedSubmissionError):
+        # Without a recorded job, there is nothing to keep.
+        # The onchange policy decides what happens next.
+        return False
+    cp = run_subprocess(complete, shell=True, check=False)
+    if cp.returncode != 0:
+        print(f"Inputs changed and outputs are incomplete according to: {complete}")
+        return False
+    update_log_inp_digest(path_log, inp_digest)
+    print(f"Inputs changed, but outputs are complete according to: {complete}")
+    print(f"Keeping job {jobid} without resubmission.")
+    return True
 
 
 def submit_once_and_wait(
@@ -65,9 +119,7 @@ def submit_once_and_wait(
         If False, the input digest is not checked.
         This is useful when the job script is modified but the changes are harmless.
     """
-    inp_digest = os.getenv("STEPUP_STEP_INP_DIGEST")
-    if inp_digest is None:
-        raise ValueError("The environment variable STEPUP_STEP_INP_DIGEST is not set.")
+    inp_digest = get_inp_digest()
     start_time = time.time()
 
     # Read previously logged job states
@@ -535,7 +587,11 @@ def sbatch(argv: Sequence[str] | None = None):
     parser.add_argument(
         "--onchange", default=default_onchange, choices=["raise", "resubmit", "ignore"]
     )
+    parser.add_argument("--complete", default=None)
     args = parser.parse_args(argv)
+
+    if args.complete is not None and args.onchange != "ignore":
+        keep_complete_job(args.complete)
 
     if args.onchange == "resubmit":
         try:

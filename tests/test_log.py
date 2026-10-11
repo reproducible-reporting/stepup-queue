@@ -19,6 +19,7 @@ from stepup.queue.log import (
     read_jobid_cluster_status,
     read_log,
     read_status,
+    update_log_inp_digest,
 )
 
 INP_DIGEST = "2f49f43af482a27116cfeb3a87441a426fb41369cd04d0ca183c765ed0f1f68f"
@@ -301,3 +302,29 @@ def test_read_jobid_cluster_status_unparsable_jobid(path_tmp: Path):
     )
     with pytest.raises(ValueError, match="Cannot parse sbatch output"):
         read_jobid_cluster_status(path_log)
+
+
+def test_update_log_inp_digest(path_tmp: Path):
+    path_log = path_tmp / "slurmjob.log"
+    init_log(path_log, "old")
+    log_status(path_log, "Submitted 123")
+    log_status(path_log, "COMPLETED")
+    lines = read_log(path_log, "old")
+    update_log_inp_digest(path_log, "new")
+    assert read_log(path_log, "new") == lines
+    assert sorted(path.name for path in path_tmp.iterdir()) == ["slurmjob.log"]
+
+
+def test_update_log_inp_digest_no_digest(path_tmp: Path):
+    path_log = path_tmp / "slurmjob.log"
+    path_log.write_text("StepUp Queue sbatch wait log format version 2\n")
+    with pytest.raises(ValueError, match="no input digest"):
+        update_log_inp_digest(path_log, "new")
+
+
+def test_update_log_inp_digest_wrong_version(path_tmp: Path):
+    path_log = path_tmp / "slurmjob.log"
+    path_log.write_text("Some other file\nold\n")
+    with pytest.raises(ValueError, match="first line of the log is wrong"):
+        update_log_inp_digest(path_log, "new")
+    assert path_log.read_text() == "Some other file\nold\n"

@@ -21,6 +21,7 @@ def sbatch(
     out: Collection[StrPath] | StrPath = (),
     vol: Collection[StrPath] | StrPath = (),
     onchange: str | None = None,
+    complete: str | None = None,
     optional: bool = False,
     resources: dict[str, int] | str | None = None,
     duration: float | None = None,
@@ -63,8 +64,23 @@ def sbatch(
         and pass it here as `source rc.sh`.
         In this case, you usually also want to include `rc.sh` in the `inp` list.
     onchange
-        Policy when a the inputs of a previously submitted job have changed.
+        Policy when the inputs of a previously submitted job have changed.
         Must be one of `"raise"`, `"resubmit"` or `"ignore"`.
+        When not given, the environment variable `STEPUP_QUEUE_ONCHANGE` is used,
+        with `"raise"` as default.
+    complete
+        A shell command that tells whether the outputs of the job are complete,
+        e.g. `"test -f result.txt"`.
+        The command is executed in the working directory
+        when the inputs of a previously submitted job have changed.
+        A zero exit code keeps the existing job, as if its inputs had not changed.
+        A non-zero exit code applies the `onchange` policy.
+        Hence, with `onchange="resubmit"`, a job whose inputs have changed is only resubmitted
+        when outputs are missing.
+        This is useful for job scripts that skip work whose outputs already exist.
+        With `onchange="raise"`, an error is only raised when outputs are missing.
+        The command is not used with `onchange="ignore"`,
+        because that policy keeps the existing job anyway.
     """
     if ext == "":
         ext = ".sh"
@@ -81,6 +97,10 @@ def sbatch(
         if onchange not in ["raise", "resubmit", "ignore"]:
             raise ValueError(f"Invalid onchange policy {onchange}.")
         cmd += f" --onchange={onchange}"
+    if complete is not None:
+        if complete.strip() == "":
+            raise ValueError("The complete command must not be empty.")
+        cmd += f" --complete={shlex.quote(complete)}"
     return run(
         cmd,
         inp=[f"slurmjob{ext}", *coerce_paths(inp)],

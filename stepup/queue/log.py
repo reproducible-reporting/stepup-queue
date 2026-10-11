@@ -18,6 +18,7 @@ __all__ = (
     "read_jobid_cluster_status",
     "read_log",
     "read_status",
+    "update_log_inp_digest",
 )
 
 FIRST_LINE = "StepUp Queue sbatch wait log format version 2"
@@ -45,6 +46,25 @@ def init_log(path_log: str, inp_digest: str):
     with open(path_log, "w") as fh:
         print(FIRST_LINE, file=fh)
         print(inp_digest, file=fh)
+
+
+def update_log_inp_digest(path_log: str, inp_digest: str):
+    """Replace the input digest in an existing log file, keeping all status lines.
+
+    The new log is written to a temporary file first,
+    so that an interruption cannot leave a truncated log behind.
+    """
+    path_log = Path(path_log)
+    with open(path_log) as fh:
+        lines = fh.readlines()
+    if len(lines) < 2:
+        raise ValueError(f"Existing log file has no input digest: {path_log}")
+    check_log_version(lines[0].strip())
+    lines[1] = f"{inp_digest}\n"
+    path_tmp = path_log.with_name(f".{path_log.name}.tmp")
+    with open(path_tmp, "w") as fh:
+        fh.writelines(lines)
+    path_tmp.replace(path_log)
 
 
 def log_status(path_log: Path, status: str):

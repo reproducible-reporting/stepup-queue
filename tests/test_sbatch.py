@@ -29,6 +29,7 @@ from stepup.queue.sbatch import (
     cached_run,
     cancel_and_wait,
     get_status,
+    keep_complete_job,
     make_cache_header,
     parse_cache_header,
     parse_sacct_out,
@@ -1064,6 +1065,221 @@ def test_sbatch_resubmit_log_without_submission(
     assert fake_scancel == []
     assert not path_log.exists()
     assert len(fake_resubmit) == 2
+
+
+#
+# keep_complete_job
+#
+
+
+@pytest.fixture
+def fake_commands(monkeypatch) -> list[str]:
+    """Replace `run_subprocess` by a stub that fakes `sbatch` and `scancel`.
+
+    All other commands, i.e. those passed with `--complete`, are executed in a real shell.
+    """
+    commands = []
+
+    def fake_run_subprocess(command, *, stdin=None, check=True, shell=False, **kwargs):
+        commands.append(command)
+        if "sbatch --parsable" in command:
+            return subprocess.CompletedProcess(command, 0, stdout="40754229;joltik\n", stderr="")
+        if command.startswith("scancel"):
+            return subprocess.CompletedProcess(command, 0)
+        assert shell
+        return subprocess.run(command, shell=True, check=check, capture_output=True, text=True)
+
+    monkeypatch.setattr(sbatch_mod, "run_subprocess", fake_run_subprocess)
+    return commands
+
+
+def read_digest(path_log: Path) -> str:
+    """Return the input digest on the second line of a log file."""
+    return path_log.read_text().splitlines()[1]
+
+
+def test_keep_complete_job_complete(
+    path_tmp: Path, monkeypatch, inp_digest, fake_commands: list[str]
+):
+    monkeypatch.chdir(path_tmp)
+    path_log = setup_log(path_tmp, "RUNNING", "COMPLETED", digest=OTHER_DIGEST)
+    lines_before = read_log(path_log)
+    (path_tmp / "result.txt").write_text("done\n")
+    assert keep_complete_job("test -f result.txt")
+    assert fake_commands == ["test -f result.txt"]
+    assert read_digest(path_log) == INP_DIGEST
+    # The history of the job is kept, so the job can be resumed or replayed as before.
+    assert read_log(path_log, INP_DIGEST) == lines_before
+    assert not (path_tmp / ".slurmjob.log.tmp").exists()
+
+
+def test_keep_complete_job_incomplete(
+    path_tmp: Path, monkeypatch, inp_digest, fake_commands: list[str]
+):
+    monkeypatch.chdir(path_tmp)
+    path_log = setup_log(path_tmp, "COMPLETED", digest=OTHER_DIGEST)
+    assert not keep_complete_job("test -f result.txt")
+    assert fake_commands == ["test -f result.txt"]
+    assert read_digest(path_log) == OTHER_DIGEST
+
+
+def test_keep_complete_job_no_log(
+    path_tmp: Path, monkeypatch, inp_digest, fake_commands: list[str]
+):
+    monkeypatch.chdir(path_tmp)
+    assert not keep_complete_job("true")
+    assert fake_commands == []
+    assert not (path_tmp / "slurmjob.log").exists()
+
+
+def test_keep_complete_job_unchanged_inputs(
+    path_tmp: Path, monkeypatch, inp_digest, fake_commands: list[str]
+):
+    # The command is only needed when the inputs have changed.
+    monkeypatch.chdir(path_tmp)
+    setup_log(path_tmp, "COMPLETED")
+    assert not keep_complete_job("true")
+    assert fake_commands == []
+
+
+def test_keep_complete_job_log_without_submission(
+    path_tmp: Path, monkeypatch, inp_digest, fake_commands: list[str]
+):
+    monkeypatch.chdir(path_tmp)
+    path_log = path_tmp / "slurmjob.log"
+    init_log(path_log, OTHER_DIGEST)
+    assert not keep_complete_job("true")
+    assert fake_commands == []
+    assert read_digest(path_log) == OTHER_DIGEST
+
+
+def test_keep_complete_job_interrupted_submission(
+    path_tmp: Path, monkeypatch, inp_digest, fake_commands: list[str]
+):
+    # A job whose ID was never recorded cannot be kept,
+    # even if its outputs look complete.
+    monkeypatch.chdir(path_tmp)
+    path_log = path_tmp / "slurmjob.log"
+    init_log(path_log, OTHER_DIGEST)
+    log_status(path_log, "Submitting")
+    assert not keep_complete_job("true")
+    assert fake_commands == []
+    assert read_digest(path_log) == OTHER_DIGEST
+
+
+def test_keep_complete_job_no_inp_digest(path_tmp: Path, monkeypatch, fake_commands: list[str]):
+    monkeypatch.delenv("STEPUP_STEP_INP_DIGEST", raising=False)
+    monkeypatch.chdir(path_tmp)
+    with pytest.raises(ValueError, match="STEPUP_STEP_INP_DIGEST is not set"):
+        keep_complete_job("true")
+
+
+def test_keep_complete_job_runs_in_shell(
+    path_tmp: Path, monkeypatch, inp_digest, fake_commands: list[str]
+):
+    monkeypatch.chdir(path_tmp)
+    path_log = setup_log(path_tmp, "COMPLETED", digest=OTHER_DIGEST)
+    (path_tmp / "a.txt").write_text("a\n")
+    assert not keep_complete_job("test -f a.txt && test -f b.txt")
+    (path_tmp / "b.txt").write_text("b\n")
+    assert keep_complete_job("test -f a.txt && test -f b.txt")
+    assert read_digest(path_log) == INP_DIGEST
+
+
+#
+# The --complete option of the sq-sbatch-and-wait entry point
+#
+
+
+def test_sbatch_complete_resubmit_keeps_complete_job(
+    path_tmp: Path, monkeypatch, inp_digest, fake_commands: list[str]
+):
+    write_job_script(path_tmp)
+    monkeypatch.chdir(path_tmp)
+    path_log = setup_log(path_tmp, "COMPLETED", digest=OTHER_DIGEST)
+    (path_tmp / "slurmjob.ret").write_text("0\n")
+    sbatch_mod.sbatch(["--onchange=resubmit", "--complete=true"])
+    assert fake_commands == ["true"]
+    assert read_digest(path_log) == INP_DIGEST
+
+
+def test_sbatch_complete_resubmit_replaces_incomplete_job(
+    path_tmp: Path, monkeypatch, inp_digest, no_polling_delay, fake_commands: list[str]
+):
+    write_job_script(path_tmp)
+    monkeypatch.chdir(path_tmp)
+    path_log = setup_log(path_tmp, "RUNNING", digest=OTHER_DIGEST)
+    monkeypatch.setattr(
+        sbatch_mod, "get_status", fake_poller(["RUNNING", "CANCELLED", "RUNNING", "COMPLETED"])
+    )
+    (path_tmp / "slurmjob.ret").write_text("0\n")
+    sbatch_mod.sbatch(["--onchange=resubmit", "--complete=false"])
+    assert fake_commands[0] == "false"
+    assert fake_commands[1] == "scancel -M joltik 40754228"
+    assert "sbatch --parsable" in fake_commands[2]
+    assert len(fake_commands) == 3
+    assert read_digest(path_log) == INP_DIGEST
+    assert "Submitted 40754229;joltik" in path_log.read_text()
+
+
+def test_sbatch_complete_waits_for_kept_job(
+    path_tmp: Path, monkeypatch, inp_digest, no_polling_delay, fake_commands: list[str]
+):
+    # A job that is still running is kept when its outputs are complete,
+    # and the step waits for it to finish.
+    write_job_script(path_tmp)
+    monkeypatch.chdir(path_tmp)
+    path_log = setup_log(path_tmp, "RUNNING", digest=OTHER_DIGEST)
+    monkeypatch.setattr(sbatch_mod, "get_status", fake_poller(["COMPLETED"]))
+    (path_tmp / "slurmjob.ret").write_text("0\n")
+    sbatch_mod.sbatch(["--onchange=resubmit", "--complete=true"])
+    assert fake_commands == ["true"]
+    assert read_log(path_log, INP_DIGEST)[-1].endswith(" COMPLETED")
+
+
+def test_sbatch_complete_raise_keeps_complete_job(
+    path_tmp: Path, monkeypatch, inp_digest, fake_commands: list[str]
+):
+    write_job_script(path_tmp)
+    monkeypatch.chdir(path_tmp)
+    setup_log(path_tmp, "COMPLETED", digest=OTHER_DIGEST)
+    (path_tmp / "slurmjob.ret").write_text("0\n")
+    sbatch_mod.sbatch(["--onchange=raise", "--complete=true"])
+    assert fake_commands == ["true"]
+
+
+def test_sbatch_complete_raise_incomplete_job(
+    path_tmp: Path, monkeypatch, inp_digest, fake_commands: list[str]
+):
+    write_job_script(path_tmp)
+    monkeypatch.chdir(path_tmp)
+    setup_log(path_tmp, "COMPLETED", digest=OTHER_DIGEST)
+    with pytest.raises(InpDigestError):
+        sbatch_mod.sbatch(["--onchange=raise", "--complete=false"])
+    assert fake_commands == ["false"]
+
+
+def test_sbatch_complete_ignore(path_tmp: Path, monkeypatch, inp_digest, fake_commands: list[str]):
+    # With onchange=ignore, the outputs are accepted without asking.
+    write_job_script(path_tmp)
+    monkeypatch.chdir(path_tmp)
+    path_log = setup_log(path_tmp, "COMPLETED", digest=OTHER_DIGEST)
+    (path_tmp / "slurmjob.ret").write_text("0\n")
+    sbatch_mod.sbatch(["--onchange=ignore", "--complete=false"])
+    assert fake_commands == []
+    assert read_digest(path_log) == OTHER_DIGEST
+
+
+def test_sbatch_complete_failed_job(
+    path_tmp: Path, monkeypatch, inp_digest, fake_commands: list[str]
+):
+    # Keeping a job does not hide its failure.
+    write_job_script(path_tmp)
+    monkeypatch.chdir(path_tmp)
+    setup_log(path_tmp, "FAILED", digest=OTHER_DIGEST)
+    with pytest.raises(RuntimeError, match="Job ended with status 'FAILED'"):
+        sbatch_mod.sbatch(["--onchange=resubmit", "--complete=true"])
+    assert fake_commands == ["true"]
 
 
 #

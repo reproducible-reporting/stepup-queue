@@ -19,7 +19,15 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
 
 ## [Unreleased][]
 
-(no changes yet)
+### Added
+
+- The `complete` argument of `sbatch()` accepts a shell command
+  that tells whether the outputs of a job are complete.
+  When the inputs of a previously submitted job have changed and this command succeeds,
+  the existing job is kept instead of applying the `onchange` policy.
+  This is useful for job scripts that skip work whose outputs already exist,
+  which can then be extended with `onchange="resubmit"`
+  without resubmitting jobs that have nothing left to do.
 
 ## [2.0.1][] - 2026-09-19 {: #v2.0.1 }
 
