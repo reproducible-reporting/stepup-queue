@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 """The job log file format and utilities to read and write it."""
 
+import os
 from datetime import datetime
 
 from path import Path
@@ -64,7 +65,8 @@ def update_log_inp_digest(path_log: str, inp_digest: str):
     path_tmp = path_log.with_name(f".{path_log.name}.tmp")
     with open(path_tmp, "w") as fh:
         fh.writelines(lines)
-    path_tmp.replace(path_log)
+    # `os.replace` is used because `Path.replace` is `str.replace` in older versions of `path`.
+    os.replace(path_tmp, path_log)
 
 
 def log_status(path_log: Path, status: str):
