@@ -3,6 +3,7 @@
 
 # Local dev environment
 activate
+.claude
 .envrc
 .idea
 .local
@@ -27,3 +28,4 @@ docs/.stepup
 
 # Temporary files
 *.swp
+tmp
