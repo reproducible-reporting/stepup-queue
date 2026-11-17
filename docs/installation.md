@@ -14,7 +14,10 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 Requirements:
 
 - [POSIX](https://en.wikipedia.org/wiki/POSIX) operating system: Linux, macOS or WSL.
-  StepUp cannot run natively on Windows.
+  StepUp Queue drives the SLURM commands, which need a POSIX system,
+  so on Windows it is used in [WSL](https://learn.microsoft.com/windows/wsl/).
+  StepUp Core itself also runs natively on Windows,
+  see its [Supported Platforms](https://reproducible-reporting.github.io/stepup-core/platforms/).
 - [Python](https://www.python.org/) ≥ 3.11
 - [Pip](https://pip.pypa.io/)
 

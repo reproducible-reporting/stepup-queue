@@ -61,6 +61,27 @@ We use pytest, so you can run the tests as follows:
 pytest -vv
 ```
 
+StepUp Queue only supports POSIX systems,
+but it follows the path and text file conventions of StepUp Core,
+which are tested on Windows in a virtual machine.
+This uses the `winvm.sh` script of StepUp Core,
+for which you need a checkout of `stepup-core` next to this repository
+and a VM created as explained in `tools/winvm/README.md` of StepUp Core.
+From the root of this repository, run:
+
+```bash
+W=../stepup-core/tools/winvm/winvm.sh
+$W start
+$W test
+WINVM_PYTHON=3.11 $W test
+$W stop
+```
+
+The `test` command copies the working tree, including uncommitted changes, into the VM
+and runs the test suite there.
+`tests/test_sbatch.py` is skipped on Windows,
+because `sq-sbatch-and-wait` needs the `fcntl` module, which only exists on POSIX systems.
+
 ## Documentation
 
 The documentation is created using [MkDocs](https://www.mkdocs.org/).

@@ -29,6 +29,19 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
   which can then be extended with `onchange="resubmit"`
   without resubmitting jobs that have nothing left to do.
 
+### Changed
+
+- StepUp Core 4.1.0rc1 or newer is required.
+- The files of StepUp Queue (the job script, `slurmjob.log`, `slurmjob.ret`
+  and the cached `sacct` output) are read and written as UTF-8 with `\n` line endings,
+  instead of in the encoding of the locale.
+  This changes nothing on a system with a UTF-8 locale.
+  With another locale, a job script that is not valid UTF-8
+  is now rejected with a `UnicodeDecodeError`.
+- On a system without the `fcntl` module, such as native Windows,
+  `sq-sbatch-and-wait` stops with an error that explains it needs a POSIX system,
+  and that workflows submitting SLURM jobs run on Linux, on macOS or in WSL.
+
 ## [2.0.1][] - 2026-09-19 {: #v2.0.1 }
 
 ### Changed

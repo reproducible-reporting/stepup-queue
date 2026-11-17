@@ -45,6 +45,21 @@ The package is organized around two layers:
   Use "which"/"because"/"that", or split the sentence.
 - **Do not add `# noqa`**
   unless the violation is a genuine false positive that cannot be resolved by restructuring.
+- **A path is a string with `/` as its only separator, also on Windows.**
+  Import `Path` from `stepup.core.path`, not from `path`, and avoid `os.path`.
+  `test_slash_paths` of `ConventionTests` enforces this.
+  StepUp Queue only supports POSIX systems,
+  but it follows the path and text file conventions of StepUp Core all the same.
+
+### Text Files
+
+Open every text file with `encoding="utf-8"`, and write text files with `newline="\n"` as well,
+so that files are identical on all platforms,
+including Windows with Python 3.14 and older, where the default is the ANSI code page.
+Ruff enforces the encoding with `PLW1514`,
+but only for `open()` and `pathlib`, not for the methods of `Path`.
+In the package, `read_text()` and `write_text()` of `Path` need `encoding="utf-8"` too.
+The same holds for `subprocess.run()` with `text=True`, which ruff does not check either.
 
 ### Docstrings
 
