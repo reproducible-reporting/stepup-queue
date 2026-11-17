@@ -32,7 +32,7 @@ def setup_job(path_job: Path, status: str | None = "RUNNING", job_id: int = 4075
     ]
     if status is not None:
         lines.append(f"2026-01-01T00:15:46.452136 {status}")
-    with open(path_job / "slurmjob.log", "w") as fh:
+    with open(path_job / "slurmjob.log", "w", encoding="utf-8") as fh:
         for line in lines:
             print(line, file=fh)
 
@@ -165,7 +165,7 @@ def test_paths_missing_and_not_a_directory(path_tmp: Path, monkeypatch, capsys):
 def test_unreadable_log(path_tmp: Path, monkeypatch, capsys):
     setup_job(path_tmp / "job1", "FAILED")
     setup_job(path_tmp / "job2", "FAILED")
-    with open(path_tmp / "job2" / "slurmjob.log", "w") as fh:
+    with open(path_tmp / "job2" / "slurmjob.log", "w", encoding="utf-8") as fh:
         print("Some other file format", file=fh)
     monkeypatch.chdir(path_tmp)
     remove_jobs(["--commit"])
@@ -177,7 +177,7 @@ def test_unreadable_log(path_tmp: Path, monkeypatch, capsys):
 
 def test_unreadable_log_all(path_tmp: Path, monkeypatch, capsys):
     setup_job(path_tmp / "job1", "FAILED")
-    with open(path_tmp / "job1" / "slurmjob.log", "w") as fh:
+    with open(path_tmp / "job1" / "slurmjob.log", "w", encoding="utf-8") as fh:
         print("Some other file format", file=fh)
     monkeypatch.chdir(path_tmp)
     remove_jobs(["--all", "--commit"])
@@ -197,7 +197,7 @@ def test_no_status_yet(path_tmp: Path, monkeypatch, capsys):
 def test_interrupted_submission(path_tmp: Path, monkeypatch, capsys):
     # A job that may be queued under an unknown ID is not a failed job.
     setup_job(path_tmp / "job1", None)
-    with open(path_tmp / "job1" / "slurmjob.log", "a") as fh:
+    with open(path_tmp / "job1" / "slurmjob.log", "a", encoding="utf-8") as fh:
         print("2026-01-01T00:15:07.451402 Submitting", file=fh)
     monkeypatch.chdir(path_tmp)
     remove_jobs(["--commit"])

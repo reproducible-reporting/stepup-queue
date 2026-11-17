@@ -44,7 +44,7 @@ class InterruptedSubmissionError(ValueError):
 
 def init_log(path_log: str, inp_digest: str):
     """Initialize a new log file."""
-    with open(path_log, "w") as fh:
+    with open(path_log, "w", encoding="utf-8", newline="\n") as fh:
         print(FIRST_LINE, file=fh)
         print(inp_digest, file=fh)
 
@@ -56,14 +56,14 @@ def update_log_inp_digest(path_log: str, inp_digest: str):
     so that an interruption cannot leave a truncated log behind.
     """
     path_log = Path(path_log)
-    with open(path_log) as fh:
+    with open(path_log, encoding="utf-8") as fh:
         lines = fh.readlines()
     if len(lines) < 2:
         raise ValueError(f"Existing log file has no input digest: {path_log}")
     check_log_version(lines[0].strip())
     lines[1] = f"{inp_digest}\n"
     path_tmp = path_log.with_name(f".{path_log.name}.tmp")
-    with open(path_tmp, "w") as fh:
+    with open(path_tmp, "w", encoding="utf-8", newline="\n") as fh:
         fh.writelines(lines)
     # `os.replace` is used because `Path.replace` is `str.replace` in older versions of `path`.
     os.replace(path_tmp, path_log)
@@ -72,7 +72,7 @@ def update_log_inp_digest(path_log: str, inp_digest: str):
 def log_status(path_log: Path, status: str):
     """Write a status to the log."""
     dt = datetime.now().isoformat()
-    with open(path_log, "a") as f:
+    with open(path_log, "a", encoding="utf-8", newline="\n") as f:
         line = f"{dt} {status}"
         f.write(f"{line}\n")
 
@@ -113,7 +113,7 @@ def read_jobid_cluster_status(path_log: str) -> tuple[int, str | None, str | Non
 def read_log(path_log: str, expected_inp_digest: str | None = None) -> list[str]:
     """Read lines from a previously created log file."""
     lines = []
-    with open(path_log) as f:
+    with open(path_log, encoding="utf-8") as f:
         try:
             check_log_version(next(f).strip())
         except StopIteration as exc:

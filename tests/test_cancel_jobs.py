@@ -42,7 +42,7 @@ def setup_job(
     ]
     if status is not None:
         lines.append(f"2026-01-01T00:15:46.452136 {status}")
-    with open(path_job / "slurmjob.log", "w") as fh:
+    with open(path_job / "slurmjob.log", "w", encoding="utf-8") as fh:
         for line in lines:
             print(line, file=fh)
 
@@ -214,7 +214,7 @@ def test_paths_missing_and_not_a_directory(
 def test_unreadable_log(path_tmp: Path, monkeypatch, capsys, scancel_calls: list[list[str]]):
     setup_job(path_tmp / "job1", 1)
     setup_job(path_tmp / "job2", 2)
-    with open(path_tmp / "job2" / "slurmjob.log", "w") as fh:
+    with open(path_tmp / "job2" / "slurmjob.log", "w", encoding="utf-8") as fh:
         print(FIRST_LINE, file=fh)
         print(INP_DIGEST, file=fh)
         print("2026-01-01T00:15:08.451402 PENDING", file=fh)
@@ -231,7 +231,7 @@ def test_interrupted_submission(
     # A log that stops at the `Submitting` marker has no job ID to cancel.
     setup_job(path_tmp / "job1", 1)
     setup_job(path_tmp / "job2", 2)
-    with open(path_tmp / "job2" / "slurmjob.log", "w") as fh:
+    with open(path_tmp / "job2" / "slurmjob.log", "w", encoding="utf-8") as fh:
         print(FIRST_LINE, file=fh)
         print(INP_DIGEST, file=fh)
         print("2026-01-01T00:15:07.451402 Submitting", file=fh)

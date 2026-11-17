@@ -191,7 +191,7 @@ def submit_once_and_wait(
 
     if status == "COMPLETED":
         # Get the return code from the job
-        with open("slurmjob.ret") as fh:
+        with open("slurmjob.ret", encoding="utf-8") as fh:
             returncode = fh.read().strip()
         try:
             returncode = int(returncode)
@@ -307,7 +307,7 @@ def submit_job(job_ext: str, sbatch_rc: str | None = None) -> str:
         raise ValueError("The job script must be executable.")
 
     # Copy the #SBATCH lines from the job script and perform some checks.
-    with open(path_job) as f:
+    with open(path_job, encoding="utf-8") as f:
         sbatch_header = []
         first_line = next(f, "")
         if not first_line.startswith("#!"):
@@ -432,14 +432,16 @@ def cached_run(
         path_out.absolute().parent.makedirs_p()
         path_out.touch()
 
-    with open(path_out, mode="r+") as fh:
+    with open(path_out, mode="r+", encoding="utf-8", newline="\n") as fh:
         fcntl.lockf(fh, fcntl.LOCK_EX)
         fh.seek(0)
         header = fh.read(CACHE_HEADER_LENGTH)
         cache_time, returncode = parse_cache_header(header)
         if cache_time is None or time.time() > cache_time + cache_timeout:
             stdout = fh.read() if cache_time is not None else ""
-            cp = subprocess.run(shlex.split(command), capture_output=True, text=True, check=False)
+            cp = subprocess.run(
+                shlex.split(command), capture_output=True, text=True, encoding="utf-8", check=False
+            )
             if first:
                 # Only the first call is recorded to avoid duplicate entries in StepUp's metadata.
                 # Note that the recording of subprocesses is intended to be informative,
