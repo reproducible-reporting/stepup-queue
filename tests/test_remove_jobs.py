@@ -3,8 +3,8 @@
 """Unit tests for stepup.queue.remove_jobs."""
 
 import pytest
-from path import Path
 
+from stepup.core.path import Path
 from stepup.queue.log import FIRST_LINE
 from stepup.queue.remove_jobs import remove_jobs
 

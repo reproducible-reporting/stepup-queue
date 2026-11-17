@@ -3,7 +3,10 @@
 """Fixtures for testing StepUp Queue."""
 
 import pytest
-from path import Path
+
+from stepup.core.path import Path
+
+pytest_plugins = ("stepup.core.pytest",)
 
 
 @pytest.fixture

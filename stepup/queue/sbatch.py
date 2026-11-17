@@ -3,7 +3,6 @@
 """An sbatch wrapper to submit only on the first call, and to wait until a job has finished."""
 
 import argparse
-import fcntl
 import os
 import random
 import re
@@ -14,10 +13,8 @@ import time
 from collections.abc import Sequence
 from datetime import datetime
 
-from path import Path
-
 from stepup.core.extapi import record_subprocess, run_subprocess
-from stepup.core.path import get_root
+from stepup.core.path import Path, get_root
 
 from .log import (
     InpDigestError,
@@ -31,6 +28,14 @@ from .log import (
     update_log_inp_digest,
 )
 from .utils import DONE_STATES, KNOWN_JOB_STATES, parse_sbatch
+
+try:
+    import fcntl
+except ImportError as exc:
+    raise ImportError(
+        "sq-sbatch-and-wait needs a POSIX system with the fcntl module. "
+        "Workflows that submit SLURM jobs run on Linux, on macOS or in WSL."
+    ) from exc
 
 __all__ = ("sbatch",)
 

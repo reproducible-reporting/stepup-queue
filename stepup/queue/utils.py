@@ -4,8 +4,9 @@
 
 from itertools import chain
 
-from path import Path
 from rich.console import Console
+
+from stepup.core.path import Path
 
 __all__ = (
     "DONE_STATES",

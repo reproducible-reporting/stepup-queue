@@ -3,13 +3,13 @@
 """Remove the directories of failed jobs."""
 
 import argparse
-import os
 import shutil
 import sys
 from collections.abc import Sequence
 
-from path import Path
 from rich.console import Console
+
+from stepup.core.path import Path
 
 from .log import read_log, read_status
 from .utils import search_jobs
@@ -60,7 +60,7 @@ def remove_jobs(argv: Sequence[str] | None = None):
         if path_full == path_cwd:
             console.print("[red]# WARNING: Refusing to remove the current directory.[/]")
             continue
-        if path_cwd.startswith(os.path.join(path_full, "")):
+        if path_cwd.startswith(path_full / ""):
             console.print(
                 f"[red]# WARNING: Refusing to remove {path_job}, "
                 "a parent of the current directory.[/]"

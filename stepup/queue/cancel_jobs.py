@@ -7,8 +7,9 @@ import subprocess
 import sys
 from collections.abc import Sequence
 
-from path import Path
 from rich.console import Console
+
+from stepup.core.path import Path
 
 from .log import read_jobid_cluster_status
 from .utils import DONE_STATES, search_jobs

@@ -7,8 +7,10 @@ import time
 from datetime import datetime
 
 import pytest
-from path import Path
 
+pytest.importorskip("fcntl", reason="sq-sbatch-and-wait needs a POSIX system.")
+
+from stepup.core.path import Path
 from stepup.queue import sbatch as sbatch_mod
 from stepup.queue.log import (
     FIRST_LINE,

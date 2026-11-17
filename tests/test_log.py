@@ -5,8 +5,8 @@
 from datetime import datetime
 
 import pytest
-from path import Path
 
+from stepup.core.path import Path
 from stepup.queue.log import (
     FIRST_LINE,
     InpDigestError,

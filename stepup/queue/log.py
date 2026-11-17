@@ -5,7 +5,7 @@
 import os
 from datetime import datetime
 
-from path import Path
+from stepup.core.path import Path
 
 from .utils import parse_sbatch
 
