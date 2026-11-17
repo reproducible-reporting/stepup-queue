@@ -46,23 +46,31 @@ and stop it about 30 minutes before the wall time limit is reached.
 `plan.py` is a Python script that defines the workflow:
 
 ```python
-{% include 'examples/slurm-perpetual/plan.py' %}
+--8<--
+examples/slurm-perpetual/plan.py
+--8<--
 ```
 
 `step1/slurmjob.sh` is the first SLURM job:
 
 ```bash
-{% include 'examples/slurm-perpetual/step1/slurmjob.sh' %}
+--8<--
+examples/slurm-perpetual/step1/slurmjob.sh
+--8<--
 ```
 
 `step2/slurmjob.sh` is the second SLURM job:
 
 ```bash
-{% include 'examples/slurm-perpetual/step2/slurmjob.sh' %}
+--8<--
+examples/slurm-perpetual/step2/slurmjob.sh
+--8<--
 ```
 
 `workflow.sh` is the SLURM job script that runs the workflow:
 
 ```bash
-{% include 'examples/slurm-perpetual/workflow.sh' %}
+--8<--
+examples/slurm-perpetual/workflow.sh
+--8<--
 ```

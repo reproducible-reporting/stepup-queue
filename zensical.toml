@@ -1,0 +1,96 @@
+# SPDX-FileCopyrightText: 2025 Toon Verstraelen <Toon.Verstraelen@UGent.be>
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+[project]
+site_name = "StepUp Queue"
+site_url = "https://reproducible-reporting.github.io/stepup-queue/"
+site_description = "Integrate SLURM jobs into a StepUp workflow"
+site_author = "Toon Verstraelen"
+copyright = "&copy; 2025-2026 Toon Verstraelen"
+repo_url = "https://github.com/reproducible-reporting/stepup-queue"
+edit_uri = "edit/main/docs/"
+strict = true
+# The API reference is generated from the docstrings in the package.
+# Zensical does not watch the mkdocstrings path `.` because it is the project root.
+watch = ["stepup"]
+
+exclude_docs = """
+social-card.svg
+CLAUDE.md
+"""
+
+nav = [
+  { "Home" = "index.md" },
+  "installation.md",
+  "usage.md",
+  "examples/slurm-basic/README.md",
+  "examples/slurm-perpetual/README.md",
+  "stepup.queue.api.md",
+  { "Development" = [
+    "development.md",
+    "changelog.md",
+    "license.md",
+  ] },
+]
+
+[project.theme]
+language = "en"
+logo = "logo.svg"
+favicon = "logo.svg"
+custom_dir = "overrides"
+features = [
+  "content.action.edit",
+  "content.code.copy",
+  "navigation.footer",
+  "navigation.instant",
+  "navigation.instant.prefetch",
+  "navigation.path",
+  "navigation.top",
+  "navigation.tracking",
+  "search.highlight",
+]
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme)"
+toggle.icon = "lucide/sun-moon"
+toggle.name = "Switch to light mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to system preference"
+
+[project.plugins.search]
+# This is the default separator of Zensical 0.1.1,
+# extended with a split before a camel-case hump,
+# so that a part of a class name such as `StepUpError` can be found.
+separator = '[\s\-_,:!=\[\]()\\"`/]+|\.(?!\d)|(?!\b)(?=[A-Z][a-z])'
+
+[project.plugins.mkdocstrings.handlers.python]
+paths = ["."]
+
+[project.plugins.mkdocstrings.handlers.python.options]
+docstring_style = "numpy"
+docstring_section_style = "list"
+show_root_heading = true
+
+[project.markdown_extensions]
+admonition = {}
+attr_list = {}
+smarty = {}
+toc.permalink = true
+pymdownx.highlight.anchor_linenums = true
+pymdownx.highlight.line_spans = "__span"
+pymdownx.highlight.pygments_lang_class = true
+pymdownx.inlinehilite = {}
+# The example pages include the files of the examples in `docs/`.
+pymdownx.snippets.base_path = ["docs"]
+pymdownx.snippets.check_paths = true
+pymdownx.superfences = {}

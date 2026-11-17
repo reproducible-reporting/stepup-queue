@@ -10,7 +10,7 @@ The docstring conventions themselves are in the top-level `CLAUDE.md`.
 
 ## Page Front Matter
 
-Every page in the `nav` of `mkdocs.yaml` starts with YAML front matter
+Every page in the `nav` of `zensical.toml` starts with YAML front matter
 that sets a `description` for that page.
 It ends up in the meta description of the page
 and in the Open Graph description of the link preview,
@@ -19,12 +19,21 @@ Pages without one fall back to `site_description`.
 Front matter is only recognized at the very start of a file,
 so it precedes the SPDX header comment.
 
+## Included Files
+
+Pages include files with the block form of `pymdownx.snippets`, as described in
+`docs/development.md`, never with the single-line form `--8<-- "path"`.
+Ruff formats the Python code blocks in Markdown files
+and turns that single line into `--8 < --"path"`,
+which Snippets no longer recognizes,
+so the page then shows the mangled line instead of the file, without any build error.
+
 ## Social Card
 
 `docs/social-card.svg` is the editable source of the link preview image
 referenced by the Open Graph and Twitter meta tags in `overrides/main.html`.
 Only the exported `docs/social-card.jpg` is published,
-because `mkdocs.yaml` excludes the SVG from the site.
+because `zensical.toml` excludes the SVG from the site.
 Regenerate the JPEG after editing the SVG:
 
 ```bash

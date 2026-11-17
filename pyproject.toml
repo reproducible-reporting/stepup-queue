@@ -74,12 +74,10 @@ tests = [
 ]
 dev = [
     "stepup-queue[tests]",
-    "mkdocs",
-    "mkdocstrings[python]",
-    "mkdocs-macros-plugin",
-    "mkdocs-material",
+    "mkdocstrings-python",
     "reuse",
     "snipwise<2.0a0",
+    "zensical",
 ]
 
 [project.urls]
@@ -147,7 +145,7 @@ mode.strict-config = true
 # The documentation pages carry YAML front matter,
 # which pymarkdown parses as a setext heading unless this extension is on.
 extensions.front-matter.enabled = true
-# The documentation indents nested lists by four spaces, matching Python-Markdown and MkDocs.
+# The documentation indents nested lists by four spaces, matching Python-Markdown and Zensical.
 plugins.md007.indent = 4
 plugins.md013.line_length = 100
 plugins.md013.heading_line_length = 100
