@@ -17,7 +17,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev/effver/).
 (Changes to features documented as "experimental" will not increment macro and meso version numbers.)
 
-## [Unreleased][]
+## [2.1.0][] - 2026-11-20 {: #v2.1.0 }
+
+New `complete` argument of `sbatch()` function and compatibility with StepUp Core 4.1.
 
 ### Added
 
@@ -31,7 +33,10 @@ and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev
 
 ### Changed
 
-- StepUp Core 4.1.0rc1 or newer is required.
+- StepUp Core 4.1.0 or newer is required.
+- The `path` package is no longer a direct dependency.
+  It is still installed as a dependency of StepUp Core.
+- Official support for Python 3.15, which is now tested in CI.
 - The files of StepUp Queue (the job script, `slurmjob.log`, `slurmjob.ret`
   and the cached `sacct` output) are read and written as UTF-8 with `\n` line endings,
   instead of in the encoding of the locale.
@@ -260,6 +265,7 @@ It was adapted to integrate well with StepUp Core 3.
 This release also features the `stepup canceljobs` tool, which was not present in Parman.
 
 [Unreleased]: https://github.com/reproducible-reporting/stepup-queue
+[2.1.0]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v2.1.0
 [2.0.1]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v2.0.1
 [2.0.0]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v2.0.0
 [1.1.1]: https://github.com/reproducible-reporting/stepup-queue/releases/tag/v1.1.1
