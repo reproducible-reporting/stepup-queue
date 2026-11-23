@@ -57,7 +57,7 @@ classifiers = [
 ]
 dependencies = [
     "rich>=13.0.0",
-    "stepup>=4.1.0,<5.0.0a1",
+    "stepup>=4.3.0a0,<5.0.0a1",
 ]
 dynamic = ["version"]
 
@@ -90,6 +90,9 @@ Changelog = "https://reproducible-reporting.github.io/stepup-queue/changelog/"
 sq-cancel-jobs = "stepup.queue.cancel_jobs:cancel_jobs"
 sq-remove-jobs = "stepup.queue.remove_jobs:remove_jobs"
 sq-sbatch-and-wait = "stepup.queue.sbatch:sbatch"
+
+[project.entry-points."stepup.env_vars"]
+queue = "stepup.queue.env_vars:env_vars"
 
 [tool.pytest.ini_options]
 addopts = "-n auto --dist worksteal -W error -W ignore::ResourceWarning"

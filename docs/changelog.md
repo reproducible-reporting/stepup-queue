@@ -17,6 +17,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Effort-based Versioning](https://jacobtomlinson.dev/effver/).
 (Changes to features documented as "experimental" will not increment macro and meso version numbers.)
 
+## [Unreleased][]
+
+### Added
+
+- The environment variables of StepUp Queue are registered with StepUp Core,
+  so that `stepup config` lists them in a group of their own,
+  instead of as unrecognized variables without effect,
+  and reports a value that StepUp Queue cannot use on the line of the variable.
+
+### Changed
+
+- StepUp Core 4.3.0 or newer is required.
+- All environment variables of StepUp Queue now start with `STEPUP_QUEUE_`,
+  following the naming convention of StepUp Core for extension packages.
+  The old names no longer have an effect and must be renamed as follows:
+    - `STEPUP_SBATCH_CACHE_TIMEOUT` → `STEPUP_QUEUE_CACHE_TIMEOUT`
+    - `STEPUP_SBATCH_CANCEL_TIMEOUT` → `STEPUP_QUEUE_CANCEL_TIMEOUT`
+    - `STEPUP_SBATCH_POLLING_MAX` → `STEPUP_QUEUE_POLLING_MAX`
+    - `STEPUP_SBATCH_POLLING_MIN` → `STEPUP_QUEUE_POLLING_MIN`
+    - `STEPUP_SBATCH_RETRY_DELAY_MAX` → `STEPUP_QUEUE_RETRY_DELAY_MAX`
+    - `STEPUP_SBATCH_RETRY_DELAY_MIN` → `STEPUP_QUEUE_RETRY_DELAY_MIN`
+    - `STEPUP_SBATCH_RETRY_NUM` → `STEPUP_QUEUE_RETRY_NUM`
+    - `STEPUP_SBATCH_UNLISTED_TIMEOUT` → `STEPUP_QUEUE_UNLISTED_TIMEOUT`
+    - `STEPUP_SACCT_START_TIME` → `STEPUP_QUEUE_SACCT_START_TIME`
+
+### Fixed
+
+- An invalid value of `STEPUP_QUEUE_ONCHANGE` is reported as an error,
+  instead of being treated as `raise`.
+- A negative value of a timeout, polling interval or retry delay is reported as an error,
+  as is a `STEPUP_QUEUE_RETRY_NUM` below one, which would never submit the job.
+
 ## [2.1.0][] - 2026-11-20 {: #v2.1.0 }
 
 New `complete` argument of `sbatch()` function and compatibility with StepUp Core 4.1.

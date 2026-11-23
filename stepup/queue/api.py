@@ -8,6 +8,8 @@ from collections.abc import Collection
 from stepup.core.api import run
 from stepup.core.path import StrPath, coerce_paths
 
+from .env_vars import ONCHANGE_POLICIES
+
 __all__ = ("sbatch",)
 
 
@@ -94,7 +96,7 @@ def sbatch(
     if rc is not None:
         cmd += f" --rc={shlex.quote(rc)}"
     if onchange is not None:
-        if onchange not in ["raise", "resubmit", "ignore"]:
+        if onchange not in ONCHANGE_POLICIES:
             raise ValueError(f"Invalid onchange policy {onchange}.")
         cmd += f" --onchange={onchange}"
     if complete is not None:

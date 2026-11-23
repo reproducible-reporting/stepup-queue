@@ -16,6 +16,7 @@ from datetime import datetime
 from stepup.core.extapi import record_subprocess, run_subprocess
 from stepup.core.path import Path, get_root
 
+from .env_vars import ONCHANGE_POLICIES, read_env_var
 from .log import (
     InpDigestError,
     InterruptedSubmissionError,
@@ -40,17 +41,17 @@ except ImportError as exc:
 __all__ = ("sbatch",)
 
 
-SBATCH_RETRY_NUM = int(os.getenv("STEPUP_SBATCH_RETRY_NUM", "5"))
-SBATCH_RETRY_DELAY_MIN = int(os.getenv("STEPUP_SBATCH_RETRY_DELAY_MIN", "60"))
+SBATCH_RETRY_NUM = read_env_var("STEPUP_QUEUE_RETRY_NUM", "5")
+SBATCH_RETRY_DELAY_MIN = read_env_var("STEPUP_QUEUE_RETRY_DELAY_MIN", "60")
 SBATCH_RETRY_DELAY_MAX = max(
-    int(os.getenv("STEPUP_SBATCH_RETRY_DELAY_MAX", "120")), SBATCH_RETRY_DELAY_MIN
+    read_env_var("STEPUP_QUEUE_RETRY_DELAY_MAX", "120"), SBATCH_RETRY_DELAY_MIN
 )
-CACHE_TIMEOUT = int(os.getenv("STEPUP_SBATCH_CACHE_TIMEOUT", "30"))
-POLLING_MIN = int(os.getenv("STEPUP_SBATCH_POLLING_MIN", "10"))
-POLLING_MAX = max(int(os.getenv("STEPUP_SBATCH_POLLING_MAX", "20")), POLLING_MIN)
-SACCT_START = os.getenv("STEPUP_SACCT_START_TIME", "now-7days")
-UNLISTED_TIMEOUT = int(os.getenv("STEPUP_SBATCH_UNLISTED_TIMEOUT", "600"))
-CANCEL_TIMEOUT = int(os.getenv("STEPUP_SBATCH_CANCEL_TIMEOUT", "600"))
+CACHE_TIMEOUT = read_env_var("STEPUP_QUEUE_CACHE_TIMEOUT", "30")
+POLLING_MIN = read_env_var("STEPUP_QUEUE_POLLING_MIN", "10")
+POLLING_MAX = max(read_env_var("STEPUP_QUEUE_POLLING_MAX", "20"), POLLING_MIN)
+SACCT_START = read_env_var("STEPUP_QUEUE_SACCT_START_TIME", "now-7days")
+UNLISTED_TIMEOUT = read_env_var("STEPUP_QUEUE_UNLISTED_TIMEOUT", "600")
+CANCEL_TIMEOUT = read_env_var("STEPUP_QUEUE_CANCEL_TIMEOUT", "600")
 
 
 def get_inp_digest() -> str:
@@ -590,12 +591,11 @@ def sbatch(argv: Sequence[str] | None = None):
     parser = argparse.ArgumentParser()
     parser.add_argument("ext", nargs="?", default=".sh")
     parser.add_argument("--rc", default=None)
-    default_onchange = os.getenv("STEPUP_QUEUE_ONCHANGE", "raise")
-    parser.add_argument(
-        "--onchange", default=default_onchange, choices=["raise", "resubmit", "ignore"]
-    )
+    parser.add_argument("--onchange", default=None, choices=ONCHANGE_POLICIES)
     parser.add_argument("--complete", default=None)
     args = parser.parse_args(argv)
+    if args.onchange is None:
+        args.onchange = read_env_var("STEPUP_QUEUE_ONCHANGE", "raise")
 
     if args.complete is not None and args.onchange != "ignore":
         keep_complete_job(args.complete)

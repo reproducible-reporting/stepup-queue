@@ -10,6 +10,7 @@ import pytest
 
 pytest.importorskip("fcntl", reason="sq-sbatch-and-wait needs a POSIX system.")
 
+from stepup.core.exceptions import StepUpError
 from stepup.core.path import Path
 from stepup.queue import sbatch as sbatch_mod
 from stepup.queue.log import (
@@ -563,7 +564,7 @@ def test_submit_job_no_sleep_after_last_attempt(
 
 
 def test_retry_delay_range_is_clipped():
-    # Without the clipping, setting only STEPUP_SBATCH_RETRY_DELAY_MIN above the default maximum
+    # Without the clipping, setting only STEPUP_QUEUE_RETRY_DELAY_MIN above the default maximum
     # would make random.randint raise in the middle of the retry loop.
     assert sbatch_mod.SBATCH_RETRY_DELAY_MAX >= sbatch_mod.SBATCH_RETRY_DELAY_MIN
 
@@ -969,6 +970,19 @@ def test_sbatch_onchange_invalid(monkeypatch):
     monkeypatch.delenv("STEPUP_QUEUE_ONCHANGE", raising=False)
     with pytest.raises(SystemExit):
         sbatch_mod.sbatch(["--onchange=whatever"])
+
+
+def test_sbatch_onchange_invalid_env(fake_submit: list[tuple], monkeypatch):
+    monkeypatch.setenv("STEPUP_QUEUE_ONCHANGE", "whatever")
+    with pytest.raises(StepUpError, match="Invalid value of STEPUP_QUEUE_ONCHANGE"):
+        sbatch_mod.sbatch([])
+    assert fake_submit == []
+
+
+def test_sbatch_onchange_argument_overrides_env(fake_submit: list[tuple], monkeypatch):
+    monkeypatch.setenv("STEPUP_QUEUE_ONCHANGE", "whatever")
+    sbatch_mod.sbatch(["--onchange=ignore"])
+    assert fake_submit == [(".sh", None, False)]
 
 
 def test_sbatch_resubmit_without_change(fake_submit: list[tuple]):

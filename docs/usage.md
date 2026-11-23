@@ -243,6 +243,9 @@ export STEPUP_QUEUE_ONCHANGE="ignore"
 
 Note that `STEPUP_QUEUE_ONCHANGE` is only used by `sbatch()` steps without an `onchange` argument.
 
+`stepup config` lists the `STEPUP_QUEUE_*` variables that are set,
+together with an error for each value that StepUp Queue cannot use.
+
 These settings are not recommended for production workflows.
 
 ## Hints for writing Job Scripts
@@ -302,7 +305,7 @@ so the number of `sacct` calls is independent of the
 number of jobs running in parallel.
 
 The time between two `sacct` calls (per cluster) can be controlled with the
-`STEPUP_SBATCH_CACHE_TIMEOUT` environment variable, which is `"30"` (seconds) by default.
+`STEPUP_QUEUE_CACHE_TIMEOUT` environment variable, which is `"30"` (seconds) by default.
 Increase this value if you want to reduce the burden on SLURM.
 
 The cached output of `sacct` is checked by the `sq-sbatch-and-wait` commands
@@ -313,22 +316,23 @@ The randomization guarantees that concurrent calls to `sacct` (for multiple clus
 will not all coincide.
 The polling time can be controlled with two additional environment variables:
 
-- `STEPUP_SBATCH_POLLING_MIN` = the minimal polling interval in seconds, default is `10`.
-- `STEPUP_SBATCH_POLLING_MAX` = the maximal polling interval in seconds, default is `20`.
+- `STEPUP_QUEUE_POLLING_MIN` = the minimal polling interval in seconds, default is `10`.
+- `STEPUP_QUEUE_POLLING_MAX` = the maximal polling interval in seconds, default is `20`.
 
 By default, `sacct` queries job information of the last 7 days.
-You can change this by setting the `STEPUP_SACCT_START_TIME` environment variable
+You can change this by setting the `STEPUP_QUEUE_SACCT_START_TIME` environment variable
 to a different value understood by `sacct -S`, e.g., `now-4days` or `2025-01-01T00:00:00`.
 
 To avoid an infinite loop for jobs that are unlisted for too long,
 a job is considered to be failed if it is not listed for more than
-`STEPUP_SBATCH_UNLISTED_TIMEOUT` seconds, which is `600` (10 minutes) by default.
+`STEPUP_QUEUE_UNLISTED_TIMEOUT` seconds, which is `600` (10 minutes) by default.
 This period is counted from the moment `sq-sbatch-and-wait` starts waiting,
 not from the submission of the job,
 so a job resumed from an older log also gets the full period.
-Note that a job which stays queued for longer than `STEPUP_SACCT_START_TIME`
+Note that a job which stays queued for longer than `STEPUP_QUEUE_SACCT_START_TIME`
 falls outside the window that `sacct` reports on and is therefore unlisted.
-Increase `STEPUP_SACCT_START_TIME` if your jobs can wait in the queue for more than seven days.
+Increase `STEPUP_QUEUE_SACCT_START_TIME`
+if your jobs can wait in the queue for more than seven days.
 
 Sometimes, job submission with `sq-sbatch-and-wait` can fail due to transient issues,
 such as temporary communication problems with the SLURM controller.
@@ -336,17 +340,17 @@ To improve robustness, StepUp Queue will retry the `sbatch` command
 a number of times before giving up.
 You can control the retry behavior with the following environment variables:
 
-- `STEPUP_SBATCH_RETRY_NUM`: Number of retry attempts (default is `5`).
-- `STEPUP_SBATCH_RETRY_DELAY_MIN`: Minimum delay between retries in seconds (default is `60`).
-- `STEPUP_SBATCH_RETRY_DELAY_MAX`: Maximum delay between retries in seconds (default is `120`).
-  This is raised to `STEPUP_SBATCH_RETRY_DELAY_MIN` when it would otherwise be lower.
+- `STEPUP_QUEUE_RETRY_NUM`: Number of retry attempts (default is `5`).
+- `STEPUP_QUEUE_RETRY_DELAY_MIN`: Minimum delay between retries in seconds (default is `60`).
+- `STEPUP_QUEUE_RETRY_DELAY_MAX`: Maximum delay between retries in seconds (default is `120`).
+  This is raised to `STEPUP_QUEUE_RETRY_DELAY_MIN` when it would otherwise be lower.
 
 When `onchange="resubmit"` replaces a job whose inputs have changed,
 `sq-sbatch-and-wait` waits for the cancelled job to disappear from the queue
 before it submits the replacement,
 because both jobs would otherwise write to the same files in the job directory.
 The step fails if the old job is still active after
-`STEPUP_SBATCH_CANCEL_TIMEOUT` seconds, which is `600` (10 minutes) by default.
+`STEPUP_QUEUE_CANCEL_TIMEOUT` seconds, which is `600` (10 minutes) by default.
 
 Right before calling `sbatch`, a `Submitting` line is written to `slurmjob.log`.
 It is replaced by a `Submitted` line with the job ID as soon as `sbatch` returns.
