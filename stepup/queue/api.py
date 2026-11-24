@@ -7,6 +7,7 @@ from collections.abc import Collection
 
 from stepup.core.api import run
 from stepup.core.path import StrPath, coerce_paths
+from stepup.core.stepinfo import StepInfo
 
 from .env_vars import ONCHANGE_POLICIES
 
@@ -27,7 +28,7 @@ def sbatch(
     optional: bool = False,
     resources: dict[str, int] | str | None = None,
     duration: float | None = None,
-):
+) -> StepInfo:
     """Submit a SLURM job script.
 
     The following filename conventions are used in the given working directory:
@@ -83,6 +84,11 @@ def sbatch(
         With `onchange="raise"`, an error is only raised when outputs are missing.
         The command is not used with `onchange="ignore"`,
         because that policy keeps the existing job anyway.
+
+    Returns
+    -------
+    step_info
+        The `StepInfo` of the `sq-sbatch-and-wait` step, as returned by `run()` in StepUp Core.
     """
     if ext == "":
         ext = ".sh"
